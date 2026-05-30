@@ -11,5 +11,9 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
+    // SPA / CSR mode: prerender a static shell, render the app client-side.
+    // Keeps full compatibility with the Supabase Auth flow (session lives in
+    // localStorage and onAuthStateChange runs on the client, no SSR session mismatch).
+    spa: { enabled: true },
   },
 });
