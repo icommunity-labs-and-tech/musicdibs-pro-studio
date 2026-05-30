@@ -74,14 +74,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "MusicDibs Enterprise" },
+      {
+        name: "description",
+        content:
+          "Email marketing con canciones generadas por IA. Brief, generación musical, envío y métricas en una sola plataforma B2B.",
+      },
+      { name: "author", content: "iCommunity Labs" },
+      { property: "og:title", content: "MusicDibs Enterprise" },
+      {
+        property: "og:description",
+        content:
+          "Convierte cada campaña de email en una experiencia sonora memorable.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
