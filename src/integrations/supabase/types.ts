@@ -1064,6 +1064,80 @@ export type Database = {
       }
     }
     Views: {
+      audit_log: {
+        Row: {
+          action: string | null
+          actor_email: string | null
+          created_at: string | null
+          id: string | null
+          metadata: Json | null
+          new_data: Json | null
+          old_data: Json | null
+          resource_id: string | null
+          resource_name: string | null
+          resource_type: string | null
+          tenant_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action?: string | null
+          actor_email?: string | null
+          created_at?: string | null
+          id?: string | null
+          metadata?: Json | null
+          new_data?: Json | null
+          old_data?: Json | null
+          resource_id?: string | null
+          resource_name?: string | null
+          resource_type?: string | null
+          tenant_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string | null
+          actor_email?: string | null
+          created_at?: string | null
+          id?: string | null
+          metadata?: Json | null
+          new_data?: Json | null
+          old_data?: Json | null
+          resource_id?: string | null
+          resource_name?: string | null
+          resource_type?: string | null
+          tenant_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_churn_signals"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_churn_signals: {
         Row: {
           billing_issue: boolean | null
@@ -1128,6 +1202,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      reset_stuck_generation_jobs: {
+        Args: never
+        Returns: {
+          failed_count: number
+          reset_count: number
+        }[]
+      }
+      run_job_maintenance: { Args: never; Returns: undefined }
       set_campaign_sent: {
         Args: {
           p_campaign_id: string
@@ -1136,6 +1218,8 @@ export type Database = {
         }
         Returns: undefined
       }
+      sync_campaign_stats_cron: { Args: never; Returns: undefined }
+      trigger_queued_jobs: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
