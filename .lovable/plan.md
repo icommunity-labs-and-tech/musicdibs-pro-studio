@@ -32,12 +32,12 @@ Producción en Vercel sigue intacta; trabajamos en paralelo hasta que decidas ap
 - `/login`, `/signup` (alta de tenant), `/onboarding` (versión simple: nombre de empresa + vertical), con redirect post-auth a `/dashboard`.
 - Validación inline en blur (email, requeridos), estados de carga y errores visibles (toasts vía sonner). Copy en español (España).
 
-## Fase 2 — App core (orden por valor, mobile-first)
+## Fase 2 — App core (orden: Dashboard → Campaigns → CampaignDetail → CampaignBuilder, mobile-first)
 
-1. **CampaignBuilder** (`/campaigns/new`) — pantalla crítica. Wizard de 5 pasos (Contexto → Música → Canal → Email → Revisión), step indicator por puntos en móvil, full-width por paso. En desktop: **panel de preview lateral en vivo** (nombre, lista, prompt IA, coste estimado, duración). Validación inline por campo, progreso "X/5", **autosave a localStorage** con banner "Tienes un borrador guardado". Al lanzar: inserta `campaign` + invoca `generate-campaign`.
-2. **CampaignDetail** (`/campaigns/:id`) — resumen, **audio player**, stats (`campaign_stats`), botón de sync (`sync-campaign-stats`). Feedback de generación en tiempo real (P2): si `status` es `generating`, polling cada 5s con waveform animado + toast al pasar a `ready`. Incluye `/campaigns/:id/queue` (GenerationQueue) con barras de progreso por job.
-3. **Campaigns** (`/campaigns`) — listado con filtros por estado, búsqueda, orden; empty state con CTA; badges de la máquina de estados (`draft → queued → generating → ready → sent → archived`).
-4. **Dashboard** (`/dashboard`) — KPIs (campañas, contactos, equipo), actividad reciente, y widget de checklist de onboarding (P3: configurar mailing → importar contactos → crear campaña, anillo de progreso X/3).
+1. **Dashboard** (`/dashboard`) — KPIs (campañas, contactos, equipo), actividad reciente, y widget de checklist de onboarding (P3: configurar mailing → importar contactos → crear campaña, anillo de progreso X/3).
+2. **Campaigns** (`/campaigns`) — listado con filtros por estado, búsqueda, orden; empty state con CTA; badges de la máquina de estados (`draft → queued → generating → ready → sent → archived`).
+3. **CampaignDetail** (`/campaigns/:id`) — resumen, **audio player**, stats (`campaign_stats`), botón de sync (`sync-campaign-stats`). Feedback de generación en tiempo real (P2): **suscripción Realtime a `generation_jobs`** (canal `.channel().on().subscribe()` con cleanup vía `removeChannel`), waveform animado mientras `status` es `generating` + toast al pasar a `ready`. Incluye `/campaigns/:id/queue` (GenerationQueue) con barras de progreso por job.
+4. **CampaignBuilder** (`/campaigns/new`) — pantalla crítica. Wizard de 5 pasos (Contexto → Música → Canal → Email → Revisión), step indicator por puntos en móvil, full-width por paso. En desktop: **panel de preview lateral en vivo** (nombre, lista, prompt IA, coste estimado, duración). Validación inline por campo, progreso "X/5", **autosave a localStorage** con banner "Tienes un borrador guardado". Al lanzar: inserta `campaign` + invoca `generate-campaign`.
 
 ## Fase 3 — Pantallas secundarias
 
