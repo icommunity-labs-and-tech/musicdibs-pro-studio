@@ -8,6 +8,8 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
