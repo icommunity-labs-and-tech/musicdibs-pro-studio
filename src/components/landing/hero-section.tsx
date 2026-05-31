@@ -29,7 +29,7 @@ export function HeroSection({
             <span className="ld-pulse-ring absolute inline-flex h-full w-full rounded-full bg-teal" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-teal" />
           </span>
-          Marketing experiencial · Email hoy · WhatsApp muy pronto
+          Bienvenido al nuevo Marketing Experiencial
         </span>
 
         <h1
