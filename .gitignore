@@ -39,3 +39,12 @@ supabase/.temp/
 .env
 .env.local
 .env.*.local
+
+# Supabase
+.supabase/
+supabase/.temp/
+
+# Env
+.env
+.env.local
+.env.*.local
