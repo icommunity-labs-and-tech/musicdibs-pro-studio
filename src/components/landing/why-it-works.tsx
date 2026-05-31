@@ -44,8 +44,7 @@ export function WhyItWorks() {
             por sí solos.
           </p>
           <p className="mt-3 text-sm text-muted-foreground/80">
-            La información sonora genera mayores niveles de recuerdo y atención que la
-            comunicación exclusivamente textual.
+            Según estudios de neuromarketing y comportamiento del consumidor, la información sonora genera mayores niveles de recuerdo y atención que la comunicación exclusivamente textual.
           </p>
         </div>
 
