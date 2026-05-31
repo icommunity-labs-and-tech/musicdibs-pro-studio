@@ -1,0 +1,9 @@
+# MusicDibs Enterprise
+
+> Plataforma B2B de marketing experiencial que convierte tus comunicaciones digitales (email hoy, WhatsApp muy pronto) en experiencias sonoras personalizadas generadas por IA, midiendo quién abrió, escuchó y convirtió.
+
+MusicDibs Enterprise permite a CMOs y agencias de marketing crear campañas con música original generada por IA, integrarse con su stack actual (MailerLite, Brevo, HubSpot, Salesforce) y medir aperturas, escuchas y conversiones en tiempo real.
+
+## Pages
+
+- [Inicio](/): Qué es MusicDibs Enterprise, cómo funciona, resultados por sector, precios y FAQ.
