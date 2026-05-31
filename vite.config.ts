@@ -15,6 +15,9 @@ export default defineConfig({
     },
   },
   tanstackStart: {
+    // Use a custom client entry so Vercel's static fallback can boot as a SPA
+    // when no TanStack SSR hydration payload is present in index.html.
+    client: { entry: "client" },
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
