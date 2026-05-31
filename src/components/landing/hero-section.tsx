@@ -36,16 +36,15 @@ export function HeroSection({
           className="ld-fade-up font-display text-4xl font-semibold leading-[1.05] tracking-tight text-sand sm:text-6xl lg:text-7xl"
           style={{ animationDelay: "0.08s" }}
         >
-          Marketing experiencial con audio personalizado para email y WhatsApp<br />
-          <span className="ld-gradient-text">Convierte tus campañas en experiencias sonoras memorables</span>
+          ¿Y si tus clientes pudieran <br />
+          <span className="ld-gradient-text">escuchar tu marca?</span>
         </h1>
 
         <p
           className="ld-fade-up mt-6 max-w-2xl text-balance text-lg text-sand-200 sm:text-xl"
           style={{ animationDelay: "0.16s" }}
         >
-          La primera plataforma que convierte tus campañas de email y WhatsApp en
-          experiencias sonoras personalizadas capaces de multiplicar aperturas, engagement y conversión.
+          La primera plataforma que convierte email y WhatsApp en experiencias sonoras memorables.
         </p>
 
         <p
