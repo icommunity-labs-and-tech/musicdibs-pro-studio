@@ -49,9 +49,11 @@ function LandingLogo({ scrolled, linkBase }: { scrolled: boolean; linkBase: stri
 export function LandingNav({
   onListen,
   onRequestDemo,
+  linkBase = "",
 }: {
   onListen: () => void;
   onRequestDemo: () => void;
+  linkBase?: string;
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
