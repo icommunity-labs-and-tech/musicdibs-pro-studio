@@ -65,7 +65,7 @@ export function LandingNav({
       )}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <LandingLogo />
+        <LandingLogo scrolled={scrolled} />
 
         <div className="hidden items-center gap-1 lg:flex">
           {NAV_LINKS.map((link) => (
