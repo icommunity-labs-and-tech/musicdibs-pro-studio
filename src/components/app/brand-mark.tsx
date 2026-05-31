@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
+import logoMusicdibs from "@/assets/logo-musicdibs.jpg";
 import { cn } from "@/lib/utils";
 
 export function BrandMark({
@@ -13,9 +14,11 @@ export function BrandMark({
 }) {
   const inner = (
     <span className="flex items-center gap-3">
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-teal font-display text-lg font-bold text-night-900">
-        M
-      </span>
+      <img
+        src={logoMusicdibs}
+        alt="Musicdibs"
+        className="h-9 w-9 shrink-0 rounded-lg object-cover"
+      />
       <span className="flex flex-col">
         <span className="font-display text-base font-semibold leading-none">
           Musicdibs
