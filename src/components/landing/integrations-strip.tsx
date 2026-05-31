@@ -1,4 +1,18 @@
-import { INTEGRATIONS } from "@/lib/landing-content";
+import mailerliteLogo from "@/assets/logos/mailerlite.svg";
+import brevoLogo from "@/assets/logos/brevo.svg";
+import hubspotLogo from "@/assets/logos/hubspot.svg";
+import salesforceLogo from "@/assets/logos/salesforce.svg";
+import whatsappLogo from "@/assets/logos/whatsapp.svg";
+import zapierLogo from "@/assets/logos/zapier.svg";
+
+const LOGOS = [
+  { name: "MailerLite", src: mailerliteLogo },
+  { name: "Brevo", src: brevoLogo },
+  { name: "HubSpot", src: hubspotLogo },
+  { name: "Salesforce", src: salesforceLogo },
+  { name: "WhatsApp Business", src: whatsappLogo },
+  { name: "Zapier", src: zapierLogo },
+];
 
 export function IntegrationsStrip() {
   return (
@@ -8,14 +22,14 @@ export function IntegrationsStrip() {
           Tu ecosistema de comunicación, ahora memorable
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
-          {INTEGRATIONS.map((integration) => (
+          {LOGOS.map((logo) => (
             <img
-              key={integration.slug}
-              src={`https://cdn.simpleicons.org/${integration.slug}`}
-              alt={`Logo de ${integration.name}`}
-              title={integration.name}
+              key={logo.name}
+              src={logo.src}
+              alt={`Logo de ${logo.name}`}
+              title={logo.name}
               loading="lazy"
-              className="h-8 w-auto opacity-60 grayscale transition-all duration-300 hover:opacity-100 hover:grayscale-0"
+              className="h-9 w-9 opacity-70 transition-all duration-300 hover:scale-105 hover:opacity-100"
             />
           ))}
         </div>
