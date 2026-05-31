@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { Megaphone, Search, X } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight, Megaphone, Search, X } from "lucide-react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
@@ -22,7 +22,7 @@ import {
 } from "@/lib/campaign-status";
 import { useCampaigns, type CampaignListItem } from "@/hooks/use-campaigns";
 
-export const Route = createFileRoute("/_authenticated/_shell/campaigns")({
+export const Route = createFileRoute("/_authenticated/_shell/campaigns/")({
   head: () => ({ meta: [{ title: "Campañas · MusicDibs Enterprise" }] }),
   component: CampaignsPage,
 });
@@ -190,18 +190,26 @@ function CampaignsPage() {
 function CampaignRow({ campaign }: { campaign: CampaignListItem }) {
   return (
     <li>
-      <Card className="transition-colors hover:bg-muted/40">
-        <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-medium">{campaign.name}</p>
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              {campaign.vertical} · {campaign.total_contacts.toLocaleString("es-ES")}{" "}
-              contactos · {formatDate(campaign.created_at)}
-            </p>
-          </div>
-          <CampaignStatusBadge status={campaign.status} className="self-start sm:self-center" />
-        </CardContent>
-      </Card>
+      <Link
+        to="/campaigns/$id"
+        params={{ id: campaign.id }}
+        className="block focus-visible:outline-none"
+      >
+        <Card className="transition-colors hover:bg-muted/40">
+          <CardContent className="flex items-center gap-3 py-4">
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium">{campaign.name}</p>
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                {campaign.vertical} ·{" "}
+                {campaign.total_contacts.toLocaleString("es-ES")} contactos ·{" "}
+                {formatDate(campaign.created_at)}
+              </p>
+            </div>
+            <CampaignStatusBadge status={campaign.status} />
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </Link>
     </li>
   );
 }
