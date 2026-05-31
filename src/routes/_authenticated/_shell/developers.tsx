@@ -48,7 +48,7 @@ import {
 } from "@/hooks/use-developers";
 
 export const Route = createFileRoute("/_authenticated/_shell/developers")({
-  head: () => ({ meta: [{ title: "Desarrolladores · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Desarrolladores · Musicdibs Enterprise" }] }),
   component: DevelopersPage,
 });
 
@@ -63,7 +63,7 @@ function DevelopersPage() {
           Desarrolladores
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Claves de API y webhooks para integrar MusicDibs con tus sistemas.
+          Claves de API y webhooks para integrar Musicdibs con tus sistemas.
         </p>
       </div>
 

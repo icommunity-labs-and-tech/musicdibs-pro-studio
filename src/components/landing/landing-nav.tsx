@@ -8,12 +8,12 @@ import { cn } from "@/lib/utils";
 
 function LandingLogo() {
   return (
-    <a href="#top" className="inline-flex items-center gap-3" aria-label="MusicDibs Enterprise — inicio">
+    <a href="#top" className="inline-flex items-center gap-3" aria-label="Musicdibs Enterprise — inicio">
       <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-teal font-display text-lg font-bold text-night-900">
         M
       </span>
       <span className="flex flex-col leading-none">
-        <span className="font-display text-base font-semibold">MusicDibs</span>
+        <span className="font-display text-base font-semibold">Musicdibs</span>
         <span className="text-xs text-muted-foreground">Enterprise</span>
       </span>
     </a>

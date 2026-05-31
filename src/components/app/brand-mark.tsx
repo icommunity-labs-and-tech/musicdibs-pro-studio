@@ -18,7 +18,7 @@ export function BrandMark({
       </span>
       <span className="flex flex-col">
         <span className="font-display text-base font-semibold leading-none">
-          MusicDibs
+          Musicdibs
         </span>
         <span className="text-xs text-muted-foreground">{subtitle}</span>
       </span>

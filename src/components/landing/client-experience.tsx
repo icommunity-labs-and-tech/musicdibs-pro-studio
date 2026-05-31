@@ -123,7 +123,7 @@ function EmailMockup() {
             M
           </span>
           <div className="leading-tight">
-            <p className="text-sm font-semibold">MusicDibs · Tu aseguradora</p>
+            <p className="text-sm font-semibold">Musicdibs · Tu aseguradora</p>
             <p className="text-xs text-muted-foreground">para ti · ahora</p>
           </div>
         </div>
@@ -166,7 +166,7 @@ function WhatsAppMockup() {
           </span>
           <div className="leading-tight">
             <p className="flex items-center gap-1 text-sm font-semibold">
-              MusicDibs
+              Musicdibs
               <Check className="size-3 rounded-full bg-white/90 p-px text-[#075E54]" aria-hidden />
             </p>
             <p className="text-[10px] text-white/70">cuenta de empresa</p>

@@ -23,7 +23,7 @@ import {
 } from "@/hooks/use-tenant-settings";
 
 export const Route = createFileRoute("/_authenticated/_shell/settings")({
-  head: () => ({ meta: [{ title: "Ajustes · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Ajustes · Musicdibs Enterprise" }] }),
   component: SettingsPage,
 });
 

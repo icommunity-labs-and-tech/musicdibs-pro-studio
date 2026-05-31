@@ -39,7 +39,7 @@ import { useContactLists } from "@/hooks/use-contact-lists";
 import { useCreateCampaign } from "@/hooks/use-create-campaign";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/new")({
-  head: () => ({ meta: [{ title: "Nueva campaña · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Nueva campaña · Musicdibs Enterprise" }] }),
   component: CampaignBuilderPage,
 });
 

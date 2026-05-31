@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     meta: [
-      { title: "MusicDibs Enterprise — Marketing que se escucha" },
+      { title: "Musicdibs Enterprise — Marketing que se escucha" },
       {
         name: "description",
         content:
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:title",
-        content: "MusicDibs Enterprise — Marketing que se escucha",
+        content: "Musicdibs Enterprise — Marketing que se escucha",
       },
       {
         property: "og:description",
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
-          name: "MusicDibs Enterprise",
+          name: "Musicdibs Enterprise",
           applicationCategory: "BusinessApplication",
           description:
             "Plataforma B2B de marketing experiencial que convierte comunicaciones digitales (email y, próximamente, WhatsApp) en experiencias sonoras personalizadas.",

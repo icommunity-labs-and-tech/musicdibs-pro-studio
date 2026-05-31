@@ -16,17 +16,17 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/styleguide")({
   head: () => ({
     meta: [
-      { title: "Design System · MusicDibs Enterprise" },
+      { title: "Design System · Musicdibs Enterprise" },
       {
         name: "description",
         content:
-          "Referencia interna del sistema de diseño de MusicDibs Enterprise: colores, tipografía y componentes de UI.",
+          "Referencia interna del sistema de diseño de Musicdibs Enterprise: colores, tipografía y componentes de UI.",
       },
-      { property: "og:title", content: "Design System · MusicDibs Enterprise" },
+      { property: "og:title", content: "Design System · Musicdibs Enterprise" },
       {
         property: "og:description",
         content:
-          "Guía del sistema de diseño y componentes de MusicDibs Enterprise.",
+          "Guía del sistema de diseño y componentes de Musicdibs Enterprise.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -59,7 +59,7 @@ function StyleGuide() {
             </div>
             <div>
               <p className="font-display text-base font-semibold leading-none">
-                MusicDibs
+                Musicdibs
               </p>
               <p className="text-xs text-muted-foreground">Design System</p>
             </div>
@@ -76,7 +76,7 @@ function StyleGuide() {
           </h1>
           <p className="max-w-2xl text-muted-foreground">
             Tokens de color, tipografías y componentes base tematizados con la
-            identidad de MusicDibs. Usa el botón de arriba a la derecha para
+            identidad de Musicdibs. Usa el botón de arriba a la derecha para
             alternar entre <strong>modo claro</strong> y <strong>oscuro</strong>.
           </p>
         </section>
@@ -202,7 +202,7 @@ function StyleGuide() {
         </section>
 
         <footer className="border-t pt-6 text-center text-sm text-muted-foreground">
-          MusicDibs Enterprise · iCommunity Labs — checkpoint de design system
+          Musicdibs Enterprise · iCommunity Labs — checkpoint de design system
         </footer>
       </main>
     </div>

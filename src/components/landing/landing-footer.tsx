@@ -11,7 +11,7 @@ export function LandingFooter() {
                 M
               </span>
               <span className="font-display text-base font-semibold">
-                MusicDibs Enterprise
+                Musicdibs Enterprise
               </span>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">

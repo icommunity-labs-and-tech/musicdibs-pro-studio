@@ -76,15 +76,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MusicDibs Enterprise — Marketing que se escucha" },
+      { title: "Musicdibs Enterprise — Marketing que se escucha" },
       {
         name: "description",
         content:
           "Plataforma B2B de marketing experiencial: convierte tus comunicaciones digitales en experiencias sonoras generadas por IA.",
       },
       { name: "author", content: "iCommunity Labs" },
-      { property: "og:site_name", content: "MusicDibs Enterprise" },
-      { property: "og:title", content: "MusicDibs Enterprise — Marketing que se escucha" },
+      { property: "og:site_name", content: "Musicdibs Enterprise" },
+      { property: "og:title", content: "Musicdibs Enterprise — Marketing que se escucha" },
       {
         property: "og:description",
         content:
@@ -92,7 +92,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "MusicDibs Enterprise — Marketing que se escucha" },
+      { name: "twitter:title", content: "Musicdibs Enterprise — Marketing que se escucha" },
       {
         name: "twitter:description",
         content:
@@ -111,7 +111,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "MusicDibs Enterprise",
+          name: "Musicdibs Enterprise",
           url: "https://musicdibs-enterprise.lovable.app",
           description:
             "Plataforma B2B de marketing experiencial que convierte comunicaciones digitales en experiencias sonoras personalizadas con IA.",
@@ -123,7 +123,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "MusicDibs Enterprise",
+          name: "Musicdibs Enterprise",
           url: "https://musicdibs-enterprise.lovable.app",
         }),
       },
