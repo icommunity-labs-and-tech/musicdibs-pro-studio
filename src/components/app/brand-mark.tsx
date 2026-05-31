@@ -16,7 +16,7 @@ export function BrandMark({
     <span className="flex items-center gap-3">
       <img
         src={logoMusicdibs}
-        alt="Musicdibs"
+        alt="Logotipo de Musicdibs Enterprise"
         className="h-9 w-9 shrink-0 rounded-lg object-cover"
       />
       <span className="flex flex-col">

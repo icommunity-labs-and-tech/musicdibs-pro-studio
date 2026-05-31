@@ -57,7 +57,7 @@ function LoginPage() {
 
   return (
     <AuthCardLayout
-      title="Bienvenido de nuevo"
+      title="Accede a tu cuenta de Musicdibs Enterprise"
       subtitle="Entra para gestionar tus campañas"
       footer={
         <>

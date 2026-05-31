@@ -14,7 +14,7 @@ export function LandingFooter() {
             <div className="flex items-center gap-3">
               <img
                 src={theme === "dark" ? logoWhite : logoDark}
-                alt="Musicdibs"
+                alt="Logotipo de Musicdibs Enterprise"
                 className="h-9 w-auto shrink-0 object-contain"
               />
               <span className="font-display text-base font-semibold">
