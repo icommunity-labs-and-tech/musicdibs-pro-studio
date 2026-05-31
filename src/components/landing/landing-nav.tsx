@@ -20,7 +20,7 @@ function LandingLogo({ scrolled }: { scrolled: boolean }) {
     <a href="#top" className="inline-flex items-center gap-3" aria-label="Musicdibs Enterprise — inicio">
       <img
         src={darkBackground ? logoWhite : logoDark}
-        alt="Musicdibs"
+        alt="Logotipo de Musicdibs Enterprise"
         className="h-9 w-auto shrink-0 object-contain"
       />
       <span className="flex flex-col leading-none">

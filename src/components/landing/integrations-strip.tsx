@@ -26,7 +26,7 @@ export function IntegrationsStrip() {
             <img
               key={logo.name}
               src={logo.src}
-              alt={`Logo de ${logo.name}`}
+              alt={`Integración con ${logo.name}`}
               title={logo.name}
               loading="lazy"
               className="h-9 w-9 opacity-70 transition-all duration-300 hover:scale-105 hover:opacity-100"
