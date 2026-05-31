@@ -129,7 +129,7 @@ export function LandingNav({
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
-                href={link.href}
+                href={`${linkBase}${link.href}`}
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent"
               >
