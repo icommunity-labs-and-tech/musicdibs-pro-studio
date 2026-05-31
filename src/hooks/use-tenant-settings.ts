@@ -77,10 +77,13 @@ export function useUpdateTenantSettings(tenantId: string | undefined) {
   return useMutation({
     mutationFn: async (update: SettingsUpdate) => {
       if (!tenantId) throw new Error("Tenant no disponible");
-      const payload: Record<string, unknown> = {
-        tenant_id: tenantId,
-        ...update,
-      };
+      const { api_keys, ...rest } = update;
+      const payload: Database["public"]["Tables"]["tenant_settings"]["Insert"] =
+        {
+          tenant_id: tenantId,
+          ...rest,
+          ...(api_keys !== undefined ? { api_keys } : {}),
+        };
       const { error } = await supabase
         .from("tenant_settings")
         .upsert(payload, { onConflict: "tenant_id" });
