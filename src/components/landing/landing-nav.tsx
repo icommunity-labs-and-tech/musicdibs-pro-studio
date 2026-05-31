@@ -27,12 +27,19 @@ function LandingLogo({ scrolled }: { scrolled: boolean }) {
         <span
           className={cn(
             "font-display text-base font-semibold",
-            darkBackground && !scrolled && "text-sand",
+            darkBackground ? "text-sand" : "text-foreground",
           )}
         >
           Musicdibs
         </span>
-        <span className="text-xs text-muted-foreground">Enterprise</span>
+        <span
+          className={cn(
+            "text-xs",
+            darkBackground ? "text-sand-200" : "text-muted-foreground",
+          )}
+        >
+          Enterprise
+        </span>
       </span>
     </a>
   );
