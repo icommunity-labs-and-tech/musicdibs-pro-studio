@@ -79,13 +79,16 @@ function LandingPage() {
 
       <main>
         <HeroSection onListen={() => setAudioOpen(true)} onRequestDemo={scrollToDemo} />
+        <ClientExperience />
         <IntegrationsStrip />
         <HowItWorks />
+        <WhyItWorks />
         <IndustryResults />
         <RoiCalculator onRequestDemo={scrollToDemo} />
         <PartnersSection onPartnerInquiry={() => setPartnerOpen(true)} />
         <PricingSection onRequestDemo={scrollToDemo} />
         <FaqSection />
+        <ProductVision />
         <DemoCta />
       </main>
 
