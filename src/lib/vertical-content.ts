@@ -5,7 +5,7 @@
  * `/delivery` route is an instance of <VerticalLanding> fed with this data.
  */
 
-export type VerticalKey = "seguros" | "banca" | "retail" | "delivery";
+export type VerticalKey = "seguros" | "banca" | "retail" | "delivery" | "telco";
 
 export interface VerticalMetric {
   label: string;
