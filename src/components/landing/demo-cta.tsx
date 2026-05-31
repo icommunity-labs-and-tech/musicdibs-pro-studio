@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Clock, Phone } from "lucide-react";
+import { Clock, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { LandingWaveform } from "@/components/landing/landing-waveform";
