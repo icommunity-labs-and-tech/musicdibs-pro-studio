@@ -6,7 +6,9 @@ import { StartClient } from "@tanstack/react-start/client";
 import { getRouter } from "./router";
 
 function hasServerHydrationPayload() {
-  return Boolean((window as Window & { $_TSR?: { router?: unknown } }).$_TSR?.router);
+  return Boolean(
+    (window as Window & { $_TSR?: { router?: unknown } }).$_TSR?.router,
+  );
 }
 
 function getSpaMountNode() {
@@ -22,7 +24,9 @@ function getSpaMountNode() {
 }
 
 function disableDocumentShellForSpa(router: ReturnType<typeof getRouter>) {
-  const rootRoute = router.routesById.__root__ as { options: { shellComponent?: unknown } };
+  const rootRoute = router.routesById.__root__ as {
+    options: { shellComponent?: unknown };
+  };
   rootRoute.options.shellComponent = undefined;
 }
 
