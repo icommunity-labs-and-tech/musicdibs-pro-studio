@@ -9,7 +9,7 @@ import logoDark from "@/assets/logo-musicdibs-dark.jpg";
 import { NAV_LINKS } from "@/lib/landing-content";
 import { cn } from "@/lib/utils";
 
-function LandingLogo({ scrolled }: { scrolled: boolean }) {
+function LandingLogo({ scrolled, linkBase }: { scrolled: boolean; linkBase: string }) {
   const { theme } = useTheme();
   // Dark background → white logo; light background → dark logo.
   // When not scrolled the header sits over the dark hero (dark bg).
@@ -17,7 +17,7 @@ function LandingLogo({ scrolled }: { scrolled: boolean }) {
   const darkBackground = !scrolled || theme === "dark";
 
   return (
-    <a href="#top" className="inline-flex items-center gap-3" aria-label="Musicdibs Enterprise — inicio">
+    <a href={`${linkBase}#top`} className="inline-flex items-center gap-3" aria-label="Musicdibs Enterprise — inicio">
       <img
         src={darkBackground ? logoWhite : logoDark}
         alt="Logotipo de Musicdibs Enterprise"
