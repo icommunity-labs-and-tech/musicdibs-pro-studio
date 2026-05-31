@@ -91,7 +91,7 @@ export const HOW_IT_WORKS = [
   {
     step: "03",
     title: "Envío",
-    body: "Se integra con tus canales actuales: email (MailerLite, Brevo), CRM (HubSpot, Zapier) y otros que irán llegando (próximamente, WhatsApp Business).",
+    body: "Se integra con tus canales actuales: email (MailerLite, Brevo), CRM (HubSpot), automatizadores (Zapier) y otros que irán llegando (próximamente, WhatsApp Business).",
     note: "Sin cambiar tu stack. Tus canales, tus listas.",
   },
   {
