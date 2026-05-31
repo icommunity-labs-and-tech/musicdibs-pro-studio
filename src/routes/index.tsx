@@ -24,17 +24,20 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     meta: [
-      { title: "MusicDibs Enterprise — Tus emails van a ser recordados" },
+      { title: "MusicDibs Enterprise — Comunicaciones que se escuchan, no que se ignoran" },
       {
         name: "description",
         content:
-          "La primera plataforma que genera música personalizada por IA para cada campaña de email. Más apertura, más emoción, más conversión — sin cambiar tu proveedor.",
+          "La plataforma que convierte tus comunicaciones digitales —email hoy, WhatsApp muy pronto— en experiencias sonoras personalizadas. Más atención, más recuerdo de marca, más conversión.",
       },
-      { property: "og:title", content: "MusicDibs Enterprise — Tus emails van a ser recordados" },
+      {
+        property: "og:title",
+        content: "MusicDibs Enterprise — Comunicaciones que se escuchan, no que se ignoran",
+      },
       {
         property: "og:description",
         content:
-          "Convierte cada campaña de email en una experiencia sonora memorable. Solicita una demo.",
+          "Convierte cada comunicación digital en una experiencia sonora memorable. Email hoy, WhatsApp muy pronto. Solicita una demo.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE_URL },
@@ -50,7 +53,7 @@ export const Route = createFileRoute("/")({
           name: "MusicDibs Enterprise",
           applicationCategory: "BusinessApplication",
           description:
-            "Plataforma B2B de email marketing experiencial con música personalizada generada por IA.",
+            "Plataforma B2B de marketing experiencial que convierte comunicaciones digitales (email y, próximamente, WhatsApp) en experiencias sonoras personalizadas.",
           offers: {
             "@type": "Offer",
             price: "399",
