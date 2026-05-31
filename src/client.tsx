@@ -5,18 +5,8 @@ import { StartClient } from "@tanstack/react-start/client";
 
 import { getRouter } from "./router";
 
-type StartHydrationState = {
-  router?: unknown;
-};
-
-declare global {
-  interface Window {
-    $_TSR?: StartHydrationState;
-  }
-}
-
 function hasServerHydrationPayload() {
-  return Boolean(window.$_TSR?.router);
+  return Boolean((window as Window & { $_TSR?: { router?: unknown } }).$_TSR?.router);
 }
 
 function getSpaMountNode() {
