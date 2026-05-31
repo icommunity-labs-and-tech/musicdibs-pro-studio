@@ -95,8 +95,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Genera campañas musicales originales para fidelizar a tus clientes. Más aperturas, más engagement, más conversión. Para CMOs y agencias de marketing." },
       { property: "og:description", content: "Genera campañas musicales originales para fidelizar a tus clientes. Más aperturas, más engagement, más conversión. Para CMOs y agencias de marketing." },
       { name: "twitter:description", content: "Genera campañas musicales originales para fidelizar a tus clientes. Más aperturas, más engagement, más conversión. Para CMOs y agencias de marketing." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/ca95e336-764f-4236-9675-e6114cf338ff" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/ca95e336-764f-4236-9675-e6114cf338ff" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/743d725e-d465-4685-a789-6b164db86a66" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/743d725e-d465-4685-a789-6b164db86a66" },
     ],
     links: [
       {
