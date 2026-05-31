@@ -18,6 +18,7 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedShellRouteImport } from './routes/_authenticated/_shell'
 import { Route as AuthenticatedShellTeamRouteImport } from './routes/_authenticated/_shell/team'
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
+import { Route as AuthenticatedShellDevelopersRouteImport } from './routes/_authenticated/_shell/developers'
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
 import { Route as AuthenticatedShellContactsRouteImport } from './routes/_authenticated/_shell/contacts'
 import { Route as AuthenticatedShellAnalyticsRouteImport } from './routes/_authenticated/_shell/analytics'
@@ -68,6 +69,12 @@ const AuthenticatedShellSettingsRoute =
   AuthenticatedShellSettingsRouteImport.update({
     id: '/settings',
     path: '/settings',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
+const AuthenticatedShellDevelopersRoute =
+  AuthenticatedShellDevelopersRouteImport.update({
+    id: '/developers',
+    path: '/developers',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
 const AuthenticatedShellDashboardRoute =
@@ -122,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/contacts': typeof AuthenticatedShellContactsRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
+  '/developers': typeof AuthenticatedShellDevelopersRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/team': typeof AuthenticatedShellTeamRoute
   '/campaigns/new': typeof AuthenticatedShellCampaignsNewRoute
@@ -138,6 +146,7 @@ export interface FileRoutesByTo {
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/contacts': typeof AuthenticatedShellContactsRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
+  '/developers': typeof AuthenticatedShellDevelopersRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/team': typeof AuthenticatedShellTeamRoute
   '/campaigns/new': typeof AuthenticatedShellCampaignsNewRoute
@@ -157,6 +166,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/_authenticated/_shell/contacts': typeof AuthenticatedShellContactsRoute
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
+  '/_authenticated/_shell/developers': typeof AuthenticatedShellDevelopersRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
   '/_authenticated/_shell/team': typeof AuthenticatedShellTeamRoute
   '/_authenticated/_shell/campaigns/new': typeof AuthenticatedShellCampaignsNewRoute
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/contacts'
     | '/dashboard'
+    | '/developers'
     | '/settings'
     | '/team'
     | '/campaigns/new'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/contacts'
     | '/dashboard'
+    | '/developers'
     | '/settings'
     | '/team'
     | '/campaigns/new'
@@ -209,6 +221,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/analytics'
     | '/_authenticated/_shell/contacts'
     | '/_authenticated/_shell/dashboard'
+    | '/_authenticated/_shell/developers'
     | '/_authenticated/_shell/settings'
     | '/_authenticated/_shell/team'
     | '/_authenticated/_shell/campaigns/new'
@@ -290,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellSettingsRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
+    '/_authenticated/_shell/developers': {
+      id: '/_authenticated/_shell/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof AuthenticatedShellDevelopersRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
     '/_authenticated/_shell/dashboard': {
       id: '/_authenticated/_shell/dashboard'
       path: '/dashboard'
@@ -346,6 +366,7 @@ interface AuthenticatedShellRouteChildren {
   AuthenticatedShellAnalyticsRoute: typeof AuthenticatedShellAnalyticsRoute
   AuthenticatedShellContactsRoute: typeof AuthenticatedShellContactsRoute
   AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
+  AuthenticatedShellDevelopersRoute: typeof AuthenticatedShellDevelopersRoute
   AuthenticatedShellSettingsRoute: typeof AuthenticatedShellSettingsRoute
   AuthenticatedShellTeamRoute: typeof AuthenticatedShellTeamRoute
   AuthenticatedShellCampaignsNewRoute: typeof AuthenticatedShellCampaignsNewRoute
@@ -358,6 +379,7 @@ const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
   AuthenticatedShellAnalyticsRoute: AuthenticatedShellAnalyticsRoute,
   AuthenticatedShellContactsRoute: AuthenticatedShellContactsRoute,
   AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
+  AuthenticatedShellDevelopersRoute: AuthenticatedShellDevelopersRoute,
   AuthenticatedShellSettingsRoute: AuthenticatedShellSettingsRoute,
   AuthenticatedShellTeamRoute: AuthenticatedShellTeamRoute,
   AuthenticatedShellCampaignsNewRoute: AuthenticatedShellCampaignsNewRoute,
