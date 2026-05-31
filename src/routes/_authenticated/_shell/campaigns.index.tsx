@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight, Megaphone, Search, X } from "lucide-react";
+import { ChevronRight, Megaphone, Plus, Search, X } from "lucide-react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
@@ -85,11 +85,21 @@ function CampaignsPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold sm:text-3xl">Campañas</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Gestiona y haz seguimiento de tus campañas musicales.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">
+            Campañas
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Gestiona y haz seguimiento de tus campañas musicales.
+          </p>
+        </div>
+        <Button asChild className="sm:shrink-0">
+          <Link to="/campaigns/new">
+            <Plus className="mr-1 h-4 w-4" />
+            Nueva campaña
+          </Link>
+        </Button>
       </div>
 
       {isError ? (
@@ -110,6 +120,14 @@ function CampaignsPage() {
           icon={Megaphone}
           title="Aún no hay campañas"
           description="Crea tu primera campaña para empezar a generar canciones y enviarlas a tus contactos."
+          action={
+            <Button asChild>
+              <Link to="/campaigns/new">
+                <Plus className="mr-1 h-4 w-4" />
+                Nueva campaña
+              </Link>
+            </Button>
+          }
         />
       ) : (
         <>
