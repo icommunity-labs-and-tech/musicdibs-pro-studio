@@ -3,17 +3,35 @@ import { Menu, Play, X } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/components/theme-provider";
+import logoWhite from "@/assets/logo-musicdibs-white.jpg";
+import logoDark from "@/assets/logo-musicdibs-dark.jpg";
 import { NAV_LINKS } from "@/lib/landing-content";
 import { cn } from "@/lib/utils";
 
-function LandingLogo() {
+function LandingLogo({ scrolled }: { scrolled: boolean }) {
+  const { theme } = useTheme();
+  // Dark background → white logo; light background → dark logo.
+  // When not scrolled the header sits over the dark hero (dark bg).
+  // When scrolled the header uses bg-background, which is dark in dark mode.
+  const darkBackground = !scrolled || theme === "dark";
+
   return (
     <a href="#top" className="inline-flex items-center gap-3" aria-label="Musicdibs Enterprise — inicio">
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-teal font-display text-lg font-bold text-night-900">
-        M
-      </span>
+      <img
+        src={darkBackground ? logoWhite : logoDark}
+        alt="Musicdibs"
+        className="h-9 w-auto shrink-0 object-contain"
+      />
       <span className="flex flex-col leading-none">
-        <span className="font-display text-base font-semibold">Musicdibs</span>
+        <span
+          className={cn(
+            "font-display text-base font-semibold",
+            darkBackground && !scrolled && "text-sand",
+          )}
+        >
+          Musicdibs
+        </span>
         <span className="text-xs text-muted-foreground">Enterprise</span>
       </span>
     </a>
@@ -47,7 +65,7 @@ export function LandingNav({
       )}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <LandingLogo />
+        <LandingLogo scrolled={scrolled} />
 
         <div className="hidden items-center gap-1 lg:flex">
           {NAV_LINKS.map((link) => (
