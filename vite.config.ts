@@ -16,8 +16,8 @@ export default defineConfig({
     // localStorage and onAuthStateChange runs on the client, no SSR session mismatch).
     spa: { enabled: true },
   },
-  // Force-enable the nitro deploy plugin outside of Lovable context and use
-  // the 'static' preset so the build outputs a fully static site to .output/public/
-  // (index.html + assets) that Vercel can serve directly.
-  nitro: { preset: "static" },
+  // Force-enable the nitro deploy plugin outside of Lovable context.
+  // 'vercel-static' outputs directly to .vercel/output/static/ — Vercel's
+  // native Build Output API format, no outputDirectory config needed.
+  nitro: { preset: "vercel-static" },
 });
