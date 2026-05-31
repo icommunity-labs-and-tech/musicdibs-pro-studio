@@ -233,8 +233,8 @@ export const FAQ_ITEMS = [
     a: "No, y eso es intencional. Los principales clientes de email (Gmail, Outlook, Apple Mail) no reproducen audio inline por razones de seguridad. MusicDibs genera un botón o imagen en el email que lleva a una micro-landing con el audio player. Esto también nos permite rastrear exactamente quién escuchó, durante cuánto tiempo, y si convirtió.",
   },
   {
-    q: "¿Tengo que cambiar mi proveedor de email actual?",
-    a: "No. MusicDibs se integra con tu stack existente: MailerLite, Brevo, HubSpot, Salesforce Marketing Cloud y otros. Mantienes tus listas, tus segmentaciones y tu flujo actual. Nosotros añadimos la capa de audio y analytics.",
+    q: "¿Tengo que cambiar mis herramientas de comunicación actuales?",
+    a: "No. MusicDibs se integra con tu stack existente: MailerLite, Brevo, HubSpot, Salesforce Marketing Cloud y, próximamente, WhatsApp Business. Mantienes tus listas, tus segmentaciones y tu flujo actual. Nosotros añadimos la capa de experiencia sonora y analytics.",
   },
   {
     q: "¿Cómo controlo que el audio encaje con la imagen de marca?",
