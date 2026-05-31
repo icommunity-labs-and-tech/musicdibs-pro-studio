@@ -44,7 +44,7 @@ export function HeroSection({
           className="ld-fade-up mt-6 max-w-2xl text-balance text-lg text-sand-200 sm:text-xl"
           style={{ animationDelay: "0.16s" }}
         >
-          La primera plataforma que convierte email y WhatsApp en experiencias sonoras capaces de aumentar aperturas, engagement y conversión.
+          La primera plataforma que convierte tus campañas de email y WhatsApp en experiencias sonoras capaces de aumentar aperturas, engagement y conversión.
         </p>
 
         <p
