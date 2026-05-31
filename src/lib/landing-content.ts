@@ -77,7 +77,7 @@ export const HOW_IT_WORKS = [
     step: "02",
     title: "Generación",
     body: "La IA genera una pieza musical única en menos de 90 segundos.",
-    note: "Modelo V5 de KIE.ai. Calidad profesional.",
+    note: "Musicdibs IA Engine. Calidad de estudio profesional.",
   },
   {
     step: "03",
