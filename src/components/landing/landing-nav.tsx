@@ -107,6 +107,30 @@ export function LandingNav({
               {link.label}
             </a>
           ))}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium outline-none transition-colors",
+                scrolled
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-sand-200 hover:text-sand",
+              )}
+            >
+              Casos de uso
+              <ChevronDown className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-44">
+              {USE_CASES.map((vertical) => (
+                <DropdownMenuItem key={vertical.path} asChild>
+                  <a href={vertical.path} className="flex items-center gap-2">
+                    <span aria-hidden>{vertical.icon}</span>
+                    {vertical.label}
+                  </a>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="hidden items-center gap-2 lg:flex">
