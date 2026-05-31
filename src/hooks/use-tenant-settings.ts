@@ -82,7 +82,12 @@ export function useUpdateTenantSettings(tenantId: string | undefined) {
         {
           tenant_id: tenantId,
           ...rest,
-          ...(api_keys !== undefined ? { api_keys } : {}),
+          ...(api_keys !== undefined
+            ? {
+                api_keys:
+                  api_keys as Database["public"]["Tables"]["tenant_settings"]["Insert"]["api_keys"],
+              }
+            : {}),
         };
       const { error } = await supabase
         .from("tenant_settings")
