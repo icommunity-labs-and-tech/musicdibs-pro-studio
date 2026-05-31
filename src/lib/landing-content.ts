@@ -85,13 +85,13 @@ export const HOW_IT_WORKS = [
   {
     step: "02",
     title: "Generación",
-    body: "La IA genera una pieza musical única en menos de 90 segundos.",
+    body: "La IA genera un mensaje musical único en menos de 90 segundos.",
     note: "Musicdibs IA Engine. Calidad de estudio profesional.",
   },
   {
     step: "03",
     title: "Envío",
-    body: "Se integra con tus canales actuales: email (MailerLite, Brevo, HubSpot) y, próximamente, WhatsApp Business.",
+    body: "Se integra con tus canales actuales: email (MailerLite, Brevo), CRM (HubSpot, Zapier) y otros que irán llegando (próximamente, WhatsApp Business).",
     note: "Sin cambiar tu stack. Tus canales, tus listas.",
   },
   {
