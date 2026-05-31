@@ -95,6 +95,16 @@ if (!entryJs) {
   process.exit(1);
 }
 
+// The global stylesheet (src/styles.css) is imported via `?url` and injected by
+// the router at runtime, so it isn't part of the entry's manifest graph. Add it
+// explicitly to avoid a flash of unstyled content before hydration.
+if (cssFiles.length === 0) {
+  const files = await readdir(ASSETS);
+  const css = files.find((f) => f.startsWith("styles-") && f.endsWith(".css"))
+    ?? files.find((f) => f.endsWith(".css"));
+  if (css) cssFiles = [`assets/${css}`];
+}
+
 const entryHref = entryJs.startsWith("assets/") ? `/${entryJs}` : `/assets/${entryJs}`;
 const cssLinks = cssFiles
   .map((f) => {
