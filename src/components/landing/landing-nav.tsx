@@ -68,7 +68,11 @@ export function LandingNav({
 
         <div className="hidden items-center gap-2 lg:flex">
           <ThemeToggle />
-          <Button variant="ghost" onClick={onRequestDemo}>
+          <Button
+            variant="ghost"
+            onClick={onRequestDemo}
+            className={cn(!scrolled && "text-sand-200 hover:bg-sand/10 hover:text-sand")}
+          >
             Solicitar demo
           </Button>
           <Button onClick={onListen}>
