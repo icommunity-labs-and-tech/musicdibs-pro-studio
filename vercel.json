@@ -1,0 +1,8 @@
+{
+  "buildCommand": "bun run build",
+  "installCommand": "bun install",
+  "outputDirectory": ".output/public",
+  "rewrites": [
+    { "source": "/((?!assets|_nuxt|favicon.ico|robots.txt).*)", "destination": "/index.html" }
+  ]
+}
