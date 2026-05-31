@@ -11,9 +11,13 @@ export default defineConfig({
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
-    // SPA / CSR mode: prerender a static shell, render the app client-side.
-    // Keeps full compatibility with the Supabase Auth flow (session lives in
-    // localStorage and onAuthStateChange runs on the client, no SSR session mismatch).
-    spa: { enabled: true },
+    // NOTE: SPA mode is intentionally NOT enabled. `spa.enabled` forces TanStack
+    // Start's prerender step ON, which (in the nitro/cloudflare build) tries to
+    // import dist/server/server.js AFTER nitro has already bundled it into
+    // index.mjs — causing `ERR_MODULE_NOT_FOUND` and a failed production build.
+    // The app is fully client-rendered (auth is guarded client-side, no route
+    // loaders or server functions), so standard SSR is safe: the worker renders
+    // the initial HTML and the client hydrates. Auth still lives in localStorage
+    // via onAuthStateChange (client-only), and SSR improves landing-page SEO.
   },
 });
