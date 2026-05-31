@@ -83,7 +83,7 @@ export function IndustryResults() {
           })}
         </Tabs>
 
-        <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-muted-foreground/70">
+        <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-muted-foreground">>
           Datos de pilotos realizados entre Q4 2024 y Q1 2025. Los resultados varían según
           sector, tamaño de lista y configuración de campaña.
         </p>
