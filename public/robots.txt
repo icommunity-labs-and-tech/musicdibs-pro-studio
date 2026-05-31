@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://musicdibs-enterprise.lovable.app/sitemap.xml
+Sitemap: https://enterprise.musicdibs.com/sitemap.xml
