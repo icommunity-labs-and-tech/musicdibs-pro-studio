@@ -85,7 +85,7 @@ export const HOW_IT_WORKS = [
   {
     step: "02",
     title: "Generamos la experiencia",
-    body: "Gracias a nuestra IA genermos un mensaje musical único en menos de 90 segundos.",
+    body: "Gracias a nuestra IA generamos un mensaje sonoro único en menos de 90 segundos.",
     note: "Musicdibs IA Engine. Calidad de estudio profesional.",
   },
   {
