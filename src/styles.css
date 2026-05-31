@@ -204,3 +204,13 @@
     font-family: var(--font-mono);
   }
 }
+
+@keyframes waveform-bar {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+.animate-waveform-bar {
+  transform-origin: center;
+  animation: waveform-bar 1s ease-in-out infinite;
+}
