@@ -19,9 +19,9 @@ import { Route as AuthenticatedShellRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
 import { Route as AuthenticatedShellContactsRouteImport } from './routes/_authenticated/_shell/contacts'
-import { Route as AuthenticatedShellCampaignsRouteImport } from './routes/_authenticated/_shell/campaigns'
 import { Route as AuthenticatedShellAnalyticsRouteImport } from './routes/_authenticated/_shell/analytics'
 import { Route as AuthenticatedShellCampaignsIndexRouteImport } from './routes/_authenticated/_shell/campaigns.index'
+import { Route as AuthenticatedShellCampaignsIdIndexRouteImport } from './routes/_authenticated/_shell/campaigns.$id.index'
 
 const StyleguideRoute = StyleguideRouteImport.update({
   id: '/styleguide',
@@ -74,12 +74,6 @@ const AuthenticatedShellContactsRoute =
     path: '/contacts',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
-const AuthenticatedShellCampaignsRoute =
-  AuthenticatedShellCampaignsRouteImport.update({
-    id: '/campaigns',
-    path: '/campaigns',
-    getParentRoute: () => AuthenticatedShellRoute,
-  } as any)
 const AuthenticatedShellAnalyticsRoute =
   AuthenticatedShellAnalyticsRouteImport.update({
     id: '/analytics',
@@ -88,9 +82,15 @@ const AuthenticatedShellAnalyticsRoute =
   } as any)
 const AuthenticatedShellCampaignsIndexRoute =
   AuthenticatedShellCampaignsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedShellCampaignsRoute,
+    id: '/campaigns/',
+    path: '/campaigns/',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
+const AuthenticatedShellCampaignsIdIndexRoute =
+  AuthenticatedShellCampaignsIdIndexRouteImport.update({
+    id: '/campaigns/$id/',
+    path: '/campaigns/$id/',
+    getParentRoute: () => AuthenticatedShellRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -100,11 +100,11 @@ export interface FileRoutesByFullPath {
   '/styleguide': typeof StyleguideRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
-  '/campaigns': typeof AuthenticatedShellCampaignsRouteWithChildren
   '/contacts': typeof AuthenticatedShellContactsRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/campaigns/': typeof AuthenticatedShellCampaignsIndexRoute
+  '/campaigns/$id/': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -117,6 +117,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/campaigns': typeof AuthenticatedShellCampaignsIndexRoute
+  '/campaigns/$id': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -128,11 +129,11 @@ export interface FileRoutesById {
   '/_authenticated/_shell': typeof AuthenticatedShellRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/_shell/analytics': typeof AuthenticatedShellAnalyticsRoute
-  '/_authenticated/_shell/campaigns': typeof AuthenticatedShellCampaignsRouteWithChildren
   '/_authenticated/_shell/contacts': typeof AuthenticatedShellContactsRoute
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
   '/_authenticated/_shell/campaigns/': typeof AuthenticatedShellCampaignsIndexRoute
+  '/_authenticated/_shell/campaigns/$id/': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -143,11 +144,11 @@ export interface FileRouteTypes {
     | '/styleguide'
     | '/onboarding'
     | '/analytics'
-    | '/campaigns'
     | '/contacts'
     | '/dashboard'
     | '/settings'
     | '/campaigns/'
+    | '/campaigns/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -160,6 +161,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/campaigns'
+    | '/campaigns/$id'
   id:
     | '__root__'
     | '/'
@@ -170,11 +172,11 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell'
     | '/_authenticated/onboarding'
     | '/_authenticated/_shell/analytics'
-    | '/_authenticated/_shell/campaigns'
     | '/_authenticated/_shell/contacts'
     | '/_authenticated/_shell/dashboard'
     | '/_authenticated/_shell/settings'
     | '/_authenticated/_shell/campaigns/'
+    | '/_authenticated/_shell/campaigns/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -257,13 +259,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellContactsRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
-    '/_authenticated/_shell/campaigns': {
-      id: '/_authenticated/_shell/campaigns'
-      path: '/campaigns'
-      fullPath: '/campaigns'
-      preLoaderRoute: typeof AuthenticatedShellCampaignsRouteImport
-      parentRoute: typeof AuthenticatedShellRoute
-    }
     '/_authenticated/_shell/analytics': {
       id: '/_authenticated/_shell/analytics'
       path: '/analytics'
@@ -273,44 +268,38 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/_shell/campaigns/': {
       id: '/_authenticated/_shell/campaigns/'
-      path: '/'
+      path: '/campaigns'
       fullPath: '/campaigns/'
       preLoaderRoute: typeof AuthenticatedShellCampaignsIndexRouteImport
-      parentRoute: typeof AuthenticatedShellCampaignsRoute
+      parentRoute: typeof AuthenticatedShellRoute
+    }
+    '/_authenticated/_shell/campaigns/$id/': {
+      id: '/_authenticated/_shell/campaigns/$id/'
+      path: '/campaigns/$id'
+      fullPath: '/campaigns/$id/'
+      preLoaderRoute: typeof AuthenticatedShellCampaignsIdIndexRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
     }
   }
 }
 
-interface AuthenticatedShellCampaignsRouteChildren {
-  AuthenticatedShellCampaignsIndexRoute: typeof AuthenticatedShellCampaignsIndexRoute
-}
-
-const AuthenticatedShellCampaignsRouteChildren: AuthenticatedShellCampaignsRouteChildren =
-  {
-    AuthenticatedShellCampaignsIndexRoute:
-      AuthenticatedShellCampaignsIndexRoute,
-  }
-
-const AuthenticatedShellCampaignsRouteWithChildren =
-  AuthenticatedShellCampaignsRoute._addFileChildren(
-    AuthenticatedShellCampaignsRouteChildren,
-  )
-
 interface AuthenticatedShellRouteChildren {
   AuthenticatedShellAnalyticsRoute: typeof AuthenticatedShellAnalyticsRoute
-  AuthenticatedShellCampaignsRoute: typeof AuthenticatedShellCampaignsRouteWithChildren
   AuthenticatedShellContactsRoute: typeof AuthenticatedShellContactsRoute
   AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
   AuthenticatedShellSettingsRoute: typeof AuthenticatedShellSettingsRoute
+  AuthenticatedShellCampaignsIndexRoute: typeof AuthenticatedShellCampaignsIndexRoute
+  AuthenticatedShellCampaignsIdIndexRoute: typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 
 const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
   AuthenticatedShellAnalyticsRoute: AuthenticatedShellAnalyticsRoute,
-  AuthenticatedShellCampaignsRoute:
-    AuthenticatedShellCampaignsRouteWithChildren,
   AuthenticatedShellContactsRoute: AuthenticatedShellContactsRoute,
   AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
   AuthenticatedShellSettingsRoute: AuthenticatedShellSettingsRoute,
+  AuthenticatedShellCampaignsIndexRoute: AuthenticatedShellCampaignsIndexRoute,
+  AuthenticatedShellCampaignsIdIndexRoute:
+    AuthenticatedShellCampaignsIdIndexRoute,
 }
 
 const AuthenticatedShellRouteWithChildren =
@@ -340,3 +329,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
