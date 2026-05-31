@@ -51,7 +51,7 @@ export function HeroSection({
           className="ld-fade-up mt-3 max-w-xl text-sm text-sand-200"
           style={{ animationDelay: "0.22s" }}
         >
-          Cada campaña genera una pieza musical única adaptada a tu sector, segmento y objetivo.
+          Cada campaña genera una experiencia sonora ÚNICA adaptada a tu sector, segmento y objetivo.
         </p>
 
         <div
