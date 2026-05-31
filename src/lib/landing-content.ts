@@ -9,7 +9,7 @@
  * swapped here later without touching components.
  */
 
-export type IndustryKey = "seguros" | "banca" | "retail" | "inmobiliaria";
+export type IndustryKey = "seguros" | "banca" | "retail" | "delivery" | "telco";
 
 /** Demo audio cards shown inside the Audio Demo Modal (section 3). */
 export interface AudioDemo {
@@ -47,12 +47,20 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
   },
   {
-    key: "inmobiliaria",
-    icon: "🏠",
-    sector: "Inmobiliaria",
-    objective: "Lanzamiento de nueva promoción residencial premium",
-    badge: "+29% conversión",
+    key: "delivery",
+    icon: "🛵",
+    sector: "Delivery",
+    objective: "Reactivación de clientes inactivos y recompra recurrente",
+    badge: "+27% recompra",
     src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+  },
+  {
+    key: "telco",
+    icon: "📱",
+    sector: "Telecomunicaciones",
+    objective: "Renovación de contrato y retención de clientes con churn alto",
+    badge: "-22% churn",
+    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
   },
 ];
 
@@ -146,17 +154,30 @@ export const INDUSTRY_RESULTS: IndustryResult[] = [
     author: "Head of Digital, Cadena retail 180 tiendas",
   },
   {
-    key: "inmobiliaria",
-    icon: "🏠",
-    name: "Inmobiliaria",
+    key: "delivery",
+    icon: "🛵",
+    name: "Delivery",
     metrics: [
-      { label: "Open rate con MusicDibs", value: "54%", benchmark: "21% media del sector" },
-      { label: "Solicitudes de visita", value: "+29%", benchmark: "emails sin audio" },
-      { label: "Tiempo hasta primer contacto", value: "-18h", benchmark: "media histórica" },
+      { label: "Open rate con MusicDibs", value: "60%", benchmark: "25% media del sector" },
+      { label: "Recompra a 30 días", value: "+27%", benchmark: "control sin audio" },
+      { label: "Reactivación de inactivos", value: "+19%", benchmark: "campaña anterior" },
     ],
     quote:
-      "Cada promoción tiene su propia identidad sonora. Los clientes recuerdan el proyecto por la música antes que por el nombre.",
-    author: "Director Comercial, Promotora inmobiliaria",
+      "El audio nos devolvió clientes que llevaban meses sin pedir. La experiencia sonora consigue lo que ningún cupón por sí solo: que vuelvan a abrir la app.",
+    author: "Head of CRM, Plataforma de delivery",
+  },
+  {
+    key: "telco",
+    icon: "📱",
+    name: "Telecomunicaciones",
+    metrics: [
+      { label: "Open rate con MusicDibs", value: "57%", benchmark: "20% media del sector" },
+      { label: "Renovaciones de contrato", value: "+19%", benchmark: "campaña anterior" },
+      { label: "Churn tras campaña", value: "-22%", benchmark: "media histórica" },
+    ],
+    quote:
+      "En un sector donde todo el mundo compite por precio, diferenciar la comunicación de renovación con audio nos ha permitido retener clientes que ya estaban con un pie fuera.",
+    author: "CMO, Operador de telecomunicaciones",
   },
 ];
 
@@ -168,7 +189,8 @@ export const ROI_SECTORS: { key: string; label: string; upliftPP: number }[] = [
   { key: "seguros", label: "Seguros", upliftPP: 7 },
   { key: "banca", label: "Banca", upliftPP: 8 },
   { key: "retail", label: "Retail", upliftPP: 9 },
-  { key: "inmobiliaria", label: "Inmobiliaria", upliftPP: 6 },
+  { key: "delivery", label: "Delivery", upliftPP: 8 },
+  { key: "telco", label: "Telecomunicaciones", upliftPP: 7 },
   { key: "otros", label: "Otros", upliftPP: 5 },
 ];
 
@@ -255,7 +277,8 @@ export const DEMO_SECTORS = [
   "Seguros",
   "Banca",
   "Retail",
-  "Inmobiliaria",
+  "Delivery",
+  "Telecomunicaciones",
   "Turismo",
   "Agencia",
   "Otro",
