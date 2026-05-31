@@ -54,7 +54,12 @@ export function LandingNav({
             <a
               key={link.href}
               href={link.href}
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className={cn(
+                "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                scrolled
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-sand-200 hover:text-sand",
+              )}
             >
               {link.label}
             </a>
