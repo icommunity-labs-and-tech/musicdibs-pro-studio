@@ -9,7 +9,7 @@ const PRICE_TO_PLAN: Record<string, string> = {
   'price_1TbQ0DFULeu7PzK63w9dujNN': 'starter',      // starter annual
   'price_1TbQ0JFULeu7PzK6x1Bj5bEa': 'professional', // professional monthly
   'price_1TbQ0PFULeu7PzK6z1MhbjAT': 'professional', // professional annual
-  'price_1TbQ0VFULeu7PzK6EaZQXHQK': 'enterprise',   // enterprise monthly
+  'price_1TbQ0VFULeu7PzK6EaZAXHQK': 'enterprise',   // enterprise monthly
   'price_1TbQ0cFULeu7PzK6FcYlj2v2': 'enterprise',   // enterprise annual
 }
 
