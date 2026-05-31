@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Clock, Mail } from "lucide-react";
 import { toast } from "sonner";
 
@@ -15,8 +15,16 @@ import {
 } from "@/components/ui/select";
 import { DEMO_LIST_SIZES, DEMO_SECTORS } from "@/lib/landing-content";
 
-export function DemoCta() {
-  const [sector, setSector] = useState("");
+export function DemoCta({
+  defaultSector = "",
+  title,
+  subtitle,
+}: {
+  defaultSector?: string;
+  title?: ReactNode;
+  subtitle?: string;
+} = {}) {
+  const [sector, setSector] = useState(defaultSector);
   const [listSize, setListSize] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,7 +35,7 @@ export function DemoCta() {
     setTimeout(() => {
       setSubmitting(false);
       (e.target as HTMLFormElement).reset();
-      setSector("");
+      setSector(defaultSector);
       setListSize("");
       toast.success("Demo solicitada", {
         description: "Te respondemos en menos de 24h para mostrarte un audio de tu sector en directo.",
@@ -44,11 +52,15 @@ export function DemoCta() {
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <div>
             <h2 className="font-display text-3xl font-semibold tracking-tight text-sand sm:text-4xl">
-              Empieza a <span className="ld-gradient-text">diferenciarte</span> hoy
+              {title ?? (
+                <>
+                  Empieza a <span className="ld-gradient-text">diferenciarte</span> hoy
+                </>
+              )}
             </h2>
             <p className="mt-4 text-sand-200">
-              Solicita una demo de 30 minutos. Te mostramos un audio generado para tu sector
-              en directo.
+              {subtitle ??
+                "Solicita una demo de 30 minutos. Te mostramos un audio generado para tu sector en directo."}
             </p>
             <div className="mt-8 h-16 max-w-sm">
               <LandingWaveform bars={36} />

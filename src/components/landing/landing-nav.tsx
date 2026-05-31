@@ -9,7 +9,7 @@ import logoDark from "@/assets/logo-musicdibs-dark.jpg";
 import { NAV_LINKS } from "@/lib/landing-content";
 import { cn } from "@/lib/utils";
 
-function LandingLogo({ scrolled }: { scrolled: boolean }) {
+function LandingLogo({ scrolled, linkBase }: { scrolled: boolean; linkBase: string }) {
   const { theme } = useTheme();
   // Dark background → white logo; light background → dark logo.
   // When not scrolled the header sits over the dark hero (dark bg).
@@ -17,7 +17,7 @@ function LandingLogo({ scrolled }: { scrolled: boolean }) {
   const darkBackground = !scrolled || theme === "dark";
 
   return (
-    <a href="#top" className="inline-flex items-center gap-3" aria-label="Musicdibs Enterprise — inicio">
+    <a href={`${linkBase}#top`} className="inline-flex items-center gap-3" aria-label="Musicdibs Enterprise — inicio">
       <img
         src={darkBackground ? logoWhite : logoDark}
         alt="Logotipo de Musicdibs Enterprise"
@@ -49,9 +49,11 @@ function LandingLogo({ scrolled }: { scrolled: boolean }) {
 export function LandingNav({
   onListen,
   onRequestDemo,
+  linkBase = "",
 }: {
   onListen: () => void;
   onRequestDemo: () => void;
+  linkBase?: string;
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -73,13 +75,13 @@ export function LandingNav({
       )}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <LandingLogo scrolled={scrolled} />
+        <LandingLogo scrolled={scrolled} linkBase={linkBase} />
 
         <div className="hidden items-center gap-1 lg:flex">
           {NAV_LINKS.map((link) => (
             <a
               key={link.href}
-              href={link.href}
+              href={`${linkBase}${link.href}`}
               className={cn(
                 "rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 scrolled
@@ -127,7 +129,7 @@ export function LandingNav({
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
-                href={link.href}
+                href={`${linkBase}${link.href}`}
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent"
               >
