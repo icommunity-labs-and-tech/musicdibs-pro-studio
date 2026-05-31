@@ -83,12 +83,12 @@ function buildInviteEmail(params: {
           <tr>
             <td style="padding:40px 40px 32px;">
               <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1a1208;letter-spacing:-0.5px;">
-                Te han invitado a ${tenantName}
+                Te han invitado a ${safeTenant}
               </h1>
               <p style="margin:0 0 28px;font-size:15px;color:#6b5a45;line-height:1.6;">
-                <strong style="color:#1a1208;">${inviterName}</strong> te ha invitado a unirte a
-                <strong style="color:#1a1208;">${tenantName}</strong> en MusicDibs Enterprise
-                con el rol de <strong style="color:#C9973A;">${roleLabel[role] ?? role}</strong>.
+                <strong style="color:#1a1208;">${safeInviter}</strong> te ha invitado a unirte a
+                <strong style="color:#1a1208;">${safeTenant}</strong> en MusicDibs Enterprise
+                con el rol de <strong style="color:#C9973A;">${safeRole}</strong>.
               </p>
 
               <!-- CTA button -->
