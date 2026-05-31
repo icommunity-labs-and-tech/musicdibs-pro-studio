@@ -53,7 +53,7 @@ export function DemoCta() {
             <div className="mt-8 h-16 max-w-sm">
               <LandingWaveform bars={36} />
             </div>
-            <div className="mt-8 space-y-2 text-sm text-sand-500">
+            <div className="mt-8 space-y-2 text-sm text-sand-200">
               <p className="flex items-center gap-2">
                 <Clock className="size-4" /> Respuesta en menos de 24h
               </p>

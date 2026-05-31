@@ -165,7 +165,7 @@ export function RoiCalculator({ onRequestDemo }: { onRequestDemo: () => void }) 
             <Button size="lg" className="mt-6 w-full" onClick={onRequestDemo}>
               Validar este estimado con mi caso real →
             </Button>
-            <p className="mt-3 text-center text-xs text-muted-foreground/70">
+            <p className="mt-3 text-center text-xs text-muted-foreground">
               Basado en la mejora media observada en pilotos del sector seleccionado.
             </p>
           </div>

@@ -49,7 +49,7 @@ export function HeroSection({
         </p>
 
         <p
-          className="ld-fade-up mt-3 max-w-xl text-sm text-sand-500"
+          className="ld-fade-up mt-3 max-w-xl text-sm text-sand-200"
           style={{ animationDelay: "0.22s" }}
         >
           Cada campaña genera una pieza musical única adaptada a tu sector, segmento y objetivo.
