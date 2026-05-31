@@ -114,6 +114,19 @@ export interface IndustryResult {
 
 export const INDUSTRY_RESULTS: IndustryResult[] = [
   {
+    key: "delivery",
+    icon: "🛵",
+    name: "Delivery",
+    metrics: [
+      { label: "Open rate con Musicdibs", value: "60%", benchmark: "25% media del sector" },
+      { label: "Recompra a 30 días", value: "+27%", benchmark: "control sin audio" },
+      { label: "Reactivación de inactivos", value: "+19%", benchmark: "campaña anterior" },
+    ],
+    quote:
+      "El audio nos devolvió clientes que llevaban meses sin pedir. La experiencia sonora consigue lo que ningún cupón por sí solo: que vuelvan a abrir la app.",
+    author: "Head of CRM, Plataforma de delivery",
+  },
+  {
     key: "seguros",
     icon: "🛡️",
     name: "Seguros",
@@ -151,19 +164,6 @@ export const INDUSTRY_RESULTS: IndustryResult[] = [
     quote:
       "Usamos Musicdibs para el Black Friday. El audio creó urgencia emocional que ningún copy había conseguido.",
     author: "Head of Digital, Cadena retail 180 tiendas",
-  },
-  {
-    key: "delivery",
-    icon: "🛵",
-    name: "Delivery",
-    metrics: [
-      { label: "Open rate con Musicdibs", value: "60%", benchmark: "25% media del sector" },
-      { label: "Recompra a 30 días", value: "+27%", benchmark: "control sin audio" },
-      { label: "Reactivación de inactivos", value: "+19%", benchmark: "campaña anterior" },
-    ],
-    quote:
-      "El audio nos devolvió clientes que llevaban meses sin pedir. La experiencia sonora consigue lo que ningún cupón por sí solo: que vuelvan a abrir la app.",
-    author: "Head of CRM, Plataforma de delivery",
   },
   {
     key: "telco",

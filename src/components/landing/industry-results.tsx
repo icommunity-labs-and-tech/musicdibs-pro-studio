@@ -20,7 +20,7 @@ export function IndustryResults() {
           </p>
         </div>
 
-        <Tabs id="industrias" defaultValue="seguros" className="mt-12 scroll-mt-24">
+        <Tabs id="industrias" defaultValue="delivery" className="mt-12 scroll-mt-24">
           <TabsList className="mx-auto flex h-auto w-full max-w-xl flex-wrap justify-center gap-1 sm:h-9">
             {INDUSTRY_RESULTS.map((ind) => (
               <TabsTrigger key={ind.key} value={ind.key} className="gap-1.5">
