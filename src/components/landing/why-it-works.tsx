@@ -43,6 +43,10 @@ export function WhyItWorks() {
             La música activa mecanismos emocionales que el texto y las imágenes no consiguen
             por sí solos.
           </p>
+          <p className="mt-3 text-sm text-muted-foreground/80">
+            La información sonora genera mayores niveles de recuerdo y atención que la
+            comunicación exclusivamente textual.
+          </p>
         </div>
 
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
