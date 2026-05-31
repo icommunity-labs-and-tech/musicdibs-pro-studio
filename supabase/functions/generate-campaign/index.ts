@@ -175,6 +175,11 @@ Deno.serve(async (req: Request) => {
 
     if (jobErr || !job) return json({ error: "No queued generation job found" }, 404)
 
+    // Enforce tenant isolation for non-service-role (user) callers
+    if (!isServiceRole && job.tenant_id !== callerTenantId) {
+      return json({ error: "No queued generation job found" }, 404)
+    }
+
     const campaign = (job as any).campaigns
     const tenantId = job.tenant_id
 
