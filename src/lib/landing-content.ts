@@ -56,13 +56,15 @@ export const AUDIO_DEMOS: AudioDemo[] = [
   },
 ];
 
-/** Logos / names for the credibility strip under the hero. */
+/** Logos / names for the ecosystem strip under the hero. */
 export const INTEGRATIONS = [
   "MailerLite",
   "Brevo",
   "HubSpot",
   "Salesforce",
+  "WhatsApp Business",
   "Zapier",
+  "KIE.ai",
 ];
 
 /** How it works — 4 steps (section 4). */
@@ -82,8 +84,8 @@ export const HOW_IT_WORKS = [
   {
     step: "03",
     title: "Envío",
-    body: "Se integra con tu proveedor de email actual (MailerLite, Brevo, HubSpot).",
-    note: "Sin cambiar tu stack. Tu proveedor, tus listas.",
+    body: "Se integra con tus canales actuales: email (MailerLite, Brevo, HubSpot) y, próximamente, WhatsApp Business.",
+    note: "Sin cambiar tu stack. Tus canales, tus listas.",
   },
   {
     step: "04",
@@ -114,7 +116,7 @@ export const INDUSTRY_RESULTS: IndustryResult[] = [
       { label: "Bajas de suscripción", value: "-31%", benchmark: "baseline sin audio" },
     ],
     quote:
-      "Enviamos la campaña de renovación de póliza de hogar a 4.200 contactos. Fue la primera vez que superamos el 50% de apertura en 8 años de email marketing.",
+      "Enviamos la campaña de renovación de póliza de hogar a 4.200 contactos. Fue la primera vez que superamos el 50% de apertura en 8 años de campañas de comunicación.",
     author: "Director Marketing, Aseguradora regional ES",
   },
   {
@@ -158,13 +160,16 @@ export const INDUSTRY_RESULTS: IndustryResult[] = [
   },
 ];
 
-/** ROI calculator — estimated open-rate uplift (pp) per sector. */
+/**
+ * ROI calculator — conservative open-rate uplift (pp) per sector.
+ * Deliberately prudent: estimates that a CMO reads as "razonable", not "imposible".
+ */
 export const ROI_SECTORS: { key: string; label: string; upliftPP: number }[] = [
-  { key: "seguros", label: "Seguros", upliftPP: 35 },
-  { key: "banca", label: "Banca", upliftPP: 38 },
-  { key: "retail", label: "Retail", upliftPP: 42 },
-  { key: "inmobiliaria", label: "Inmobiliaria", upliftPP: 31 },
-  { key: "otros", label: "Otros", upliftPP: 28 },
+  { key: "seguros", label: "Seguros", upliftPP: 7 },
+  { key: "banca", label: "Banca", upliftPP: 8 },
+  { key: "retail", label: "Retail", upliftPP: 9 },
+  { key: "inmobiliaria", label: "Inmobiliaria", upliftPP: 6 },
+  { key: "otros", label: "Otros", upliftPP: 5 },
 ];
 
 /** Pricing presented as volume of impact (section 8). */
