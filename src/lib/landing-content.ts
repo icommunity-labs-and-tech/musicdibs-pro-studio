@@ -62,7 +62,7 @@ export const INTEGRATIONS = [
   "Brevo",
   "HubSpot",
   "Salesforce",
-  "KIE.ai",
+  "Zapier",
 ];
 
 /** How it works — 4 steps (section 4). */
