@@ -18,9 +18,9 @@ export function IntegrationsStrip() {
   return (
     <section className="border-y border-border bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <p className="text-center font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+        <h2 className="text-center font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
           Tu ecosistema de comunicación, ahora memorable
-        </p>
+        </h2>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
           {LOGOS.map((logo) => (
             <img

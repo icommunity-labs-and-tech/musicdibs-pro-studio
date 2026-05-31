@@ -36,8 +36,8 @@ export function HeroSection({
           className="ld-fade-up font-display text-4xl font-semibold leading-[1.05] tracking-tight text-sand sm:text-6xl lg:text-7xl"
           style={{ animationDelay: "0.08s" }}
         >
-          El marketing digital no ha cambiado en 20 años...<br />
-          <span className="ld-gradient-text">Hasta ahora</span>
+          Marketing experiencial con audio personalizado para email y WhatsApp<br />
+          <span className="ld-gradient-text">Convierte tus campañas en experiencias sonoras memorables</span>
         </h1>
 
         <p
