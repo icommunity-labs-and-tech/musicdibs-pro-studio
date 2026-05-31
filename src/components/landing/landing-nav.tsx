@@ -54,7 +54,12 @@ export function LandingNav({
             <a
               key={link.href}
               href={link.href}
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className={cn(
+                "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                scrolled
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-sand-200 hover:text-sand",
+              )}
             >
               {link.label}
             </a>
@@ -63,7 +68,11 @@ export function LandingNav({
 
         <div className="hidden items-center gap-2 lg:flex">
           <ThemeToggle />
-          <Button variant="ghost" onClick={onRequestDemo}>
+          <Button
+            variant="ghost"
+            onClick={onRequestDemo}
+            className={cn(!scrolled && "text-sand-200 hover:bg-sand/10 hover:text-sand")}
+          >
             Solicitar demo
           </Button>
           <Button onClick={onListen}>
