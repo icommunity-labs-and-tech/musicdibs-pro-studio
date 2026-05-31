@@ -95,7 +95,7 @@ function buildInviteEmail(params: {
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
                 <tr>
                   <td>
-                    <a href="${inviteUrl}"
+                    <a href="${safeUrl}"
                        style="display:inline-block;background:linear-gradient(135deg,#C9973A,#8C5E0A);color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:14px 32px;border-radius:10px;letter-spacing:0.2px;">
                       Aceptar invitación →
                     </a>
