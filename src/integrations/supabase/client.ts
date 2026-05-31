@@ -2,11 +2,26 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+// The Supabase URL and publishable (anon) key are public values, safe to ship
+// in the client bundle. We keep literal fallbacks so production builds (e.g.
+// Vercel) always have valid credentials even if VITE_* env vars are not
+// injected at build time — otherwise the apikey header is empty and Supabase
+// rejects every request with "Invalid API key".
+const FALLBACK_SUPABASE_URL = "https://asolssebjyjyfbggraew.supabase.co";
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzb2xzc2VianlqeWZiZ2dyYWV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3ODEzMjIsImV4cCI6MjA5NTM1NzMyMn0.OEpO9JWa0MDGKT2OGCE4P5r-gctf-f8Um6zxCCBlTu0";
+
 function createSupabaseClient() {
   // Use import.meta.env for client-side (Vite build-time replacement)
   // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+  const SUPABASE_URL =
+    import.meta.env.VITE_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    FALLBACK_SUPABASE_URL;
+  const SUPABASE_PUBLISHABLE_KEY =
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
