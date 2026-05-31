@@ -58,7 +58,7 @@ export function DemoCta() {
                 <Clock className="size-4" /> Respuesta en menos de 24h
               </p>
               <p className="flex items-center gap-2">
-                <Phone className="size-4" /> También puedes llamarnos: +34 600 000 000
+                <Mail className="size-4" /> También puedes escribirnos: info@musicdibs.com
               </p>
             </div>
           </div>
