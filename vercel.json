@@ -2,7 +2,8 @@
   "buildCommand": "bun run build",
   "installCommand": "bun install",
   "outputDirectory": "dist/client",
-  "rewrites": [
-    { "source": "/((?!assets|_nuxt|favicon.ico|robots.txt).*)", "destination": "/index.html" }
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
