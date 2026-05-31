@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TelcoRouteImport } from './routes/telco'
 import { Route as StyleguideRouteImport } from './routes/styleguide'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
@@ -33,6 +34,11 @@ import { Route as AuthenticatedShellCampaignsNewRouteImport } from './routes/_au
 import { Route as AuthenticatedShellCampaignsIdIndexRouteImport } from './routes/_authenticated/_shell/campaigns.$id.index'
 import { Route as AuthenticatedShellCampaignsIdQueueRouteImport } from './routes/_authenticated/_shell/campaigns.$id.queue'
 
+const TelcoRoute = TelcoRouteImport.update({
+  id: '/telco',
+  path: '/telco',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StyleguideRoute = StyleguideRouteImport.update({
   id: '/styleguide',
   path: '/styleguide',
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/styleguide': typeof StyleguideRoute
+  '/telco': typeof TelcoRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/audit-log': typeof AuthenticatedShellAuditLogRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/styleguide': typeof StyleguideRoute
+  '/telco': typeof TelcoRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/audit-log': typeof AuthenticatedShellAuditLogRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/styleguide': typeof StyleguideRoute
+  '/telco': typeof TelcoRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/_shell/analytics': typeof AuthenticatedShellAnalyticsRoute
@@ -241,6 +250,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/styleguide'
+    | '/telco'
     | '/onboarding'
     | '/analytics'
     | '/audit-log'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/styleguide'
+    | '/telco'
     | '/onboarding'
     | '/analytics'
     | '/audit-log'
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/styleguide'
+    | '/telco'
     | '/_authenticated/_shell'
     | '/_authenticated/onboarding'
     | '/_authenticated/_shell/analytics'
@@ -314,10 +326,18 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StyleguideRoute: typeof StyleguideRoute
+  TelcoRoute: typeof TelcoRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/telco': {
+      id: '/telco'
+      path: '/telco'
+      fullPath: '/telco'
+      preLoaderRoute: typeof TelcoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/styleguide': {
       id: '/styleguide'
       path: '/styleguide'
@@ -540,6 +560,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StyleguideRoute: StyleguideRoute,
+  TelcoRoute: TelcoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

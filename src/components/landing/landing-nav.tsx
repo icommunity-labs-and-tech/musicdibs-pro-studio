@@ -21,6 +21,7 @@ const USE_CASES = [
   VERTICALS.seguros,
   VERTICALS.banca,
   VERTICALS.retail,
+  VERTICALS.telco,
 ];
 
 

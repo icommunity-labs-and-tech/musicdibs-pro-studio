@@ -5,7 +5,7 @@
  * `/delivery` route is an instance of <VerticalLanding> fed with this data.
  */
 
-export type VerticalKey = "seguros" | "banca" | "retail" | "delivery";
+export type VerticalKey = "seguros" | "banca" | "retail" | "delivery" | "telco";
 
 export interface VerticalMetric {
   label: string;
@@ -326,6 +326,75 @@ export const VERTICALS: Record<VerticalKey, VerticalContent> = {
         "Demo de 30 minutos. Calculamos el impacto en tu base de usuarios inactivos.",
     },
   },
+
+  telco: {
+    key: "telco",
+    label: "Telco",
+    icon: "📡",
+    path: "/telco",
+    meta: {
+      title: "Email marketing para telco con IA musical | MusicDibs",
+      description:
+        "Reduce el churn y mejora la conversión de tus campañas de telecomunicaciones. MusicDibs genera audio personalizado que tus clientes abren: hasta un 57% de open rate.",
+    },
+    hero: {
+      eyebrow: "Telecomunicaciones",
+      headline: "Comunica tarifas y renovaciones sin que te ignoren",
+      subtitle:
+        "Las operadoras envían facturas, renovaciones y ofertas que el cliente asocia a gasto y portabilidad. MusicDibs convierte esas comunicaciones en una experiencia sonora que reduce el churn y mejora la conversión.",
+      audioLabel: "Escucha: campaña de retención — cliente en riesgo de portabilidad",
+      audioMeta: "Segmento alto valor · Tono: cercano, tecnológico · Duración: 30s",
+      audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+    },
+    problem: [
+      "En telco la batalla es por la retención, y el email es la peor arma del sector.",
+      "Facturas, subidas de tarifa y ofertas de la competencia saturan el inbox del cliente.",
+      "El cliente abre el email de la operadora solo cuando piensa en portarse.",
+      "Open rate medio del sector: 20%. Churn anual de dos dígitos.",
+    ],
+    solution: [
+      "MusicDibs crea un audio único que diferencia a la operadora de la guerra de precios.",
+      "El audio comunica innovación y cercanía antes de que el cliente vea la tarifa.",
+      "Se adapta al segmento: joven y dinámico para datos, tranquilo para fibra familiar.",
+      "Resultado: comunicaciones que se abren y construyen relación, no solo facturan.",
+    ],
+    metrics: [
+      { label: "Open rate", value: "57%", comparison: "20% media del sector" },
+      { label: "CTR", value: "15%", comparison: "5% media del sector" },
+      { label: "Churn / portabilidad", value: "-22%", comparison: "baseline sin audio" },
+      { label: "Upsell de tarifa", value: "+27%", comparison: "campaña anterior" },
+    ],
+    metricsNote:
+      "Datos de pilotos Q1 2025. Muestra: 12.000 – 25.000 envíos por piloto.",
+    useCases: [
+      {
+        title: "Campaña de retención / anti-churn",
+        description:
+          "Clientes en riesgo de portabilidad. El audio crea un momento emocional positivo que reduce la fuga sin tener que igualar el precio de la competencia.",
+      },
+      {
+        title: "Upsell de tarifa o fibra",
+        description:
+          "Cliente con potencial de subir de plan. El audio comunica el valor del salto antes de mostrar el nuevo precio.",
+      },
+      {
+        title: "Lanzamiento de nuevo servicio",
+        description:
+          "5G, fibra simétrica o paquetes convergentes. El audio genera curiosidad e innovación antes de leer las condiciones.",
+      },
+    ],
+    testimonial: {
+      quote:
+        "Probamos MusicDibs en una campaña de retención para clientes en riesgo. La tasa de apertura se duplicó y conseguimos reducir la portabilidad sin entrar en guerra de precios.",
+      author: "Responsable de CRM",
+      company: "Operadora de telecomunicaciones, España",
+    },
+    cta: {
+      title: "¿Cuántos clientes se te portan cada mes?",
+      subtitle:
+        "Demo de 30 minutos. Generamos un audio para tu próxima campaña de retención en directo.",
+    },
+  },
 };
 
 export const VERTICAL_LIST: VerticalContent[] = [
@@ -333,4 +402,5 @@ export const VERTICAL_LIST: VerticalContent[] = [
   VERTICALS.banca,
   VERTICALS.retail,
   VERTICALS.delivery,
+  VERTICALS.telco,
 ];

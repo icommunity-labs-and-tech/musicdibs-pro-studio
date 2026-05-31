@@ -10,6 +10,7 @@ const VERTICAL_PATHS: Record<string, string> = {
   banca: "/banca",
   retail: "/retail",
   delivery: "/delivery",
+  telco: "/telco",
 };
 
 export function IndustryResults() {
