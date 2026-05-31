@@ -14,6 +14,16 @@ const cors = {
 
 // ── Email template ────────────────────────────────────────────────────────────
 
+// Escape user-supplied values before interpolating into HTML to prevent injection.
+function esc(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function buildInviteEmail(params: {
   inviterName: string
   tenantName:  string
@@ -27,6 +37,11 @@ function buildInviteEmail(params: {
     member: 'Miembro',
     viewer: 'Lector',
   }
+
+  const safeInviter = esc(inviterName)
+  const safeTenant  = esc(tenantName)
+  const safeRole    = esc(roleLabel[role] ?? role)
+  const safeUrl     = encodeURI(inviteUrl)
 
   const html = `<!DOCTYPE html>
 <html lang="es">
