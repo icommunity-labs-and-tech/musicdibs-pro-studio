@@ -19,7 +19,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
-  head: () => ({ meta: [{ title: "Configura tu espacio · MusicDibs" }] }),
+  head: () => ({ meta: [{ title: "Configura tu espacio · Musicdibs" }] }),
   component: OnboardingPage,
 });
 

@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useDashboard, type RecentCampaign } from "@/hooks/use-dashboard";
 
 export const Route = createFileRoute("/_authenticated/_shell/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Dashboard · Musicdibs Enterprise" }] }),
   component: DashboardPage,
 });
 

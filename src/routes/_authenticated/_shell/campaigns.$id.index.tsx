@@ -24,7 +24,7 @@ import {
 } from "@/hooks/use-campaign-detail";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/$id/")({
-  head: () => ({ meta: [{ title: "Campaña · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Campaña · Musicdibs Enterprise" }] }),
   component: CampaignDetailPage,
 });
 

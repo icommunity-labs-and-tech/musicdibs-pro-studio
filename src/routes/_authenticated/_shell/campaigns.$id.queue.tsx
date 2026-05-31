@@ -21,7 +21,7 @@ import {
 export const Route = createFileRoute(
   "/_authenticated/_shell/campaigns/$id/queue",
 )({
-  head: () => ({ meta: [{ title: "Cola de generación · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Cola de generación · Musicdibs Enterprise" }] }),
   component: GenerationQueuePage,
 });
 

@@ -51,7 +51,7 @@ import {
 } from "@/hooks/use-team";
 
 export const Route = createFileRoute("/_authenticated/_shell/team")({
-  head: () => ({ meta: [{ title: "Equipo · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Equipo · Musicdibs Enterprise" }] }),
   component: TeamPage,
 });
 

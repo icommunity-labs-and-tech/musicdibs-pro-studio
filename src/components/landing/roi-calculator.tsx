@@ -126,7 +126,7 @@ export function RoiCalculator({ onRequestDemo }: { onRequestDemo: () => void }) 
           <div className="flex flex-col rounded-3xl border border-gold/30 bg-gradient-to-br from-gold/8 to-teal/8 p-6 sm:p-8">
             <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <TrendingUp className="size-4 text-teal" />
-              Con MusicDibs · open rate estimado {Math.round(result.newOpenRate)}%
+              Con Musicdibs · open rate estimado {Math.round(result.newOpenRate)}%
             </div>
 
             <dl className="mt-6 space-y-4">

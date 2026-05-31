@@ -37,7 +37,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAnalytics } from "@/hooks/use-analytics";
 
 export const Route = createFileRoute("/_authenticated/_shell/analytics")({
-  head: () => ({ meta: [{ title: "Analytics · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Analytics · Musicdibs Enterprise" }] }),
   component: AnalyticsPage,
 });
 

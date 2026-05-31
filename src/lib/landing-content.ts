@@ -1,5 +1,5 @@
 /**
- * MusicDibs Enterprise — Landing content (single source of truth).
+ * Musicdibs Enterprise — Landing content (single source of truth).
  *
  * All copy and data for the public landing live here so the section
  * components stay presentational and reusable (industries, ROI, pricing…).
@@ -118,7 +118,7 @@ export const INDUSTRY_RESULTS: IndustryResult[] = [
     icon: "🛡️",
     name: "Seguros",
     metrics: [
-      { label: "Open rate con MusicDibs", value: "61%", benchmark: "22% media del sector" },
+      { label: "Open rate con Musicdibs", value: "61%", benchmark: "22% media del sector" },
       { label: "CTR", value: "14%", benchmark: "4% media del sector" },
       { label: "Bajas de suscripción", value: "-31%", benchmark: "baseline sin audio" },
     ],
@@ -131,12 +131,12 @@ export const INDUSTRY_RESULTS: IndustryResult[] = [
     icon: "🏦",
     name: "Banca",
     metrics: [
-      { label: "Open rate con MusicDibs", value: "58%", benchmark: "19% media del sector" },
+      { label: "Open rate con Musicdibs", value: "58%", benchmark: "19% media del sector" },
       { label: "Tiempo de lectura del email", value: "+2.4x", benchmark: "emails sin audio" },
       { label: "Solicitudes de información", value: "+41%", benchmark: "campaña anterior" },
     ],
     quote:
-      "El audio diferencia la comunicación del banco. Los clientes premium esperan algo diferente. MusicDibs lo entrega.",
+      "El audio diferencia la comunicación del banco. Los clientes premium esperan algo diferente. Musicdibs lo entrega.",
     author: "CMO, Entidad financiera 400M€ AUM",
   },
   {
@@ -144,12 +144,12 @@ export const INDUSTRY_RESULTS: IndustryResult[] = [
     icon: "🛍️",
     name: "Retail",
     metrics: [
-      { label: "Open rate con MusicDibs", value: "64%", benchmark: "26% media del sector" },
+      { label: "Open rate con Musicdibs", value: "64%", benchmark: "26% media del sector" },
       { label: "CTR Black Friday", value: "18%", benchmark: "5% año anterior" },
       { label: "Conversión (venta)", value: "+23%", benchmark: "control sin audio" },
     ],
     quote:
-      "Usamos MusicDibs para el Black Friday. El audio creó urgencia emocional que ningún copy había conseguido.",
+      "Usamos Musicdibs para el Black Friday. El audio creó urgencia emocional que ningún copy había conseguido.",
     author: "Head of Digital, Cadena retail 180 tiendas",
   },
   {
@@ -157,7 +157,7 @@ export const INDUSTRY_RESULTS: IndustryResult[] = [
     icon: "🛵",
     name: "Delivery",
     metrics: [
-      { label: "Open rate con MusicDibs", value: "60%", benchmark: "25% media del sector" },
+      { label: "Open rate con Musicdibs", value: "60%", benchmark: "25% media del sector" },
       { label: "Recompra a 30 días", value: "+27%", benchmark: "control sin audio" },
       { label: "Reactivación de inactivos", value: "+19%", benchmark: "campaña anterior" },
     ],
@@ -170,7 +170,7 @@ export const INDUSTRY_RESULTS: IndustryResult[] = [
     icon: "📱",
     name: "Telecomunicaciones",
     metrics: [
-      { label: "Open rate con MusicDibs", value: "57%", benchmark: "20% media del sector" },
+      { label: "Open rate con Musicdibs", value: "57%", benchmark: "20% media del sector" },
       { label: "Renovaciones de contrato", value: "+19%", benchmark: "campaña anterior" },
       { label: "Churn tras campaña", value: "-22%", benchmark: "media histórica" },
     ],
@@ -251,11 +251,11 @@ export const PRICING_PLANS: PricingPlan[] = [
 export const FAQ_ITEMS = [
   {
     q: "¿El audio se reproduce directamente en el email?",
-    a: "No, y eso es intencional. Los principales clientes de email (Gmail, Outlook, Apple Mail) no reproducen audio inline por razones de seguridad. MusicDibs genera un botón o imagen en el email que lleva a una micro-landing con el audio player. Esto también nos permite rastrear exactamente quién escuchó, durante cuánto tiempo, y si convirtió.",
+    a: "No, y eso es intencional. Los principales clientes de email (Gmail, Outlook, Apple Mail) no reproducen audio inline por razones de seguridad. Musicdibs genera un botón o imagen en el email que lleva a una micro-landing con el audio player. Esto también nos permite rastrear exactamente quién escuchó, durante cuánto tiempo, y si convirtió.",
   },
   {
     q: "¿Tengo que cambiar mis herramientas de comunicación actuales?",
-    a: "No. MusicDibs se integra con tu stack existente: MailerLite, Brevo, HubSpot, Salesforce Marketing Cloud y, próximamente, WhatsApp Business. Mantienes tus listas, tus segmentaciones y tu flujo actual. Nosotros añadimos la capa de experiencia sonora y analytics.",
+    a: "No. Musicdibs se integra con tu stack existente: MailerLite, Brevo, HubSpot, Salesforce Marketing Cloud y, próximamente, WhatsApp Business. Mantienes tus listas, tus segmentaciones y tu flujo actual. Nosotros añadimos la capa de experiencia sonora y analytics.",
   },
   {
     q: "¿Cómo controlo que el audio encaje con la imagen de marca?",
@@ -263,7 +263,7 @@ export const FAQ_ITEMS = [
   },
   {
     q: "¿Qué pasa con el GDPR y los datos de mis contactos?",
-    a: "MusicDibs no procesa datos de contactos. Tus listas permanecen en tu proveedor de email. Únicamente sincronizamos estadísticas agregadas (aperturas, clics). Para Enterprise incluimos DPA firmado y podemos alojar en EU exclusivamente.",
+    a: "Musicdibs no procesa datos de contactos. Tus listas permanecen en tu proveedor de email. Únicamente sincronizamos estadísticas agregadas (aperturas, clics). Para Enterprise incluimos DPA firmado y podemos alojar en EU exclusivamente.",
   },
   {
     q: "¿Cuánto tiempo lleva generar una canción?",

@@ -23,7 +23,7 @@ import {
 import { useCampaigns, type CampaignListItem } from "@/hooks/use-campaigns";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/")({
-  head: () => ({ meta: [{ title: "Campañas · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Campañas · Musicdibs Enterprise" }] }),
   component: CampaignsPage,
 });
 

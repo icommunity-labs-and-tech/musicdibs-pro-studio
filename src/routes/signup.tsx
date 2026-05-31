@@ -14,13 +14,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Crear cuenta · MusicDibs Enterprise" },
+      { title: "Crear cuenta · Musicdibs Enterprise" },
       {
         name: "description",
         content:
-          "Crea tu cuenta en MusicDibs Enterprise y empieza a lanzar campañas de marketing experiencial con audio generado por IA.",
+          "Crea tu cuenta en Musicdibs Enterprise y empieza a lanzar campañas de marketing experiencial con audio generado por IA.",
       },
-      { property: "og:title", content: "Crear cuenta · MusicDibs Enterprise" },
+      { property: "og:title", content: "Crear cuenta · Musicdibs Enterprise" },
       {
         property: "og:description",
         content:

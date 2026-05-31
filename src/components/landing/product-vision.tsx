@@ -2,7 +2,7 @@ import { Check, Circle } from "lucide-react";
 
 /**
  * "Una plataforma. Múltiples canales." — category vision, not feature list.
- * Communicates that MusicDibs is a new way of communicating with customers.
+ * Communicates that Musicdibs is a new way of communicating with customers.
  */
 
 const AVAILABLE = ["Email", "WhatsApp Business"];

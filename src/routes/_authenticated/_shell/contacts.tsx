@@ -33,7 +33,7 @@ import {
 } from "@/hooks/use-contacts";
 
 export const Route = createFileRoute("/_authenticated/_shell/contacts")({
-  head: () => ({ meta: [{ title: "Contactos · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Contactos · Musicdibs Enterprise" }] }),
   component: ContactsPage,
 });
 

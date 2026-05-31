@@ -32,7 +32,7 @@ import {
 } from "@/hooks/use-audit-log";
 
 export const Route = createFileRoute("/_authenticated/_shell/audit-log")({
-  head: () => ({ meta: [{ title: "Registro de actividad · MusicDibs Enterprise" }] }),
+  head: () => ({ meta: [{ title: "Registro de actividad · Musicdibs Enterprise" }] }),
   component: AuditLogPage,
 });
 
