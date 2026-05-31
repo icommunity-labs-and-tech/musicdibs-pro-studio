@@ -272,5 +272,4 @@ export const NAV_LINKS = [
   { href: "#resultados", label: "Resultados" },
   { href: "#partners", label: "Partners" },
   { href: "#precios", label: "Precios" },
-  { href: "#precios", label: "Precios" },
 ];
