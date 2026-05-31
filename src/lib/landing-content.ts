@@ -267,9 +267,10 @@ export const PARTNER_CLIENT_RANGES = ["<5", "5-20", "20-50", "+50"];
 
 /** Nav anchor links. */
 export const NAV_LINKS = [
+  { href: "#experiencia", label: "Experiencia" },
   { href: "#como-funciona", label: "Cómo funciona" },
   { href: "#resultados", label: "Resultados" },
-  { href: "#industrias", label: "Industrias" },
   { href: "#partners", label: "Partners" },
+  { href: "#precios", label: "Precios" },
   { href: "#precios", label: "Precios" },
 ];
