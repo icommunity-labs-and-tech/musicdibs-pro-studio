@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { AudioDemoModal } from "@/components/landing/audio-demo-modal";
+import { ClientExperience } from "@/components/landing/client-experience";
 import { DemoCta } from "@/components/landing/demo-cta";
 import { FaqSection } from "@/components/landing/faq-section";
 import { HeroSection } from "@/components/landing/hero-section";
@@ -13,7 +14,9 @@ import { LandingNav } from "@/components/landing/landing-nav";
 import { PartnerDialog } from "@/components/landing/partner-dialog";
 import { PartnersSection } from "@/components/landing/partners-section";
 import { PricingSection } from "@/components/landing/pricing-section";
+import { ProductVision } from "@/components/landing/product-vision";
 import { RoiCalculator } from "@/components/landing/roi-calculator";
+import { WhyItWorks } from "@/components/landing/why-it-works";
 
 const SITE_URL = "https://musicdibs-enterprise.lovable.app";
 
