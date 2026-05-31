@@ -12,7 +12,23 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Entrar · MusicDibs Enterprise" }] }),
+  head: () => ({
+    meta: [
+      { title: "Entrar · MusicDibs Enterprise" },
+      {
+        name: "description",
+        content:
+          "Accede a tu cuenta de MusicDibs Enterprise para gestionar campañas, contactos y métricas de marketing experiencial.",
+      },
+      { property: "og:title", content: "Entrar · MusicDibs Enterprise" },
+      {
+        property: "og:description",
+        content:
+          "Inicia sesión para gestionar tus campañas de marketing sonoro.",
+      },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: LoginPage,
 });
 

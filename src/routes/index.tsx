@@ -17,22 +17,25 @@ import { PricingSection } from "@/components/landing/pricing-section";
 import { ProductVision } from "@/components/landing/product-vision";
 import { RoiCalculator } from "@/components/landing/roi-calculator";
 import { WhyItWorks } from "@/components/landing/why-it-works";
+import { FAQ_ITEMS } from "@/lib/landing-content";
 
 const SITE_URL = "https://musicdibs-enterprise.lovable.app";
+const SOCIAL_IMAGE =
+  "https://storage.googleapis.com/gpt-engineer-file-uploads/DakVJRWULrayRSjJYIgXi0jQKUG2/social-images/social-1780244388899-ff144e01-1c79-42c6-8c6c-977143655f7c.webp";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     meta: [
-      { title: "MusicDibs Enterprise — Comunicaciones que se escuchan, no que se ignoran" },
+      { title: "MusicDibs Enterprise — Marketing que se escucha" },
       {
         name: "description",
         content:
-          "La plataforma que convierte tus comunicaciones digitales —email hoy, WhatsApp muy pronto— en experiencias sonoras personalizadas. Más atención, más recuerdo de marca, más conversión.",
+          "Convierte tus comunicaciones digitales —email hoy, WhatsApp pronto— en experiencias sonoras con IA. Más atención, más recuerdo de marca, más conversión.",
       },
       {
         property: "og:title",
-        content: "MusicDibs Enterprise — Comunicaciones que se escuchan, no que se ignoran",
+        content: "MusicDibs Enterprise — Marketing que se escucha",
       },
       {
         property: "og:description",
@@ -41,7 +44,9 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: SOCIAL_IMAGE },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: SOCIAL_IMAGE },
     ],
     links: [{ rel: "canonical", href: SITE_URL }],
     scripts: [
@@ -59,6 +64,18 @@ export const Route = createFileRoute("/")({
             price: "399",
             priceCurrency: "EUR",
           },
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQ_ITEMS.map((item) => ({
+            "@type": "Question",
+            name: item.q,
+            acceptedAnswer: { "@type": "Answer", text: item.a },
+          })),
         }),
       },
     ],

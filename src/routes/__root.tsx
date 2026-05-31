@@ -76,32 +76,56 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Musicdibs Enterprise — Campañas de marketing con música" },
+      { title: "MusicDibs Enterprise — Marketing que se escucha" },
       {
         name: "description",
         content:
-          "Email marketing con canciones generadas por IA. Brief, generación musical, envío y métricas en una sola plataforma B2B.",
+          "Plataforma B2B de marketing experiencial: convierte tus comunicaciones digitales en experiencias sonoras generadas por IA.",
       },
       { name: "author", content: "iCommunity Labs" },
-      { property: "og:title", content: "Musicdibs Enterprise — Campañas de marketing con música" },
+      { property: "og:site_name", content: "MusicDibs Enterprise" },
+      { property: "og:title", content: "MusicDibs Enterprise — Marketing que se escucha" },
       {
         property: "og:description",
         content:
-          "Convierte cada campaña de email en una experiencia sonora memorable.",
+          "Convierte cada comunicación digital en una experiencia sonora memorable.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Musicdibs Enterprise — Campañas de marketing con música" },
-      { name: "description", content: "Genera campañas musicales originales para fidelizar a tus clientes. Más aperturas, más engagement, más conversión. Para CMOs y agencias de marketing." },
-      { property: "og:description", content: "Genera campañas musicales originales para fidelizar a tus clientes. Más aperturas, más engagement, más conversión. Para CMOs y agencias de marketing." },
-      { name: "twitter:description", content: "Genera campañas musicales originales para fidelizar a tus clientes. Más aperturas, más engagement, más conversión. Para CMOs y agencias de marketing." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/DakVJRWULrayRSjJYIgXi0jQKUG2/social-images/social-1780244388899-ff144e01-1c79-42c6-8c6c-977143655f7c.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/DakVJRWULrayRSjJYIgXi0jQKUG2/social-images/social-1780244388899-ff144e01-1c79-42c6-8c6c-977143655f7c.webp" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "MusicDibs Enterprise — Marketing que se escucha" },
+      {
+        name: "twitter:description",
+        content:
+          "Convierte cada comunicación digital en una experiencia sonora memorable.",
+      },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "MusicDibs Enterprise",
+          url: "https://musicdibs-enterprise.lovable.app",
+          description:
+            "Plataforma B2B de marketing experiencial que convierte comunicaciones digitales en experiencias sonoras personalizadas con IA.",
+          parentOrganization: { "@type": "Organization", name: "iCommunity Labs" },
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "MusicDibs Enterprise",
+          url: "https://musicdibs-enterprise.lovable.app",
+        }),
       },
     ],
   }),
