@@ -44,9 +44,9 @@ export function HowItWorks() {
         </div>
 
         <p className="mx-auto mt-12 max-w-2xl text-center text-sm text-muted-foreground">
-          El audio no se reproduce dentro del email. MusicDibs añade un botón que lleva a una
-          micro-landing con el player — así funciona en Gmail, Outlook y Apple Mail, y además
-          medimos quién escuchó y convirtió.
+          El audio no se reproduce dentro del mensaje. MusicDibs añade un botón que lleva a una
+          micro-landing con el player — funciona en cualquier canal, tanto email como WhatsApp, y
+          además medimos quién abrió el mensaje, escuchó y convirtió.
         </p>
       </div>
     </section>
