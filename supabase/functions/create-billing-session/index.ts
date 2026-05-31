@@ -183,6 +183,7 @@ Deno.serve(async (req: Request) => {
 })
 
 function returnUrl(base: string, override: string | undefined, fallback: string): string {
-  if (override) return override
+  // Only honour client-supplied URLs that point back to our own app (open-redirect guard)
+  if (override && override.startsWith(base)) return override
   return `${base}${fallback}`
 }
