@@ -15,8 +15,16 @@ import {
 } from "@/components/ui/select";
 import { DEMO_LIST_SIZES, DEMO_SECTORS } from "@/lib/landing-content";
 
-export function DemoCta() {
-  const [sector, setSector] = useState("");
+export function DemoCta({
+  defaultSector = "",
+  title,
+  subtitle,
+}: {
+  defaultSector?: string;
+  title?: React.ReactNode;
+  subtitle?: string;
+} = {}) {
+  const [sector, setSector] = useState(defaultSector);
   const [listSize, setListSize] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
