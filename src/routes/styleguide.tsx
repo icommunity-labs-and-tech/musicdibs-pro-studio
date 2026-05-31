@@ -15,7 +15,21 @@ import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/styleguide")({
   head: () => ({
-    meta: [{ title: "Design System · MusicDibs Enterprise" }],
+    meta: [
+      { title: "Design System · MusicDibs Enterprise" },
+      {
+        name: "description",
+        content:
+          "Referencia interna del sistema de diseño de MusicDibs Enterprise: colores, tipografía y componentes de UI.",
+      },
+      { property: "og:title", content: "Design System · MusicDibs Enterprise" },
+      {
+        property: "og:description",
+        content:
+          "Guía del sistema de diseño y componentes de MusicDibs Enterprise.",
+      },
+      { name: "robots", content: "noindex" },
+    ],
   }),
   component: StyleGuide,
 });
