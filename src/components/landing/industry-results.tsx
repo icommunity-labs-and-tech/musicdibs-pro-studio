@@ -82,6 +82,15 @@ export function IndustryResults() {
                           {demo.objective}
                         </p>
                         <AudioPlayer src={demo.src} className="mt-4" />
+                        {VERTICAL_PATHS[ind.key] && (
+                          <a
+                            href={VERTICAL_PATHS[ind.key]}
+                            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-teal transition-colors hover:text-teal/80"
+                          >
+                            Ver casos de uso de {ind.name}
+                            <ArrowRight className="size-4" />
+                          </a>
+                        )}
                       </div>
                     </div>
                   )}
