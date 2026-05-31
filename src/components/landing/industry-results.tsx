@@ -16,7 +16,7 @@ export function IndustryResults() {
             Lo que consiguen nuestros clientes
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Datos reales de pilotos y primeros clientes. Comparativa contra benchmarks del sector.
+            Resultados observados en pilotos y campañas iniciales. Comparativa contra benchmarks del sector.
           </p>
         </div>
 

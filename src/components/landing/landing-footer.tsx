@@ -15,7 +15,7 @@ export function LandingFooter() {
               </span>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Convierte cada campaña de email en una experiencia sonora memorable.
+              Convierte cada comunicación digital en una experiencia sonora memorable.
             </p>
           </div>
 

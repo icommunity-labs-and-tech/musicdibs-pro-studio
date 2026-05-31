@@ -153,7 +153,7 @@ export function RoiCalculator({ onRequestDemo }: { onRequestDemo: () => void }) 
               <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
                 {result.roi !== null && (
                   <span className="font-display text-3xl font-semibold text-gold-dark dark:text-gold-light">
-                    {Math.round(result.roi)}x ROI
+                    {result.roi >= 25 ? "25x+" : `${Math.round(result.roi)}x`} ROI estimado
                   </span>
                 )}
                 <span className="text-sm text-muted-foreground">

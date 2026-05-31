@@ -25,8 +25,8 @@ export function PartnersSection({ onPartnerInquiry }: { onPartnerInquiry: () => 
                 Ofrece algo que ninguna otra agencia puede replicar todavía
               </h2>
               <p className="mt-5 text-sand-200">
-                Tus clientes llevan años recibiendo los mismos emails. MusicDibs te permite
-                ofrecerles la primera experiencia de email marketing emocional.
+                Tus clientes llevan años enviando las mismas comunicaciones. MusicDibs te permite
+                ofrecerles la primera experiencia de comunicación emocional, en email y, muy pronto, WhatsApp.
               </p>
               <p className="mt-3 font-display text-lg text-sand">
                 No es otro servicio. Es una ventaja competitiva.

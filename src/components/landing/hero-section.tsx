@@ -29,22 +29,23 @@ export function HeroSection({
             <span className="ld-pulse-ring absolute inline-flex h-full w-full rounded-full bg-teal" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-teal" />
           </span>
-          Email marketing experiencial con audio
+          Marketing experiencial · Email hoy · WhatsApp muy pronto
         </span>
 
         <h1
           className="ld-fade-up font-display text-4xl font-semibold leading-[1.05] tracking-tight text-sand sm:text-6xl lg:text-7xl"
           style={{ animationDelay: "0.08s" }}
         >
-          Tus emails van a ser <span className="ld-gradient-text">recordados</span>
+          El marketing digital no ha cambiado en 20 años.{" "}
+          <span className="ld-gradient-text">Hasta ahora.</span>
         </h1>
 
         <p
           className="ld-fade-up mt-6 max-w-2xl text-balance text-lg text-sand-200 sm:text-xl"
           style={{ animationDelay: "0.16s" }}
         >
-          La primera plataforma que genera música personalizada para cada campaña en
-          segundos. Más apertura. Más emoción. Más conversión.
+          La primera plataforma que convierte campañas de email y mensajes de WhatsApp en
+          experiencias sonoras capaces de multiplicar aperturas, engagement y conversión.
         </p>
 
         <p
