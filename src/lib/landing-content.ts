@@ -78,25 +78,25 @@ export const INTEGRATIONS = [
 export const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "Brief",
-    body: "Defines el objetivo, sector y segmento. Tú controlas el tono y el estilo.",
+    title: "Define tu campaña",
+    body: "Objetivo, sector y segmento. Tú controlas el tono y el estilo.",
     note: "Wizard guiado. Sin conocimientos técnicos necesarios.",
   },
   {
     step: "02",
-    title: "Generación",
-    body: "La IA genera un mensaje musical único en menos de 90 segundos.",
+    title: "Generamos la experiencia",
+    body: "Gracias a nuestra IA genermos un mensaje musical único en menos de 90 segundos.",
     note: "Musicdibs IA Engine. Calidad de estudio profesional.",
   },
   {
     step: "03",
-    title: "Envío",
+    title: "Envía por tus canales",
     body: "Se integra con tus canales actuales: email (MailerLite, Brevo), CRM (HubSpot), automatizadores (Zapier) y otros que irán llegando (próximamente, WhatsApp Business).",
     note: "Sin cambiar tu stack. Tus canales, tus listas.",
   },
   {
     step: "04",
-    title: "Resultados",
+    title: "Clientes escuchan y reaccionan",
     body: "Open rate, CTR y conversión en tiempo real en tu dashboard.",
     note: "Sincronización automática cada hora.",
   },
