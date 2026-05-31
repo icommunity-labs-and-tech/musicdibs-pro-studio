@@ -98,6 +98,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Convierte cada comunicación digital en una experiencia sonora memorable.",
       },
+      { name: "description", content: "¿Y si tus clientes pudieran
+escuchar tu marca? Convierte tus campañas de email y WhatsApp en experiencias sonoras que aumentan apertura, engagement y conversión" },
+      { property: "og:description", content: "¿Y si tus clientes pudieran
+escuchar tu marca? Convierte tus campañas de email y WhatsApp en experiencias sonoras que aumentan apertura, engagement y conversión" },
+      { name: "twitter:description", content: "¿Y si tus clientes pudieran
+escuchar tu marca? Convierte tus campañas de email y WhatsApp en experiencias sonoras que aumentan apertura, engagement y conversión" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/782f5644-4149-4dab-b012-bdc630242ba0" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/782f5644-4149-4dab-b012-bdc630242ba0" },
     ],
     links: [
       {
