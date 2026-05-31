@@ -7,6 +7,13 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  // Emit a Vite manifest so the Vercel post-build step (scripts/generate-index.mjs)
+  // can resolve the TRUE client entry chunk instead of guessing by file size.
+  vite: {
+    build: {
+      manifest: true,
+    },
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
