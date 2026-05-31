@@ -111,7 +111,7 @@ function buildInviteEmail(params: {
                 O copia este enlace en tu navegador:
               </p>
               <p style="margin:0;font-size:11px;color:#C9973A;word-break:break-all;font-family:'Courier New',Courier,monospace;background:#fdf8f2;padding:10px 12px;border-radius:6px;border:1px solid #f0e8d8;">
-                ${inviteUrl}
+                ${safeUrl}
               </p>
             </td>
           </tr>
