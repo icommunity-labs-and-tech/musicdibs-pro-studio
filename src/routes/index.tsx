@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
   head: () => ({
     meta: [
-      { title: "Musicdibs Enterprise — Marketing que se escucha" },
+      { title: "Musicdibs Enterprise — Convierte tu marketing en experiencias sonoras" },
       {
         name: "description",
         content:
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:title",
-        content: "Musicdibs Enterprise — Marketing que se escucha",
+        content: "Marketing que se escucha: campañas sonoras con IA para tu marca",
       },
       {
         property: "og:description",
