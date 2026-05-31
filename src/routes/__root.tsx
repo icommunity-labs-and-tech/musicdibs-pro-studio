@@ -76,14 +76,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MusicDibs Enterprise" },
+      { title: "Musicdibs Enterprise — Campañas de marketing con música" },
       {
         name: "description",
         content:
           "Email marketing con canciones generadas por IA. Brief, generación musical, envío y métricas en una sola plataforma B2B.",
       },
       { name: "author", content: "iCommunity Labs" },
-      { property: "og:title", content: "MusicDibs Enterprise" },
+      { property: "og:title", content: "Musicdibs Enterprise — Campañas de marketing con música" },
       {
         property: "og:description",
         content:
@@ -91,6 +91,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Musicdibs Enterprise — Campañas de marketing con música" },
+      { name: "description", content: "Genera campañas musicales originales para fidelizar a tus clientes. Más aperturas, más engagement, más conversión. Para CMOs y agencias de marketing." },
+      { property: "og:description", content: "Genera campañas musicales originales para fidelizar a tus clientes. Más aperturas, más engagement, más conversión. Para CMOs y agencias de marketing." },
+      { name: "twitter:description", content: "Genera campañas musicales originales para fidelizar a tus clientes. Más aperturas, más engagement, más conversión. Para CMOs y agencias de marketing." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/ca95e336-764f-4236-9675-e6114cf338ff" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/ca95e336-764f-4236-9675-e6114cf338ff" },
     ],
     links: [
       {
