@@ -126,6 +126,8 @@ Deno.serve(async (req: Request) => {
 
     if (action === 'checkout') {
       if (!priceId) return json({ error: 'priceId required for checkout' }, 400)
+      // Only allow known price IDs to prevent plan/billing mismatch
+      if (!PRICE_TO_PLAN[priceId]) return json({ error: 'Invalid price ID' }, 400)
 
       const hasActiveSub =
         tenant.stripe_subscription_id &&
