@@ -1,13 +1,28 @@
 import { useEffect, useState } from "react";
-import { Menu, Play, X } from "lucide-react";
+import { ChevronDown, Menu, Play, X } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/theme-provider";
 import logoWhite from "@/assets/logo-musicdibs-white.jpg";
 import logoDark from "@/assets/logo-musicdibs-dark.jpg";
 import { NAV_LINKS } from "@/lib/landing-content";
+import { VERTICALS } from "@/lib/vertical-content";
 import { cn } from "@/lib/utils";
+
+const USE_CASES = [
+  VERTICALS.delivery,
+  VERTICALS.seguros,
+  VERTICALS.banca,
+  VERTICALS.retail,
+];
+
 
 function LandingLogo({ scrolled, linkBase }: { scrolled: boolean; linkBase: string }) {
   const { theme } = useTheme();
@@ -92,6 +107,30 @@ export function LandingNav({
               {link.label}
             </a>
           ))}
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                "inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium outline-none transition-colors",
+                scrolled
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-sand-200 hover:text-sand",
+              )}
+            >
+              Casos de uso
+              <ChevronDown className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-44">
+              {USE_CASES.map((vertical) => (
+                <DropdownMenuItem key={vertical.path} asChild>
+                  <a href={vertical.path} className="flex items-center gap-2">
+                    <span aria-hidden>{vertical.icon}</span>
+                    {vertical.label}
+                  </a>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="hidden items-center gap-2 lg:flex">
@@ -134,6 +173,21 @@ export function LandingNav({
                 className="rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent"
               >
                 {link.label}
+              </a>
+            ))}
+
+            <div className="mt-2 px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Casos de uso
+            </div>
+            {USE_CASES.map((vertical) => (
+              <a
+                key={vertical.path}
+                href={vertical.path}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                <span aria-hidden>{vertical.icon}</span>
+                {vertical.label}
               </a>
             ))}
             <div className="mt-2 flex flex-col gap-2">
