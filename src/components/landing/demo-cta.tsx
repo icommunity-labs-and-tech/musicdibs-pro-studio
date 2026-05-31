@@ -58,7 +58,10 @@ export function DemoCta() {
                 <Clock className="size-4" /> Respuesta en menos de 24h
               </p>
               <p className="flex items-center gap-2">
-                <Mail className="size-4" /> También puedes escribirnos: info@musicdibs.com
+                <Mail className="size-4" /> También puedes escribirnos:{" "}
+                <a href="mailto:info@musicdibs.com" className="underline hover:text-sand">
+                  info@musicdibs.com
+                </a>
               </p>
             </div>
           </div>
