@@ -21,6 +21,11 @@ function getSpaMountNode() {
   return node;
 }
 
+function disableDocumentShellForSpa(router: ReturnType<typeof getRouter>) {
+  const rootRoute = router.routesById.__root__ as { options: { shellComponent?: unknown } };
+  rootRoute.options.shellComponent = undefined;
+}
+
 startTransition(() => {
   if (hasServerHydrationPayload()) {
     hydrateRoot(
@@ -33,6 +38,7 @@ startTransition(() => {
   }
 
   const router = getRouter();
+  disableDocumentShellForSpa(router);
 
   createRoot(getSpaMountNode()).render(
     <StrictMode>
