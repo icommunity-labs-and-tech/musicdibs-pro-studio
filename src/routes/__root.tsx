@@ -83,6 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Plataforma B2B de marketing experiencial: convierte tus comunicaciones digitales en experiencias sonoras generadas por IA.",
       },
       { name: "author", content: "iCommunity Labs" },
+      { name: "google-site-verification", content: "a7x1W-K0UUn8BZ_Lfm4ydToH7QIX2chcFIxmHrjCsV8" },
       { property: "og:site_name", content: "Musicdibs Enterprise" },
       { property: "og:title", content: "Musicdibs Enterprise — Marketing que se escucha" },
       {
