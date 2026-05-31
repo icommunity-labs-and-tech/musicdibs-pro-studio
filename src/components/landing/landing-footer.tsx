@@ -1,15 +1,22 @@
+import { useTheme } from "@/components/theme-provider";
+import logoWhite from "@/assets/logo-musicdibs-white.jpg";
+import logoDark from "@/assets/logo-musicdibs-dark.jpg";
 import { NAV_LINKS } from "@/lib/landing-content";
 
 export function LandingFooter() {
+  const { theme } = useTheme();
+
   return (
     <footer className="border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col items-start justify-between gap-8 sm:flex-row">
           <div className="max-w-xs">
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-gold to-teal font-display text-lg font-bold text-night-900">
-                M
-              </span>
+              <img
+                src={theme === "dark" ? logoWhite : logoDark}
+                alt="Musicdibs"
+                className="h-9 w-auto shrink-0 object-contain"
+              />
               <span className="font-display text-base font-semibold">
                 Musicdibs Enterprise
               </span>
