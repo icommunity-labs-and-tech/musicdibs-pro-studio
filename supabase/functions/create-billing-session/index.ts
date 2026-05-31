@@ -126,6 +126,8 @@ Deno.serve(async (req: Request) => {
 
     if (action === 'checkout') {
       if (!priceId) return json({ error: 'priceId required for checkout' }, 400)
+      // Only allow known price IDs to prevent plan/billing mismatch
+      if (!PRICE_TO_PLAN[priceId]) return json({ error: 'Invalid price ID' }, 400)
 
       const hasActiveSub =
         tenant.stripe_subscription_id &&
@@ -183,6 +185,7 @@ Deno.serve(async (req: Request) => {
 })
 
 function returnUrl(base: string, override: string | undefined, fallback: string): string {
-  if (override) return override
+  // Only honour client-supplied URLs that point back to our own app (open-redirect guard)
+  if (override && override.startsWith(base)) return override
   return `${base}${fallback}`
 }

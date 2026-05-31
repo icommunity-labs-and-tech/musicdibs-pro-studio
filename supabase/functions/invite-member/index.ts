@@ -14,6 +14,16 @@ const cors = {
 
 // ── Email template ────────────────────────────────────────────────────────────
 
+// Escape user-supplied values before interpolating into HTML to prevent injection.
+function esc(s: string): string {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function buildInviteEmail(params: {
   inviterName: string
   tenantName:  string
@@ -28,12 +38,17 @@ function buildInviteEmail(params: {
     viewer: 'Lector',
   }
 
+  const safeInviter = esc(inviterName)
+  const safeTenant  = esc(tenantName)
+  const safeRole    = esc(roleLabel[role] ?? role)
+  const safeUrl     = encodeURI(inviteUrl)
+
   const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Invitación a ${tenantName}</title>
+  <title>Invitación a ${safeTenant}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f5f0eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0eb;padding:40px 16px;">
@@ -68,19 +83,19 @@ function buildInviteEmail(params: {
           <tr>
             <td style="padding:40px 40px 32px;">
               <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#1a1208;letter-spacing:-0.5px;">
-                Te han invitado a ${tenantName}
+                Te han invitado a ${safeTenant}
               </h1>
               <p style="margin:0 0 28px;font-size:15px;color:#6b5a45;line-height:1.6;">
-                <strong style="color:#1a1208;">${inviterName}</strong> te ha invitado a unirte a
-                <strong style="color:#1a1208;">${tenantName}</strong> en MusicDibs Enterprise
-                con el rol de <strong style="color:#C9973A;">${roleLabel[role] ?? role}</strong>.
+                <strong style="color:#1a1208;">${safeInviter}</strong> te ha invitado a unirte a
+                <strong style="color:#1a1208;">${safeTenant}</strong> en MusicDibs Enterprise
+                con el rol de <strong style="color:#C9973A;">${safeRole}</strong>.
               </p>
 
               <!-- CTA button -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
                 <tr>
                   <td>
-                    <a href="${inviteUrl}"
+                    <a href="${safeUrl}"
                        style="display:inline-block;background:linear-gradient(135deg,#C9973A,#8C5E0A);color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:14px 32px;border-radius:10px;letter-spacing:0.2px;">
                       Aceptar invitación →
                     </a>
@@ -96,7 +111,7 @@ function buildInviteEmail(params: {
                 O copia este enlace en tu navegador:
               </p>
               <p style="margin:0;font-size:11px;color:#C9973A;word-break:break-all;font-family:'Courier New',Courier,monospace;background:#fdf8f2;padding:10px 12px;border-radius:6px;border:1px solid #f0e8d8;">
-                ${inviteUrl}
+                ${safeUrl}
               </p>
             </td>
           </tr>

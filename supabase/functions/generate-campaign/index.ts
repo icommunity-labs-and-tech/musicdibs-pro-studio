@@ -135,9 +135,20 @@ Deno.serve(async (req: Request) => {
     // Allow both JWT (frontend trigger) and service role (cron retry)
     const token = authHeader.replace("Bearer ", "")
     const isServiceRole = token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+    let callerTenantId: string | null = null
     if (!isServiceRole) {
-      const { error: authErr } = await supabase.auth.getUser(token)
-      if (authErr) return json({ error: "Unauthorized" }, 401)
+      const { data: { user }, error: authErr } = await supabase.auth.getUser(token)
+      if (authErr || !user) return json({ error: "Unauthorized" }, 401)
+      // Resolve the caller's tenant so we can enforce cross-tenant isolation
+      const { data: callerProfile, error: profileErr } = await supabase
+        .from("profiles")
+        .select("tenant_id")
+        .eq("id", user.id)
+        .single()
+      if (profileErr || !callerProfile?.tenant_id) {
+        return json({ error: "Unauthorized" }, 403)
+      }
+      callerTenantId = callerProfile.tenant_id as string
     }
 
     // ── Parse body ──────────────────────────────────────────────────────────
@@ -163,6 +174,11 @@ Deno.serve(async (req: Request) => {
       .single()
 
     if (jobErr || !job) return json({ error: "No queued generation job found" }, 404)
+
+    // Enforce tenant isolation for non-service-role (user) callers
+    if (!isServiceRole && job.tenant_id !== callerTenantId) {
+      return json({ error: "No queued generation job found" }, 404)
+    }
 
     const campaign = (job as any).campaigns
     const tenantId = job.tenant_id

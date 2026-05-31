@@ -24,15 +24,25 @@ Deno.serve(async (req: Request) => {
     const { data: { user }, error: authErr } = await supabase.auth.getUser(token)
     if (authErr || !user) return json({ error: "Unauthorized" }, 401)
 
+    // Resolve the caller's tenant to enforce cross-tenant isolation
+    const { data: callerProfile, error: profileErr } = await supabase
+      .from("profiles")
+      .select("tenant_id")
+      .eq("id", user.id)
+      .single()
+    if (profileErr || !callerProfile?.tenant_id) return json({ error: "Unauthorized" }, 403)
+    const callerTenantId = callerProfile.tenant_id as string
+
     // ── Parse body ────────────────────────────────────────────────────────────
     const { campaign_id } = await req.json()
     if (!campaign_id) return json({ error: "campaign_id required" }, 400)
 
-    // ── Load campaign (with tenant and contact_list) ──────────────────────────
+    // ── Load campaign (with tenant and contact_list) — scoped to caller tenant ─
     const { data: campaign, error: campErr } = await supabase
       .from("campaigns")
       .select("*, tenants!inner(id, name), contact_lists(id, mailerlite_group_id, name)")
       .eq("id", campaign_id)
+      .eq("tenant_id", callerTenantId)
       .single()
 
     if (campErr || !campaign) return json({ error: "Campaign not found" }, 404)
