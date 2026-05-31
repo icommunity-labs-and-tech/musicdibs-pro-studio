@@ -64,20 +64,14 @@ export const AUDIO_DEMOS: AudioDemo[] = [
   },
 ];
 
-/** Logos for the ecosystem strip under the hero. Logos via Simple Icons CDN. */
-export interface Integration {
-  name: string;
-  /** Simple Icons slug — https://cdn.simpleicons.org/{slug} */
-  slug: string;
-}
-
-export const INTEGRATIONS: Integration[] = [
-  { name: "MailerLite", slug: "mailerlite" },
-  { name: "Brevo", slug: "brevo" },
-  { name: "HubSpot", slug: "hubspot" },
-  { name: "Salesforce", slug: "salesforce" },
-  { name: "WhatsApp Business", slug: "whatsapp" },
-  { name: "Zapier", slug: "zapier" },
+/** Names for the ecosystem strip under the hero. Logos resolved in the component. */
+export const INTEGRATIONS = [
+  "MailerLite",
+  "Brevo",
+  "HubSpot",
+  "Salesforce",
+  "WhatsApp Business",
+  "Zapier",
 ];
 
 /** How it works — 4 steps (section 4). */
