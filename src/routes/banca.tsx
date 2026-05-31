@@ -4,7 +4,7 @@ import { VerticalLanding } from "@/components/landing/vertical-landing";
 import { VERTICALS } from "@/lib/vertical-content";
 
 const data = VERTICALS.banca;
-const url = `https://musicdibs-enterprise.lovable.app${data.path}`;
+const url = `https://enterprise.musicdibs.com${data.path}`;
 
 export const Route = createFileRoute("/banca")({
   component: () => <VerticalLanding data={data} />,

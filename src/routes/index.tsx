@@ -19,7 +19,7 @@ import { RoiCalculator } from "@/components/landing/roi-calculator";
 import { WhyItWorks } from "@/components/landing/why-it-works";
 import { FAQ_ITEMS } from "@/lib/landing-content";
 
-const SITE_URL = "https://musicdibs-enterprise.lovable.app";
+const SITE_URL = "https://enterprise.musicdibs.com";
 const SOCIAL_IMAGE =
   "https://storage.googleapis.com/gpt-engineer-file-uploads/DakVJRWULrayRSjJYIgXi0jQKUG2/social-images/social-1780244388899-ff144e01-1c79-42c6-8c6c-977143655f7c.webp";
 
