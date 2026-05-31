@@ -22,6 +22,7 @@ import { Route as AuthenticatedShellContactsRouteImport } from './routes/_authen
 import { Route as AuthenticatedShellAnalyticsRouteImport } from './routes/_authenticated/_shell/analytics'
 import { Route as AuthenticatedShellCampaignsIndexRouteImport } from './routes/_authenticated/_shell/campaigns.index'
 import { Route as AuthenticatedShellCampaignsIdIndexRouteImport } from './routes/_authenticated/_shell/campaigns.$id.index'
+import { Route as AuthenticatedShellCampaignsIdQueueRouteImport } from './routes/_authenticated/_shell/campaigns.$id.queue'
 
 const StyleguideRoute = StyleguideRouteImport.update({
   id: '/styleguide',
@@ -92,6 +93,12 @@ const AuthenticatedShellCampaignsIdIndexRoute =
     path: '/campaigns/$id/',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
+const AuthenticatedShellCampaignsIdQueueRoute =
+  AuthenticatedShellCampaignsIdQueueRouteImport.update({
+    id: '/campaigns/$id/queue',
+    path: '/campaigns/$id/queue',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/campaigns/': typeof AuthenticatedShellCampaignsIndexRoute
+  '/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/campaigns/$id/': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -117,6 +125,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedShellDashboardRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/campaigns': typeof AuthenticatedShellCampaignsIndexRoute
+  '/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/campaigns/$id': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 export interface FileRoutesById {
@@ -133,6 +142,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
   '/_authenticated/_shell/campaigns/': typeof AuthenticatedShellCampaignsIndexRoute
+  '/_authenticated/_shell/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/_authenticated/_shell/campaigns/$id/': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/campaigns/'
+    | '/campaigns/$id/queue'
     | '/campaigns/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/settings'
     | '/campaigns'
+    | '/campaigns/$id/queue'
     | '/campaigns/$id'
   id:
     | '__root__'
@@ -176,6 +188,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/dashboard'
     | '/_authenticated/_shell/settings'
     | '/_authenticated/_shell/campaigns/'
+    | '/_authenticated/_shell/campaigns/$id/queue'
     | '/_authenticated/_shell/campaigns/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -280,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellCampaignsIdIndexRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
+    '/_authenticated/_shell/campaigns/$id/queue': {
+      id: '/_authenticated/_shell/campaigns/$id/queue'
+      path: '/campaigns/$id/queue'
+      fullPath: '/campaigns/$id/queue'
+      preLoaderRoute: typeof AuthenticatedShellCampaignsIdQueueRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
   }
 }
 
@@ -289,6 +309,7 @@ interface AuthenticatedShellRouteChildren {
   AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
   AuthenticatedShellSettingsRoute: typeof AuthenticatedShellSettingsRoute
   AuthenticatedShellCampaignsIndexRoute: typeof AuthenticatedShellCampaignsIndexRoute
+  AuthenticatedShellCampaignsIdQueueRoute: typeof AuthenticatedShellCampaignsIdQueueRoute
   AuthenticatedShellCampaignsIdIndexRoute: typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 
@@ -298,6 +319,8 @@ const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
   AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
   AuthenticatedShellSettingsRoute: AuthenticatedShellSettingsRoute,
   AuthenticatedShellCampaignsIndexRoute: AuthenticatedShellCampaignsIndexRoute,
+  AuthenticatedShellCampaignsIdQueueRoute:
+    AuthenticatedShellCampaignsIdQueueRoute,
   AuthenticatedShellCampaignsIdIndexRoute:
     AuthenticatedShellCampaignsIdIndexRoute,
 }
