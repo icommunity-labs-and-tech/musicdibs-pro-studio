@@ -17,8 +17,11 @@ export function LandingFooter() {
                 alt="Logotipo de Musicdibs Enterprise"
                 className="h-9 w-auto shrink-0 object-contain"
               />
-              <span className="font-display text-base font-semibold">
-                Musicdibs Enterprise
+              <span className="flex flex-col leading-tight">
+                <span className="font-display text-base font-semibold">
+                  Musicdibs Enterprise
+                </span>
+                <span className="text-xs font-medium text-teal">powered by iCommunity</span>
               </span>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">

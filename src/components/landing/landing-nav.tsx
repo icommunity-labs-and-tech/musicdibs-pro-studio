@@ -40,6 +40,7 @@ function LandingLogo({ scrolled }: { scrolled: boolean }) {
         >
           Enterprise
         </span>
+        <span className="text-xs font-medium text-teal">powered by iCommunity</span>
       </span>
     </a>
   );
