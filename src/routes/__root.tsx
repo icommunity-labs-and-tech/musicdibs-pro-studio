@@ -121,7 +121,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "Organization",
           name: "Musicdibs Enterprise",
-          url: "https://musicdibs-enterprise.lovable.app",
+          url: "https://enterprise.musicdibs.com",
           description:
             "Plataforma B2B de marketing experiencial que convierte comunicaciones digitales en experiencias sonoras personalizadas con IA.",
           parentOrganization: { "@type": "Organization", name: "iCommunity Labs" },
@@ -133,7 +133,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "Musicdibs Enterprise",
-          url: "https://musicdibs-enterprise.lovable.app",
+          url: "https://enterprise.musicdibs.com",
         }),
       },
     ],
