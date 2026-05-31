@@ -175,6 +175,21 @@ export function LandingNav({
                 {link.label}
               </a>
             ))}
+
+            <div className="mt-2 px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Casos de uso
+            </div>
+            {USE_CASES.map((vertical) => (
+              <a
+                key={vertical.path}
+                href={vertical.path}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-md px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                <span aria-hidden>{vertical.icon}</span>
+                {vertical.label}
+              </a>
+            ))}
             <div className="mt-2 flex flex-col gap-2">
               <Button
                 onClick={() => {
