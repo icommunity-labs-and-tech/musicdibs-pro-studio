@@ -1,13 +1,28 @@
 import { useEffect, useState } from "react";
-import { Menu, Play, X } from "lucide-react";
+import { ChevronDown, Menu, Play, X } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/theme-provider";
 import logoWhite from "@/assets/logo-musicdibs-white.jpg";
 import logoDark from "@/assets/logo-musicdibs-dark.jpg";
 import { NAV_LINKS } from "@/lib/landing-content";
+import { VERTICALS } from "@/lib/vertical-content";
 import { cn } from "@/lib/utils";
+
+const USE_CASES = [
+  VERTICALS.delivery,
+  VERTICALS.seguros,
+  VERTICALS.banca,
+  VERTICALS.retail,
+];
+
 
 function LandingLogo({ scrolled, linkBase }: { scrolled: boolean; linkBase: string }) {
   const { theme } = useTheme();
