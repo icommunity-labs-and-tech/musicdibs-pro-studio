@@ -49,5 +49,4 @@ startTransition(() => {
       <RouterProvider router={router} />
     </StrictMode>,
   );
-
 });
