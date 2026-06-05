@@ -319,9 +319,12 @@ function AudiencesSection({ tenantId }: { tenantId: string | undefined }) {
         ) : (
           <div className="space-y-2">
             {audiences.data!.map((a) => {
-              // Estimated personalized campaign cost: 1 credit per contact.
-              // Display only — the credit engine is not implemented yet.
-              const estimatedCredits = a.contacts_count;
+              // Estimated personalized campaign cost via the shared helper:
+              // 1 credit per contact with a 100-credit minimum. Display only.
+              const estimatedCredits = calculateEstimatedCredits(
+                "personalized_song",
+                a.contacts_count,
+              );
               return (
                 <div
                   key={a.id}
