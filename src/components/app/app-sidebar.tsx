@@ -1,11 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { ShieldCheck } from "lucide-react";
 
 import { BrandMark } from "@/components/app/brand-mark";
 import { NAV_ITEMS } from "@/components/app/nav-items";
+import { useAuth } from "@/components/auth/auth-provider";
 import { cn } from "@/lib/utils";
 
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { profile } = useAuth();
 
   return (
     <nav className="flex flex-1 flex-col gap-1 px-3 py-4">
@@ -18,7 +21,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             onClick={onNavigate}
             className={cn(
               "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-              "min-h-11", // comfortable tap target on mobile
+              "min-h-11",
               active
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                 : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
@@ -32,6 +35,24 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           </Link>
         );
       })}
+
+      {/* Admin link — superadmins only */}
+      {profile?.is_superadmin && (
+        <Link
+          to="/admin"
+          onClick={onNavigate}
+          className={cn(
+            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors mt-1",
+            "min-h-11",
+            pathname === "/admin" || pathname.startsWith("/admin/")
+              ? "bg-destructive/10 text-destructive"
+              : "text-destructive/60 hover:bg-destructive/8 hover:text-destructive",
+          )}
+        >
+          <ShieldCheck className="h-[1.15rem] w-[1.15rem] shrink-0" />
+          Admin
+        </Link>
+      )}
     </nav>
   );
 }
