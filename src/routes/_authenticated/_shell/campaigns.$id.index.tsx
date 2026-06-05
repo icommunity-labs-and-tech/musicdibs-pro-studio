@@ -30,7 +30,10 @@ import {
   buildCampaignConfigRows,
   type CampaignConfigSummary,
 } from "@/lib/campaign-generation-summary";
-import { AI_MUSIC_STUDIO } from "@/lib/campaign-generation-options";
+import {
+  AI_MUSIC_STUDIO,
+  type GenerationMode,
+} from "@/lib/campaign-generation-options";
 import { getProviderMeta } from "@/lib/providers";
 import {
   useCampaignDetail,
