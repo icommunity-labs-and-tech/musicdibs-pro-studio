@@ -72,8 +72,10 @@ function DevelopersPage() {
         </p>
       </div>
 
+      <SendingIntegrationsSection tenantId={tenantId} />
       <ApiKeysSection tenantId={tenantId} />
       <WebhooksSection tenantId={tenantId} />
+
     </div>
   );
 }
