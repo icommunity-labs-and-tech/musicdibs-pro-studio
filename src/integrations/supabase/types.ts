@@ -88,6 +88,82 @@ export type Database = {
           },
         ]
       }
+      campaign_generation_configs: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          estimated_credits: number
+          generation_mode: string
+          id: string
+          include_first_name: boolean
+          language: string | null
+          lyrics_goal: string | null
+          lyrics_prompt: string | null
+          mood: string | null
+          music_style: string | null
+          provider_audience_id: string | null
+          provider_connection_id: string | null
+          updated_at: string
+          voice_type: string | null
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          estimated_credits?: number
+          generation_mode: string
+          id?: string
+          include_first_name?: boolean
+          language?: string | null
+          lyrics_goal?: string | null
+          lyrics_prompt?: string | null
+          mood?: string | null
+          music_style?: string | null
+          provider_audience_id?: string | null
+          provider_connection_id?: string | null
+          updated_at?: string
+          voice_type?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          estimated_credits?: number
+          generation_mode?: string
+          id?: string
+          include_first_name?: boolean
+          language?: string | null
+          lyrics_goal?: string | null
+          lyrics_prompt?: string | null
+          mood?: string | null
+          music_style?: string | null
+          provider_audience_id?: string | null
+          provider_connection_id?: string | null
+          updated_at?: string
+          voice_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_generation_configs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: true
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_generation_configs_provider_audience_id_fkey"
+            columns: ["provider_audience_id"]
+            isOneToOne: false
+            referencedRelation: "provider_audiences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_generation_configs_provider_connection_id_fkey"
+            columns: ["provider_connection_id"]
+            isOneToOne: false
+            referencedRelation: "provider_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_stats: {
         Row: {
           campaign_id: string
