@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { KeyRound, Loader2, Save } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAuth } from "@/components/auth/auth-provider";
@@ -37,35 +37,26 @@ function SettingsPage() {
       <div>
         <h1 className="font-display text-2xl font-bold sm:text-3xl">Ajustes</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Configura tu espacio de trabajo y las integraciones de envío.
+          Configura tu espacio de trabajo.
         </p>
       </div>
 
       {settings.isLoading ? (
-        <>
-          <Skeleton className="h-48 rounded-2xl" />
-          <Skeleton className="h-56 rounded-2xl" />
-        </>
+        <Skeleton className="h-48 rounded-2xl" />
       ) : (
-        <>
-          <ProfileCard
-            tenantId={tenantId}
-            tenantName={tenant?.name ?? ""}
-            plan={tenant?.plan}
-            onTenantUpdated={refresh}
-            supportEmail={settings.data?.support_email ?? ""}
-            website={settings.data?.website ?? ""}
-          />
-          <ApiKeysCard
-            tenantId={tenantId}
-            mailerlite={settings.data?.api_keys.mailerlite ?? ""}
-            brevo={settings.data?.api_keys.brevo ?? ""}
-          />
-        </>
+        <ProfileCard
+          tenantId={tenantId}
+          tenantName={tenant?.name ?? ""}
+          plan={tenant?.plan}
+          onTenantUpdated={refresh}
+          supportEmail={settings.data?.support_email ?? ""}
+          website={settings.data?.website ?? ""}
+        />
       )}
     </div>
   );
 }
+
 
 function ProfileCard({
   tenantId,
@@ -174,84 +165,3 @@ function ProfileCard({
   );
 }
 
-function ApiKeysCard({
-  tenantId,
-  mailerlite,
-  brevo,
-}: {
-  tenantId: string | undefined;
-  mailerlite: string;
-  brevo: string;
-}) {
-  const [ml, setMl] = useState(mailerlite);
-  const [bv, setBv] = useState(brevo);
-
-  useEffect(() => setMl(mailerlite), [mailerlite]);
-  useEffect(() => setBv(brevo), [brevo]);
-
-  const updateSettings = useUpdateTenantSettings(tenantId);
-
-  async function handleSave() {
-    try {
-      await updateSettings.mutateAsync({
-        api_keys: {
-          mailerlite: ml.trim() || undefined,
-          brevo: bv.trim() || undefined,
-        },
-      });
-      toast.success("Claves de integración guardadas");
-    } catch (e) {
-      toast.error("No pudimos guardar las claves", {
-        description: e instanceof Error ? e.message : undefined,
-      });
-    }
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-display text-lg">
-          <KeyRound className="h-4 w-4" />
-          Integraciones de envío
-        </CardTitle>
-        <CardDescription>
-          Conecta tu proveedor de email marketing para enviar campañas.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="mailerlite-key">API key de MailerLite</Label>
-          <Input
-            id="mailerlite-key"
-            type="password"
-            value={ml}
-            onChange={(e) => setMl(e.target.value)}
-            placeholder="••••••••••••"
-            autoComplete="off"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="brevo-key">API key de Brevo</Label>
-          <Input
-            id="brevo-key"
-            type="password"
-            value={bv}
-            onChange={(e) => setBv(e.target.value)}
-            placeholder="••••••••••••"
-            autoComplete="off"
-          />
-        </div>
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={updateSettings.isPending}>
-            {updateSettings.isPending ? (
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="mr-1.5 h-4 w-4" />
-            )}
-            Guardar claves
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}

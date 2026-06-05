@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Check,
@@ -7,6 +7,7 @@ import {
   KeyRound,
   Loader2,
   Plus,
+  Save,
   Trash2,
   Webhook,
 } from "lucide-react";
@@ -46,6 +47,10 @@ import {
   type ApiKeyItem,
   type WebhookItem,
 } from "@/hooks/use-developers";
+import {
+  useTenantSettings,
+  useUpdateTenantSettings,
+} from "@/hooks/use-tenant-settings";
 
 export const Route = createFileRoute("/_authenticated/_shell/developers")({
   head: () => ({ meta: [{ title: "Desarrolladores · Musicdibs Enterprise" }] }),
@@ -67,11 +72,119 @@ function DevelopersPage() {
         </p>
       </div>
 
+      <SendingIntegrationsSection tenantId={tenantId} />
       <ApiKeysSection tenantId={tenantId} />
       <WebhooksSection tenantId={tenantId} />
+
     </div>
   );
 }
+
+// ── Sending integrations ────────────────────────────────────────────────────
+
+function SendingIntegrationsSection({
+  tenantId,
+}: {
+  tenantId: string | undefined;
+}) {
+  const settings = useTenantSettings(tenantId);
+
+  if (settings.isLoading) {
+    return <Skeleton className="h-56 w-full rounded-2xl" />;
+  }
+
+  return (
+    <SendingIntegrationsCard
+      tenantId={tenantId}
+      mailerlite={settings.data?.api_keys.mailerlite ?? ""}
+      brevo={settings.data?.api_keys.brevo ?? ""}
+    />
+  );
+}
+
+function SendingIntegrationsCard({
+  tenantId,
+  mailerlite,
+  brevo,
+}: {
+  tenantId: string | undefined;
+  mailerlite: string;
+  brevo: string;
+}) {
+  const [ml, setMl] = useState(mailerlite);
+  const [bv, setBv] = useState(brevo);
+
+  useEffect(() => setMl(mailerlite), [mailerlite]);
+  useEffect(() => setBv(brevo), [brevo]);
+
+  const updateSettings = useUpdateTenantSettings(tenantId);
+
+  async function handleSave() {
+    try {
+      await updateSettings.mutateAsync({
+        api_keys: {
+          mailerlite: ml.trim() || undefined,
+          brevo: bv.trim() || undefined,
+        },
+      });
+      toast.success("Claves de integración guardadas");
+    } catch (e) {
+      toast.error("No pudimos guardar las claves", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 font-display text-lg">
+          <KeyRound className="h-4 w-4" />
+          Integraciones de envío
+        </CardTitle>
+        <CardDescription>
+          Conecta tu proveedor de email marketing para enviar campañas.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="mailerlite-key">API key de MailerLite</Label>
+          <Input
+            id="mailerlite-key"
+            type="password"
+            value={ml}
+            onChange={(e) => setMl(e.target.value)}
+            placeholder="••••••••••••"
+            autoComplete="off"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="brevo-key">API key de Brevo</Label>
+          <Input
+            id="brevo-key"
+            type="password"
+            value={bv}
+            onChange={(e) => setBv(e.target.value)}
+            placeholder="••••••••••••"
+            autoComplete="off"
+          />
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={handleSave} disabled={updateSettings.isPending}>
+            {updateSettings.isPending ? (
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-1.5 h-4 w-4" />
+            )}
+            Guardar claves
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+
 
 // ── API keys ──────────────────────────────────────────────────────────────
 
