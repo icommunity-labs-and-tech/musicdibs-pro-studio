@@ -19,7 +19,7 @@ import { AudioPlayer } from "@/components/app/audio-player";
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
 import { GenerationWaveform } from "@/components/app/generation-waveform";
 import { useAuth } from "@/components/auth/auth-provider";
-import { Badge } from "@/components/ui/badge";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
