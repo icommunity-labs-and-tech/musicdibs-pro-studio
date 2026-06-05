@@ -519,10 +519,13 @@ export type Database = {
           asset_type: string
           campaign_id: string
           created_at: string
+          duration_seconds: number | null
+          external_asset_id: string | null
           generation_job_id: string
           id: string
           lyrics_content: string | null
           metadata: Json | null
+          provider_metadata: Json | null
           public_url: string | null
           status: string
           storage_path: string | null
@@ -533,10 +536,13 @@ export type Database = {
           asset_type: string
           campaign_id: string
           created_at?: string
+          duration_seconds?: number | null
+          external_asset_id?: string | null
           generation_job_id: string
           id?: string
           lyrics_content?: string | null
           metadata?: Json | null
+          provider_metadata?: Json | null
           public_url?: string | null
           status?: string
           storage_path?: string | null
@@ -547,10 +553,13 @@ export type Database = {
           asset_type?: string
           campaign_id?: string
           created_at?: string
+          duration_seconds?: number | null
+          external_asset_id?: string | null
           generation_job_id?: string
           id?: string
           lyrics_content?: string | null
           metadata?: Json | null
+          provider_metadata?: Json | null
           public_url?: string | null
           status?: string
           storage_path?: string | null
@@ -645,15 +654,19 @@ export type Database = {
           duration_seconds: number
           error_message: string | null
           external_contact_id: string | null
+          external_lyrics_task_id: string | null
+          external_music_task_id: string | null
           generation_batch_id: string | null
           id: string
           lyrics_status: string
+          lyrics_title: string | null
           music_status: string
           output_metadata: Json | null
           output_url: string | null
           prompt: string | null
           provider: string
           queued_at: string
+          selected_variant: number
           started_at: string | null
           status: string
           style: string | null
@@ -671,15 +684,19 @@ export type Database = {
           duration_seconds?: number
           error_message?: string | null
           external_contact_id?: string | null
+          external_lyrics_task_id?: string | null
+          external_music_task_id?: string | null
           generation_batch_id?: string | null
           id?: string
           lyrics_status?: string
+          lyrics_title?: string | null
           music_status?: string
           output_metadata?: Json | null
           output_url?: string | null
           prompt?: string | null
           provider?: string
           queued_at?: string
+          selected_variant?: number
           started_at?: string | null
           status?: string
           style?: string | null
@@ -697,15 +714,19 @@ export type Database = {
           duration_seconds?: number
           error_message?: string | null
           external_contact_id?: string | null
+          external_lyrics_task_id?: string | null
+          external_music_task_id?: string | null
           generation_batch_id?: string | null
           id?: string
           lyrics_status?: string
+          lyrics_title?: string | null
           music_status?: string
           output_metadata?: Json | null
           output_url?: string | null
           prompt?: string | null
           provider?: string
           queued_at?: string
+          selected_variant?: number
           started_at?: string | null
           status?: string
           style?: string | null

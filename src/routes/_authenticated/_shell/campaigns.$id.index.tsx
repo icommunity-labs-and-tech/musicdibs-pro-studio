@@ -3,10 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  Layers,
   ListChecks,
   Loader2,
-  Music2,
   Pencil,
   RefreshCw,
   Sparkles,
@@ -15,14 +13,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { AudioPlayer } from "@/components/app/audio-player";
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
-import { GenerationWaveform } from "@/components/app/generation-waveform";
+import { CampaignGenerationPanel } from "@/components/app/campaign-generation-panel";
 import { useAuth } from "@/components/auth/auth-provider";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { isCampaignEditable } from "@/lib/campaign-status";
@@ -35,17 +31,21 @@ import {
   type GenerationMode,
 } from "@/lib/campaign-generation-options";
 import { getProviderMeta } from "@/lib/providers";
-import {
-  useCampaignDetail,
-  useGenerationJobsRealtime,
-} from "@/hooks/use-campaign-detail";
+import { useCampaignDetail } from "@/hooks/use-campaign-detail";
 import { useCampaignGenerationConfig } from "@/hooks/use-campaign-generation-config";
 import {
   useProviderAudiences,
   useProviderConnections,
 } from "@/hooks/use-providers";
-import { useCampaignBatch, useGenerateCampaign } from "@/hooks/use-generation";
-import { getBatchProgress } from "@/lib/generation";
+import {
+  useCampaignAssets,
+  useCampaignBatch,
+  useCampaignJob,
+  useCampaignGenerationRealtime,
+  useGenerateCampaign,
+  useRetryLyrics,
+  useRetryMusic,
+} from "@/hooks/use-generation";
 import { GenerateCampaignDialog } from "@/components/app/generate-campaign-dialog";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/$id/")({
@@ -63,20 +63,6 @@ function formatDateTime(iso: string): string {
   });
 }
 
-const BATCH_STATUS_LABELS: Record<string, string> = {
-  draft: "Borrador",
-  queued: "En cola",
-  processing: "Procesando",
-  completed: "Completado",
-  failed: "Fallido",
-};
-
-function getBatchStatusLabel(status: string): string {
-  return BATCH_STATUS_LABELS[status] ?? status;
-}
-
-
-
 function CampaignDetailPage() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
@@ -87,10 +73,14 @@ function CampaignDetailPage() {
   const { data: connections } = useProviderConnections(tenant?.id);
 
   const { data: batch } = useCampaignBatch(id);
+  const { data: job } = useCampaignJob(id);
+  const { data: assets } = useCampaignAssets(id);
   const generateCampaign = useGenerateCampaign();
+  const retryLyrics = useRetryLyrics();
+  const retryMusic = useRetryMusic();
   const [generateOpen, setGenerateOpen] = useState(false);
 
-  useGenerationJobsRealtime(id);
+  useCampaignGenerationRealtime(id);
 
   const syncStats = useMutation({
     mutationFn: async () => {
@@ -174,48 +164,61 @@ function CampaignDetailPage() {
   }
 
   const { campaign, stats } = data;
-  const isGenerating = campaign.status === "generating";
   const canEdit = isCampaignEditable(campaign.status);
-  const generatedPct =
-    campaign.total_contacts > 0
-      ? Math.round((campaign.generated_count / campaign.total_contacts) * 100)
-      : 0;
+  const hasGeneration = Boolean(job || (batch && batch.status !== "draft"));
 
-  // Generation Status panel — derived from the latest batch (placeholder
-  // zeros until a batch exists). No generation runs in this sprint.
-  const batchProgress = getBatchProgress(batch ?? null);
-
-  // Confirmation modal inputs. Single song = 1 job; personalized = 1 per contact.
+  // Confirmation modal inputs. Single song only in this sprint.
   const generationMode = (configSummary?.generationMode || null) as
     | GenerationMode
     | null;
   const audienceSize =
     configSummary?.audienceSize ?? campaign.total_contacts ?? 0;
   const estimatedCredits = configSummary?.estimatedCredits ?? 0;
-  const totalJobs = generationMode === "single_song" ? 1 : audienceSize;
 
   const handleConfirmGeneration = () => {
     if (!tenant?.id || !generationMode) return;
     generateCampaign.mutate(
-      {
-        tenantId: tenant.id,
-        campaignId: id,
-        generationMode,
-        totalJobs,
-        estimatedCredits,
-      },
+      { tenantId: tenant.id, campaignId: id },
       {
         onSuccess: () => {
           setGenerateOpen(false);
-          toast.success("Lote de generación creado", {
-            description: "La campaña está lista para generar.",
+          toast.success("Generación iniciada", {
+            description: "Estamos creando la letra y la música.",
           });
         },
         onError: (e: unknown) => {
-          toast.error("No pudimos crear el lote de generación", {
+          toast.error("No pudimos iniciar la generación", {
             description: e instanceof Error ? e.message : undefined,
           });
         },
+      },
+    );
+  };
+
+  const handleRetryLyrics = () => {
+    if (!tenant?.id) return;
+    retryLyrics.mutate(
+      { tenantId: tenant.id, campaignId: id },
+      {
+        onSuccess: () => toast.success("Reintentando la letra"),
+        onError: (e: unknown) =>
+          toast.error("No pudimos reintentar la letra", {
+            description: e instanceof Error ? e.message : undefined,
+          }),
+      },
+    );
+  };
+
+  const handleRetryMusic = () => {
+    if (!tenant?.id) return;
+    retryMusic.mutate(
+      { tenantId: tenant.id, campaignId: id },
+      {
+        onSuccess: () => toast.success("Reintentando la música"),
+        onError: (e: unknown) =>
+          toast.error("No pudimos reintentar la música", {
+            description: e instanceof Error ? e.message : undefined,
+          }),
       },
     );
   };
@@ -300,68 +303,17 @@ function CampaignDetailPage() {
         </div>
       ) : null}
 
-      {/* Estado de generación */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-display text-lg">
-            <Layers className="h-4 w-4 text-primary" />
-            Estado de generación
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Metric
-              label="Estado del lote"
-              value={batch ? getBatchStatusLabel(batch.status) : "No generado"}
-            />
-            <Metric
-              label="Trabajos"
-              value={batchProgress.totalJobs.toLocaleString("es-ES")}
-            />
-            <Metric
-              label="Completados"
-              value={batchProgress.completedJobs.toLocaleString("es-ES")}
-            />
-            <Metric
-              label="Fallidos"
-              value={batchProgress.failedJobs.toLocaleString("es-ES")}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-
-
-      {/* Generación en curso */}
-      {isGenerating ? (
-        <Card>
-          <CardContent className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center">
-            <GenerationWaveform />
-            <div className="min-w-0 flex-1">
-              <p className="font-medium">Generando canciones…</p>
-              <p className="text-sm text-muted-foreground">
-                {campaign.generated_count.toLocaleString("es-ES")} de{" "}
-                {campaign.total_contacts.toLocaleString("es-ES")} listas
-              </p>
-              <Progress value={generatedPct} className="mt-2" />
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {/* Audio */}
-      {campaign.audio_url ? (
-        <div className="space-y-2">
-          <h2 className="font-display text-lg font-semibold">Audio</h2>
-          <AudioPlayer src={campaign.audio_url} />
-        </div>
-      ) : !isGenerating ? (
-        <Card>
-          <CardContent className="flex items-center gap-3 py-6 text-sm text-muted-foreground">
-            <Music2 className="h-5 w-5" />
-            Todavía no hay audio para esta campaña.
-          </CardContent>
-        </Card>
+      {/* Progreso de generación + canciones generadas */}
+      {hasGeneration ? (
+        <CampaignGenerationPanel
+          job={job ?? null}
+          batch={batch ?? null}
+          assets={assets ?? []}
+          isRetryingLyrics={retryLyrics.isPending}
+          isRetryingMusic={retryMusic.isPending}
+          onRetryLyrics={handleRetryLyrics}
+          onRetryMusic={handleRetryMusic}
+        />
       ) : null}
 
       {/* Configuración de AI Music Studio */}
