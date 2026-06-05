@@ -19,6 +19,11 @@ import type {
   ProviderGenerationConfig,
   ProviderMusicTrack,
 } from "./GenerationProvider";
+import {
+  KIE_INVALID_RESPONSE_ES,
+  KIE_NETWORK_ES,
+  translateKieError,
+} from "./kie-errors";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   es: "Spanish",
