@@ -66,24 +66,36 @@ export class KieLyricsProvider implements Pick<
     callBackUrl: string,
   ): Promise<LyricsRequestResult> {
     const prompt = buildLyricsPrompt(config);
-    const res = await fetch(`${this.baseUrl.replace(/\/+$/, "")}/api/v1/lyrics`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ prompt, callBackUrl }),
-    });
-    const parsed = (await res.json()) as {
-      code?: number;
-      msg?: string;
-      data?: { taskId?: string };
-    };
+    let res: Response;
+    try {
+      res = await fetch(`${this.baseUrl.replace(/\/+$/, "")}/api/v1/lyrics`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt, callBackUrl }),
+      });
+    } catch {
+      throw new Error(KIE_NETWORK_ES);
+    }
+    let parsed: { code?: number; msg?: string; data?: { taskId?: string } };
+    try {
+      parsed = (await res.json()) as {
+        code?: number;
+        msg?: string;
+        data?: { taskId?: string };
+      };
+    } catch {
+      throw new Error(KIE_INVALID_RESPONSE_ES);
+    }
     if (!res.ok || parsed.code !== 200 || !parsed.data?.taskId) {
-      throw new Error(parsed.msg ?? `Lyrics request failed (HTTP ${res.status})`);
+      const code = typeof parsed.code === "number" ? parsed.code : res.status;
+      throw new Error(translateKieError(code, parsed.msg ?? null));
     }
     return { taskId: parsed.data.taskId, prompt };
   }
+
 
   handleLyricsCallback(body: unknown): ParsedLyricsCallback {
     const root = (body ?? {}) as {
