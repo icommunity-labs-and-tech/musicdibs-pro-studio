@@ -24,7 +24,7 @@ export const KIE_CODE_MESSAGES_ES: Record<number, string> = {
   // ── Client / request errors ────────────────────────────────────────────────
   400: "La solicitud de generación no es válida. Revisa la configuración de la campaña e inténtalo de nuevo.",
   401: "El servicio de generación musical rechazó las credenciales. Contacta con soporte.",
-  402: "No hay créditos suficientes para generar la canción. Contacta con soporte para ampliar tu plan.",
+  402: "El servicio de generación no está disponible temporalmente. Inténtalo más tarde.",
   403: "El servicio de generación musical denegó el acceso a esta operación. Contacta con soporte.",
   404: "No se encontró el recurso de generación solicitado. Vuelve a iniciar la generación.",
   405: "Operación no permitida por el servicio de generación musical. Contacta con soporte.",
