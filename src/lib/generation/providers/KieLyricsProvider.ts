@@ -118,11 +118,14 @@ export class KieLyricsProvider implements Pick<
       variants.length > 0 &&
       variants[0].status === "complete" &&
       variants[0].text.length > 0;
+    const code = typeof root.code === "number" ? root.code : null;
     return {
       ok,
       taskId: root.data?.task_id ?? null,
       variants,
-      errorMessage: ok ? null : root.msg ?? "Lyrics generation failed",
+      errorMessage: ok
+        ? null
+        : translateKieError(code === 200 ? 501 : code, root.msg ?? null),
     };
   }
 
@@ -134,3 +137,4 @@ export class KieLyricsProvider implements Pick<
     throw new Error("KieLyricsProvider does not handle music callbacks.");
   }
 }
+
