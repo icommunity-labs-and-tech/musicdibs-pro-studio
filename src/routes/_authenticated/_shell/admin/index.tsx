@@ -17,7 +17,7 @@ import {
   type ChurnSignal,
 } from "@/hooks/use-admin";
 
-export const Route = createFileRoute("/_authenticated/admin/")({
+export const Route = createFileRoute("/_authenticated/_shell/admin/")({
   head: () => ({ meta: [{ title: "Admin · Musicdibs Enterprise" }] }),
   component: AdminPage,
 });

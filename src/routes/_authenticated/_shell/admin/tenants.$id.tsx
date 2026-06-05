@@ -27,7 +27,7 @@ import {
   useAdminChangePlan,
 } from "@/hooks/use-admin";
 
-export const Route = createFileRoute("/_authenticated/admin/tenants/$id")({
+export const Route = createFileRoute("/_authenticated/_shell/admin/tenants/$id")({
   head: () => ({ meta: [{ title: "Tenant · Admin · Musicdibs Enterprise" }] }),
   component: TenantDetailPage,
 });
