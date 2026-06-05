@@ -21,7 +21,9 @@ import { Route as BancaRouteImport } from './routes/banca'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedShellRouteImport } from './routes/_authenticated/_shell'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedShellTeamRouteImport } from './routes/_authenticated/_shell/team'
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
 import { Route as AuthenticatedShellDevelopersRouteImport } from './routes/_authenticated/_shell/developers'
@@ -30,6 +32,7 @@ import { Route as AuthenticatedShellContactsRouteImport } from './routes/_authen
 import { Route as AuthenticatedShellAuditLogRouteImport } from './routes/_authenticated/_shell/audit-log'
 import { Route as AuthenticatedShellAnalyticsRouteImport } from './routes/_authenticated/_shell/analytics'
 import { Route as AuthenticatedShellCampaignsIndexRouteImport } from './routes/_authenticated/_shell/campaigns.index'
+import { Route as AuthenticatedAdminTenantsIdRouteImport } from './routes/_authenticated/admin/tenants.$id'
 import { Route as AuthenticatedShellCampaignsNewRouteImport } from './routes/_authenticated/_shell/campaigns.new'
 import { Route as AuthenticatedShellCampaignsIdIndexRouteImport } from './routes/_authenticated/_shell/campaigns.$id.index'
 import { Route as AuthenticatedShellCampaignsIdQueueRouteImport } from './routes/_authenticated/_shell/campaigns.$id.queue'
@@ -93,9 +96,19 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedShellRoute = AuthenticatedShellRouteImport.update({
   id: '/_shell',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
 const AuthenticatedShellTeamRoute = AuthenticatedShellTeamRouteImport.update({
   id: '/team',
@@ -144,6 +157,12 @@ const AuthenticatedShellCampaignsIndexRoute =
     path: '/campaigns/',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
+const AuthenticatedAdminTenantsIdRoute =
+  AuthenticatedAdminTenantsIdRouteImport.update({
+    id: '/tenants/$id',
+    path: '/tenants/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedShellCampaignsNewRoute =
   AuthenticatedShellCampaignsNewRouteImport.update({
     id: '/campaigns/new',
@@ -174,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/styleguide': typeof StyleguideRoute
   '/telco': typeof TelcoRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/audit-log': typeof AuthenticatedShellAuditLogRoute
@@ -182,7 +202,9 @@ export interface FileRoutesByFullPath {
   '/developers': typeof AuthenticatedShellDevelopersRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/team': typeof AuthenticatedShellTeamRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/campaigns/new': typeof AuthenticatedShellCampaignsNewRoute
+  '/admin/tenants/$id': typeof AuthenticatedAdminTenantsIdRoute
   '/campaigns/': typeof AuthenticatedShellCampaignsIndexRoute
   '/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/campaigns/$id/': typeof AuthenticatedShellCampaignsIdIndexRoute
@@ -206,7 +228,9 @@ export interface FileRoutesByTo {
   '/developers': typeof AuthenticatedShellDevelopersRoute
   '/settings': typeof AuthenticatedShellSettingsRoute
   '/team': typeof AuthenticatedShellTeamRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/campaigns/new': typeof AuthenticatedShellCampaignsNewRoute
+  '/admin/tenants/$id': typeof AuthenticatedAdminTenantsIdRoute
   '/campaigns': typeof AuthenticatedShellCampaignsIndexRoute
   '/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/campaigns/$id': typeof AuthenticatedShellCampaignsIdIndexRoute
@@ -225,6 +249,7 @@ export interface FileRoutesById {
   '/styleguide': typeof StyleguideRoute
   '/telco': typeof TelcoRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteWithChildren
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/_shell/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/_authenticated/_shell/audit-log': typeof AuthenticatedShellAuditLogRoute
@@ -233,7 +258,9 @@ export interface FileRoutesById {
   '/_authenticated/_shell/developers': typeof AuthenticatedShellDevelopersRoute
   '/_authenticated/_shell/settings': typeof AuthenticatedShellSettingsRoute
   '/_authenticated/_shell/team': typeof AuthenticatedShellTeamRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/_shell/campaigns/new': typeof AuthenticatedShellCampaignsNewRoute
+  '/_authenticated/admin/tenants/$id': typeof AuthenticatedAdminTenantsIdRoute
   '/_authenticated/_shell/campaigns/': typeof AuthenticatedShellCampaignsIndexRoute
   '/_authenticated/_shell/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/_authenticated/_shell/campaigns/$id/': typeof AuthenticatedShellCampaignsIdIndexRoute
@@ -251,6 +278,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/styleguide'
     | '/telco'
+    | '/admin'
     | '/onboarding'
     | '/analytics'
     | '/audit-log'
@@ -259,7 +287,9 @@ export interface FileRouteTypes {
     | '/developers'
     | '/settings'
     | '/team'
+    | '/admin/'
     | '/campaigns/new'
+    | '/admin/tenants/$id'
     | '/campaigns/'
     | '/campaigns/$id/queue'
     | '/campaigns/$id/'
@@ -283,7 +313,9 @@ export interface FileRouteTypes {
     | '/developers'
     | '/settings'
     | '/team'
+    | '/admin'
     | '/campaigns/new'
+    | '/admin/tenants/$id'
     | '/campaigns'
     | '/campaigns/$id/queue'
     | '/campaigns/$id'
@@ -301,6 +333,7 @@ export interface FileRouteTypes {
     | '/styleguide'
     | '/telco'
     | '/_authenticated/_shell'
+    | '/_authenticated/admin'
     | '/_authenticated/onboarding'
     | '/_authenticated/_shell/analytics'
     | '/_authenticated/_shell/audit-log'
@@ -309,7 +342,9 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/developers'
     | '/_authenticated/_shell/settings'
     | '/_authenticated/_shell/team'
+    | '/_authenticated/admin/'
     | '/_authenticated/_shell/campaigns/new'
+    | '/_authenticated/admin/tenants/$id'
     | '/_authenticated/_shell/campaigns/'
     | '/_authenticated/_shell/campaigns/$id/queue'
     | '/_authenticated/_shell/campaigns/$id/'
@@ -415,12 +450,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/_shell': {
       id: '/_authenticated/_shell'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedShellRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/_shell/team': {
       id: '/_authenticated/_shell/team'
@@ -477,6 +526,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/campaigns/'
       preLoaderRoute: typeof AuthenticatedShellCampaignsIndexRouteImport
       parentRoute: typeof AuthenticatedShellRoute
+    }
+    '/_authenticated/admin/tenants/$id': {
+      id: '/_authenticated/admin/tenants/$id'
+      path: '/tenants/$id'
+      fullPath: '/admin/tenants/$id'
+      preLoaderRoute: typeof AuthenticatedAdminTenantsIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/_shell/campaigns/new': {
       id: '/_authenticated/_shell/campaigns/new'
@@ -535,13 +591,28 @@ const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
 const AuthenticatedShellRouteWithChildren =
   AuthenticatedShellRoute._addFileChildren(AuthenticatedShellRouteChildren)
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminTenantsIdRoute: typeof AuthenticatedAdminTenantsIdRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminTenantsIdRoute: AuthenticatedAdminTenantsIdRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedShellRoute: typeof AuthenticatedShellRouteWithChildren
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedShellRoute: AuthenticatedShellRouteWithChildren,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
 }
 
@@ -565,3 +636,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
