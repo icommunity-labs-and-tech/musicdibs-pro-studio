@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  CheckCircle2,
   Layers,
   ListChecks,
   Loader2,
@@ -12,7 +11,6 @@ import {
   RefreshCw,
   Sparkles,
   Wand2,
-  XCircle,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
