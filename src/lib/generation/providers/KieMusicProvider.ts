@@ -19,6 +19,11 @@ import type {
   ProviderGenerationConfig,
   ProviderMusicTrack,
 } from "./GenerationProvider";
+import {
+  KIE_INVALID_RESPONSE_ES,
+  KIE_NETWORK_ES,
+  translateKieError,
+} from "./kie-errors";
 
 const LANGUAGE_NAMES: Record<string, string> = {
   es: "Spanish",
@@ -75,32 +80,44 @@ export class KieMusicProvider implements Pick<
   ): Promise<MusicRequestResult> {
     const style = buildMusicStyle(params.config);
     const title = buildMusicTitle(params.lyricsTitle);
-    const res = await fetch(`${this.baseUrl.replace(/\/+$/, "")}/api/v1/generate`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt: truncate(params.lyrics, 5000),
-        customMode: true,
-        instrumental: false,
-        model: "V4_5",
-        style,
-        title,
-        callBackUrl,
-      }),
-    });
-    const parsed = (await res.json()) as {
-      code?: number;
-      msg?: string;
-      data?: { taskId?: string };
-    };
+    let res: Response;
+    try {
+      res = await fetch(`${this.baseUrl.replace(/\/+$/, "")}/api/v1/generate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: truncate(params.lyrics, 5000),
+          customMode: true,
+          instrumental: false,
+          model: "V4_5",
+          style,
+          title,
+          callBackUrl,
+        }),
+      });
+    } catch {
+      throw new Error(KIE_NETWORK_ES);
+    }
+    let parsed: { code?: number; msg?: string; data?: { taskId?: string } };
+    try {
+      parsed = (await res.json()) as {
+        code?: number;
+        msg?: string;
+        data?: { taskId?: string };
+      };
+    } catch {
+      throw new Error(KIE_INVALID_RESPONSE_ES);
+    }
     if (!res.ok || parsed.code !== 200 || !parsed.data?.taskId) {
-      throw new Error(parsed.msg ?? `Music request failed (HTTP ${res.status})`);
+      const code = typeof parsed.code === "number" ? parsed.code : res.status;
+      throw new Error(translateKieError(code, parsed.msg ?? null));
     }
     return { taskId: parsed.data.taskId, style, title };
   }
+
 
   handleMusicCallback(body: unknown): ParsedMusicCallback {
     const root = (body ?? {}) as {
@@ -123,14 +140,18 @@ export class KieMusicProvider implements Pick<
       }));
     const callbackType = root.data?.callbackType ?? null;
     const isError = root.code !== 200 || callbackType === "error";
+    const code = typeof root.code === "number" ? root.code : null;
     return {
       ok: !isError,
       complete: callbackType === "complete" && tracks.length > 0,
       taskId: root.data?.task_id ?? null,
       tracks,
-      errorMessage: isError ? root.msg ?? "Music generation failed" : null,
+      errorMessage: isError
+        ? translateKieError(code === 200 ? 501 : code, root.msg ?? null)
+        : null,
     };
   }
+
 
   // Not implemented by the music provider.
   generateLyrics(): Promise<LyricsRequestResult> {

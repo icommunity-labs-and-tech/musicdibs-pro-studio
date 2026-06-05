@@ -4,6 +4,10 @@
 // "copy provider media into Supabase Storage" workflow.
 // ============================================================================
 
+import { KIE_DOWNLOAD_ES } from "./kie-errors.ts";
+
+
+
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -100,18 +104,38 @@ export async function downloadAndStore(
   contentType: string,
 ): Promise<StoredFile> {
   log("storage", "download_start", { storagePath });
-  const res = await fetch(sourceUrl);
+
+  // Fetch the provider-generated media. Any transport/HTTP failure becomes a
+  // customer-safe Spanish message; the raw detail stays in the logs only.
+  let res: Response;
+  try {
+    res = await fetch(sourceUrl);
+  } catch (networkErr) {
+    log("storage", "download_network_error", {
+      storagePath,
+      message: networkErr instanceof Error ? networkErr.message : "unknown",
+    });
+    throw new Error(KIE_DOWNLOAD_ES);
+  }
   if (!res.ok) {
-    throw new Error(`Failed to download asset (HTTP ${res.status})`);
+    log("storage", "download_failed", { storagePath, httpStatus: res.status });
+    throw new Error(KIE_DOWNLOAD_ES);
   }
   const bytes = new Uint8Array(await res.arrayBuffer());
 
   const { error } = await supabase.storage
     .from(STORAGE_BUCKET)
     .upload(storagePath, bytes, { contentType, upsert: true });
-  if (error) throw new Error(`Storage upload failed: ${error.message}`);
+  if (error) {
+    log("storage", "upload_failed", {
+      storagePath,
+      message: error.message ?? "unknown",
+    });
+    throw new Error(KIE_DOWNLOAD_ES);
+  }
 
   const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
   log("storage", "upload_done", { storagePath, bytes: bytes.length });
   return { storagePath, publicUrl: data.publicUrl as string };
 }
+

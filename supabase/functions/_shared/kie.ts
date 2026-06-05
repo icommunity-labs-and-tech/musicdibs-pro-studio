@@ -11,7 +11,19 @@
 //
 // BRANDING: nothing here is ever surfaced to customers. The UI only shows
 // "Powered by AI Music Studio".
+//
+// ERROR HANDLING: every request and callback funnels its failures through the
+// KIE/Suno error catalogue (kie-errors.ts) so no raw/English provider error is
+// ever stored or shown — all user-facing messages are Spanish.
 // ============================================================================
+
+import {
+  KIE_CODE_MESSAGES_ES,
+  KIE_INVALID_RESPONSE_ES,
+  KIE_NETWORK_ES,
+  KieError,
+  translateKieError,
+} from "./kie-errors.ts";
 
 // ── Config shapes (mirror campaign_generation_configs) ──────────────────────
 export interface GenerationConfigInput {
@@ -124,32 +136,54 @@ export class KieClient {
     path: string,
     body: Record<string, unknown>,
   ): Promise<{ taskId: string }> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+    // ── Transport layer (network / fetch failures) ──────────────────────────
+    let res: Response;
+    try {
+      res = await fetch(`${this.baseUrl}${path}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (networkErr) {
+      // Network/DNS/timeout: no business code available.
+      throw new KieError({
+        userMessage: KIE_NETWORK_ES,
+        rawMessage:
+          networkErr instanceof Error ? networkErr.message : String(networkErr),
+      });
+    }
 
+    // ── Body parsing (non-JSON / malformed responses) ───────────────────────
     let parsed: { code?: number; msg?: string; data?: { taskId?: string } };
     try {
       parsed = await res.json();
     } catch {
-      throw new Error(`KIE returned non-JSON response (HTTP ${res.status})`);
+      // Use the HTTP status as the business code when the body isn't JSON so a
+      // documented 4xx/5xx still maps to a precise Spanish message.
+      if (typeof KIE_CODE_MESSAGES_ES[res.status] === "undefined") {
+        throw new KieError({ userMessage: KIE_INVALID_RESPONSE_ES, httpStatus: res.status });
+      }
+      throw new KieError({ code: res.status, httpStatus: res.status });
     }
 
+
+    // ── Business layer (documented KIE/Suno codes) ──────────────────────────
     if (!res.ok || parsed.code !== 200 || !parsed.data?.taskId) {
-      throw new Error(
-        `KIE request failed (HTTP ${res.status}, code ${parsed.code}): ${
-          parsed.msg ?? "unknown error"
-        }`,
-      );
+      // Prefer the documented business code; fall back to the HTTP status.
+      const code = typeof parsed.code === "number" ? parsed.code : res.status;
+      throw new KieError({
+        code,
+        rawMessage: parsed.msg ?? null,
+        httpStatus: res.status,
+      });
     }
 
     return { taskId: parsed.data.taskId };
   }
+
 
   /** POST /api/v1/lyrics — returns the lyrics task id. */
   async generateLyrics(
@@ -225,13 +259,20 @@ export function parseLyricsCallback(body: unknown): ParsedLyricsCallback {
     variants[0].status === "complete" &&
     variants[0].text.length > 0;
 
+  // Translate the documented code to Spanish. When the transport code is 200
+  // but the content itself failed (no usable variant), treat it as a failed
+  // generation (501) so the user still gets a clear, actionable message.
+  const code = typeof root.code === "number" ? root.code : null;
   return {
     ok: firstOk,
     taskId,
     variants,
-    errorMessage: firstOk ? null : root.msg ?? "Lyrics generation failed",
+    errorMessage: firstOk
+      ? null
+      : translateKieError(code === 200 ? 501 : code, root.msg ?? null),
   };
 }
+
 
 export interface ParsedMusicCallback {
   ok: boolean;
@@ -275,12 +316,18 @@ export function parseMusicCallback(body: unknown): ParsedMusicCallback {
   const isError = root.code !== 200 || callbackType === "error";
   const complete = callbackType === "complete";
 
+  // Translate the documented code to Spanish. A 200 transport code paired with
+  // an "error" callbackType means the generation itself failed → map to 501.
+  const code = typeof root.code === "number" ? root.code : null;
   return {
     ok: !isError,
     complete: complete && tracks.length > 0,
     taskId,
     callbackType,
     tracks,
-    errorMessage: isError ? root.msg ?? "Music generation failed" : null,
+    errorMessage: isError
+      ? translateKieError(code === 200 ? 501 : code, root.msg ?? null)
+      : null,
   };
+
 }
