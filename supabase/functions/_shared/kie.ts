@@ -316,12 +316,18 @@ export function parseMusicCallback(body: unknown): ParsedMusicCallback {
   const isError = root.code !== 200 || callbackType === "error";
   const complete = callbackType === "complete";
 
+  // Translate the documented code to Spanish. A 200 transport code paired with
+  // an "error" callbackType means the generation itself failed → map to 501.
+  const code = typeof root.code === "number" ? root.code : null;
   return {
     ok: !isError,
     complete: complete && tracks.length > 0,
     taskId,
     callbackType,
     tracks,
-    errorMessage: isError ? root.msg ?? "Music generation failed" : null,
+    errorMessage: isError
+      ? translateKieError(code === 200 ? 501 : code, root.msg ?? null)
+      : null,
   };
+
 }
