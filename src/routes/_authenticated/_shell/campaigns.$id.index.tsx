@@ -183,7 +183,9 @@ function CampaignDetailPage() {
   const batchProgress = getBatchProgress(batch ?? null);
 
   // Confirmation modal inputs. Single song = 1 job; personalized = 1 per contact.
-  const generationMode = configSummary?.generationMode ?? null;
+  const generationMode = (configSummary?.generationMode || null) as
+    | GenerationMode
+    | null;
   const audienceSize =
     configSummary?.audienceSize ?? campaign.total_contacts ?? 0;
   const estimatedCredits = configSummary?.estimatedCredits ?? 0;
