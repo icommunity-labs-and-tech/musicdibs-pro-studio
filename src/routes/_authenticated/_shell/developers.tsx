@@ -7,6 +7,7 @@ import {
   KeyRound,
   Loader2,
   Plus,
+  Save,
   Trash2,
   Webhook,
 } from "lucide-react";
