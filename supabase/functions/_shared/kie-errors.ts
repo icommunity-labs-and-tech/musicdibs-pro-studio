@@ -63,6 +63,8 @@ export function translateKieError(
 /**
  * Error thrown by the KIE provider layer. Carries the customer-safe Spanish
  * message (in `message`) plus the original code/raw text for server logs only.
+ * Pass `userMessage` to override the catalogue lookup for transport-level
+ * failures (network, malformed body) that have no documented business code.
  */
 export class KieError extends Error {
   readonly code: number | null;
@@ -73,14 +75,16 @@ export class KieError extends Error {
     code?: number | null;
     rawMessage?: string | null;
     httpStatus?: number | null;
+    userMessage?: string;
   }) {
-    super(translateKieError(opts.code ?? null, opts.rawMessage ?? null));
+    super(opts.userMessage ?? translateKieError(opts.code ?? null, opts.rawMessage ?? null));
     this.name = "KieError";
     this.code = opts.code ?? null;
     this.rawMessage = opts.rawMessage ?? null;
     this.httpStatus = opts.httpStatus ?? null;
   }
 }
+
 
 /** Spanish message for transport-level failures (network, non-JSON, etc.). */
 export const KIE_NETWORK_ES =
