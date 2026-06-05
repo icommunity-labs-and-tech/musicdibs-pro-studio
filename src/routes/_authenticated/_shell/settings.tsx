@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { KeyRound, Loader2, Save } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAuth } from "@/components/auth/auth-provider";
@@ -37,35 +37,26 @@ function SettingsPage() {
       <div>
         <h1 className="font-display text-2xl font-bold sm:text-3xl">Ajustes</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Configura tu espacio de trabajo y las integraciones de envío.
+          Configura tu espacio de trabajo.
         </p>
       </div>
 
       {settings.isLoading ? (
-        <>
-          <Skeleton className="h-48 rounded-2xl" />
-          <Skeleton className="h-56 rounded-2xl" />
-        </>
+        <Skeleton className="h-48 rounded-2xl" />
       ) : (
-        <>
-          <ProfileCard
-            tenantId={tenantId}
-            tenantName={tenant?.name ?? ""}
-            plan={tenant?.plan}
-            onTenantUpdated={refresh}
-            supportEmail={settings.data?.support_email ?? ""}
-            website={settings.data?.website ?? ""}
-          />
-          <ApiKeysCard
-            tenantId={tenantId}
-            mailerlite={settings.data?.api_keys.mailerlite ?? ""}
-            brevo={settings.data?.api_keys.brevo ?? ""}
-          />
-        </>
+        <ProfileCard
+          tenantId={tenantId}
+          tenantName={tenant?.name ?? ""}
+          plan={tenant?.plan}
+          onTenantUpdated={refresh}
+          supportEmail={settings.data?.support_email ?? ""}
+          website={settings.data?.website ?? ""}
+        />
       )}
     </div>
   );
 }
+
 
 function ProfileCard({
   tenantId,
