@@ -32,24 +32,49 @@ export const GENERATION_MODES: GenerationModeMeta[] = [
     value: "personalized_song",
     label: "Campaña de canción personalizada",
     description: "Genera una canción única por destinatario.",
-    creditLabel: "1 crédito por contacto",
+    creditLabel: "1 crédito por contacto (mínimo 100 créditos)",
   },
 ];
 
+/**
+ * Minimum credit cost for ANY campaign, regardless of type. Personalized
+ * campaigns below this contact count are still billed at this floor.
+ */
+export const MINIMUM_CAMPAIGN_CREDITS = 100;
+
 /** Fixed credit cost for a single-song campaign. */
-export const SINGLE_SONG_CREDITS = 100;
+export const SINGLE_SONG_CREDITS = MINIMUM_CAMPAIGN_CREDITS;
 
 /** Credit cost per contact for a personalized-song campaign. */
 export const PERSONALIZED_SONG_CREDITS_PER_CONTACT = 1;
 
-export function estimateCredits(
+/**
+ * Single source of truth for estimated campaign credit cost.
+ *
+ *   single_song        → fixed 100 credits
+ *   personalized_song  → max(100, contactsCount)  (1 credit per recipient,
+ *                        with a 100-credit minimum campaign cost)
+ *
+ * Use this everywhere (Builder, Review, Campaign Detail, Generation Modal,
+ * future billing). Do NOT duplicate this logic.
+ */
+export function calculateEstimatedCredits(
   mode: GenerationMode | "",
   contactsCount: number,
 ): number {
   if (mode === "single_song") return SINGLE_SONG_CREDITS;
-  if (mode === "personalized_song") return contactsCount;
+  if (mode === "personalized_song") {
+    const contacts = Number.isFinite(contactsCount) ? Math.max(0, Math.floor(contactsCount)) : 0;
+    return Math.max(
+      MINIMUM_CAMPAIGN_CREDITS,
+      contacts * PERSONALIZED_SONG_CREDITS_PER_CONTACT,
+    );
+  }
   return 0;
 }
+
+/** @deprecated Use {@link calculateEstimatedCredits}. Kept as an alias. */
+export const estimateCredits = calculateEstimatedCredits;
 
 export const GENERATION_MUSIC_STYLES: { value: string; label: string }[] = [
   { value: "pop", label: "Pop" },
