@@ -28,6 +28,7 @@ import {
 } from "@/lib/campaign-generation-summary";
 import {
   AI_MUSIC_STUDIO,
+  calculateEstimatedCredits,
   type GenerationMode,
 } from "@/lib/campaign-generation-options";
 import { getProviderMeta } from "@/lib/providers";
@@ -138,8 +139,12 @@ function CampaignDetailPage() {
       language: config?.language ?? campaign.language ?? null,
       mood: config?.mood ?? campaign.tone ?? null,
       includeFirstName: config?.include_first_name ?? false,
-      estimatedCredits:
-        config?.estimated_credits ?? Number(campaign.cost_estimate ?? 0),
+      // Always derived from the shared helper — never trust stored values so
+      // every screen shows the same number under the current pricing rule.
+      estimatedCredits: calculateEstimatedCredits(
+        (config?.generation_mode ?? campaign.type ?? "") as GenerationMode | "",
+        campaign.total_contacts ?? audience?.contacts_count ?? 0,
+      ),
     };
   }, [data, config, audiences, connections]);
 

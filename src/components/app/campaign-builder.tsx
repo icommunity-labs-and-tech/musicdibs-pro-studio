@@ -38,7 +38,7 @@ import {
   GENERATION_MOODS,
   GENERATION_MUSIC_STYLES,
   VOICE_TYPES,
-  estimateCredits,
+  calculateEstimatedCredits,
   type GenerationLanguage,
   type GenerationMode,
   type VoiceType,
@@ -151,7 +151,7 @@ export function CampaignBuilder({
 
   const estimatedCredits = useMemo(
     () =>
-      estimateCredits(
+      calculateEstimatedCredits(
         state.generationMode,
         selectedAudience?.contacts_count ?? 0,
       ),
@@ -539,13 +539,21 @@ function StepAudience({
       </div>
 
       {selectedId && generationMode !== "" && (
-        <div className="flex items-center justify-between rounded-xl border border-primary/40 bg-primary/5 p-4">
-          <span className="text-sm text-muted-foreground">
-            Créditos estimados
-          </span>
-          <span className="font-display text-lg font-bold text-primary">
-            {estimatedCredits.toLocaleString("es-ES")}
-          </span>
+        <div className="space-y-2 rounded-xl border border-primary/40 bg-primary/5 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              Créditos estimados
+            </span>
+            <span className="font-display text-lg font-bold text-primary">
+              {estimatedCredits.toLocaleString("es-ES")}
+            </span>
+          </div>
+          {generationMode === "personalized_song" && (
+            <p className="text-xs text-muted-foreground">
+              Las campañas personalizadas consumen 1 crédito por destinatario,
+              con un coste mínimo por campaña de 100 créditos.
+            </p>
+          )}
         </div>
       )}
     </>

@@ -34,6 +34,7 @@ import {
   type ProviderConnection,
 } from "@/hooks/use-providers";
 import { PROVIDERS, type ProviderMeta, type ProviderStatus } from "@/lib/providers";
+import { calculateEstimatedCredits } from "@/lib/campaign-generation-options";
 
 // Providers with a real metadata-sync integration available today.
 const SYNC_ENABLED: Record<string, boolean> = { mailerlite: true, brevo: false };
@@ -318,9 +319,12 @@ function AudiencesSection({ tenantId }: { tenantId: string | undefined }) {
         ) : (
           <div className="space-y-2">
             {audiences.data!.map((a) => {
-              // Estimated personalized campaign cost: 1 credit per contact.
-              // Display only — the credit engine is not implemented yet.
-              const estimatedCredits = a.contacts_count;
+              // Estimated personalized campaign cost via the shared helper:
+              // 1 credit per contact with a 100-credit minimum. Display only.
+              const estimatedCredits = calculateEstimatedCredits(
+                "personalized_song",
+                a.contacts_count,
+              );
               return (
                 <div
                   key={a.id}
@@ -345,7 +349,7 @@ function AudiencesSection({ tenantId }: { tenantId: string | undefined }) {
                   <Badge
                     variant="outline"
                     className="gap-1"
-                    title="Coste estimado: 1 crédito por contacto"
+                    title="Las campañas personalizadas consumen 1 crédito por destinatario, con un coste mínimo por campaña de 100 créditos."
                   >
                     <Coins className="h-3 w-3" />
                     {numberFmt.format(estimatedCredits)} créditos
