@@ -47,6 +47,10 @@ import {
   type ApiKeyItem,
   type WebhookItem,
 } from "@/hooks/use-developers";
+import {
+  useTenantSettings,
+  useUpdateTenantSettings,
+} from "@/hooks/use-tenant-settings";
 
 export const Route = createFileRoute("/_authenticated/_shell/developers")({
   head: () => ({ meta: [{ title: "Desarrolladores · Musicdibs Enterprise" }] }),
