@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Layers,
   ListChecks,
   Loader2,
   Music2,
@@ -18,7 +19,7 @@ import { AudioPlayer } from "@/components/app/audio-player";
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
 import { GenerationWaveform } from "@/components/app/generation-waveform";
 import { useAuth } from "@/components/auth/auth-provider";
-import { Badge } from "@/components/ui/badge";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -29,7 +30,10 @@ import {
   buildCampaignConfigRows,
   type CampaignConfigSummary,
 } from "@/lib/campaign-generation-summary";
-import { AI_MUSIC_STUDIO } from "@/lib/campaign-generation-options";
+import {
+  AI_MUSIC_STUDIO,
+  type GenerationMode,
+} from "@/lib/campaign-generation-options";
 import { getProviderMeta } from "@/lib/providers";
 import {
   useCampaignDetail,
@@ -40,6 +44,9 @@ import {
   useProviderAudiences,
   useProviderConnections,
 } from "@/hooks/use-providers";
+import { useCampaignBatch, useGenerateCampaign } from "@/hooks/use-generation";
+import { getBatchProgress } from "@/lib/generation";
+import { GenerateCampaignDialog } from "@/components/app/generate-campaign-dialog";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/$id/")({
   head: () => ({ meta: [{ title: "Campaña · Musicdibs Enterprise" }] }),
@@ -56,6 +63,20 @@ function formatDateTime(iso: string): string {
   });
 }
 
+const BATCH_STATUS_LABELS: Record<string, string> = {
+  draft: "Borrador",
+  queued: "En cola",
+  processing: "Procesando",
+  completed: "Completado",
+  failed: "Fallido",
+};
+
+function getBatchStatusLabel(status: string): string {
+  return BATCH_STATUS_LABELS[status] ?? status;
+}
+
+
+
 function CampaignDetailPage() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
@@ -64,6 +85,10 @@ function CampaignDetailPage() {
   const { data: config } = useCampaignGenerationConfig(id);
   const { data: audiences } = useProviderAudiences(tenant?.id);
   const { data: connections } = useProviderConnections(tenant?.id);
+
+  const { data: batch } = useCampaignBatch(id);
+  const generateCampaign = useGenerateCampaign();
+  const [generateOpen, setGenerateOpen] = useState(false);
 
   useGenerationJobsRealtime(id);
 
@@ -156,6 +181,45 @@ function CampaignDetailPage() {
       ? Math.round((campaign.generated_count / campaign.total_contacts) * 100)
       : 0;
 
+  // Generation Status panel — derived from the latest batch (placeholder
+  // zeros until a batch exists). No generation runs in this sprint.
+  const batchProgress = getBatchProgress(batch ?? null);
+
+  // Confirmation modal inputs. Single song = 1 job; personalized = 1 per contact.
+  const generationMode = (configSummary?.generationMode || null) as
+    | GenerationMode
+    | null;
+  const audienceSize =
+    configSummary?.audienceSize ?? campaign.total_contacts ?? 0;
+  const estimatedCredits = configSummary?.estimatedCredits ?? 0;
+  const totalJobs = generationMode === "single_song" ? 1 : audienceSize;
+
+  const handleConfirmGeneration = () => {
+    if (!tenant?.id || !generationMode) return;
+    generateCampaign.mutate(
+      {
+        tenantId: tenant.id,
+        campaignId: id,
+        generationMode,
+        totalJobs,
+        estimatedCredits,
+      },
+      {
+        onSuccess: () => {
+          setGenerateOpen(false);
+          toast.success("Lote de generación creado", {
+            description: "La campaña está lista para generar.",
+          });
+        },
+        onError: (e: unknown) => {
+          toast.error("No pudimos crear el lote de generación", {
+            description: e instanceof Error ? e.message : undefined,
+          });
+        },
+      },
+    );
+  };
+
   const openRate =
     stats && stats.emails_sent > 0
       ? (stats.emails_opened / stats.emails_sent) * 100
@@ -226,19 +290,47 @@ function CampaignDetailPage() {
             </Link>
           </Button>
           <Button
-            variant="secondary"
-            disabled
-            className="relative sm:w-auto"
-            title="Disponible próximamente"
+            className="sm:w-auto"
+            onClick={() => setGenerateOpen(true)}
+            disabled={!generationMode}
           >
             <Wand2 className="mr-1.5 h-4 w-4" />
             Generar campaña
-            <Badge variant="secondary" className="ml-2 bg-muted text-xs">
-              Próximamente
-            </Badge>
           </Button>
         </div>
       ) : null}
+
+      {/* Estado de generación */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 font-display text-lg">
+            <Layers className="h-4 w-4 text-primary" />
+            Estado de generación
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Metric
+              label="Estado del lote"
+              value={batch ? getBatchStatusLabel(batch.status) : "No generado"}
+            />
+            <Metric
+              label="Trabajos"
+              value={batchProgress.totalJobs.toLocaleString("es-ES")}
+            />
+            <Metric
+              label="Completados"
+              value={batchProgress.completedJobs.toLocaleString("es-ES")}
+            />
+            <Metric
+              label="Fallidos"
+              value={batchProgress.failedJobs.toLocaleString("es-ES")}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+
 
       {/* Generación en curso */}
       {isGenerating ? (
@@ -357,6 +449,17 @@ function CampaignDetailPage() {
           </dl>
         </CardContent>
       </Card>
+
+      <GenerateCampaignDialog
+        open={generateOpen}
+        onOpenChange={setGenerateOpen}
+        campaignName={campaign.name}
+        generationMode={generationMode}
+        audienceSize={audienceSize}
+        estimatedCredits={estimatedCredits}
+        isPending={generateCampaign.isPending}
+        onConfirm={handleConfirmGeneration}
+      />
     </div>
   );
 }
