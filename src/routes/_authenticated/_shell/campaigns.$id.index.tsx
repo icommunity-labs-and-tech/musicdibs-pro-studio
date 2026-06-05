@@ -444,6 +444,17 @@ function CampaignDetailPage() {
           </dl>
         </CardContent>
       </Card>
+
+      <GenerateCampaignDialog
+        open={generateOpen}
+        onOpenChange={setGenerateOpen}
+        campaignName={campaign.name}
+        generationMode={generationMode}
+        audienceSize={audienceSize}
+        estimatedCredits={estimatedCredits}
+        isPending={generateCampaign.isPending}
+        onConfirm={handleConfirmGeneration}
+      />
     </div>
   );
 }
