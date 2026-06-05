@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -5,7 +6,10 @@ import {
   ListChecks,
   Loader2,
   Music2,
+  Pencil,
   RefreshCw,
+  Sparkles,
+  Wand2,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -13,15 +17,29 @@ import { toast } from "sonner";
 import { AudioPlayer } from "@/components/app/audio-player";
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
 import { GenerationWaveform } from "@/components/app/generation-waveform";
+import { useAuth } from "@/components/auth/auth-provider";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
+import { isCampaignEditable } from "@/lib/campaign-status";
+import {
+  buildCampaignConfigRows,
+  type CampaignConfigSummary,
+} from "@/lib/campaign-generation-summary";
+import { AI_MUSIC_STUDIO } from "@/lib/campaign-generation-options";
+import { getProviderMeta } from "@/lib/providers";
 import {
   useCampaignDetail,
   useGenerationJobsRealtime,
 } from "@/hooks/use-campaign-detail";
+import { useCampaignGenerationConfig } from "@/hooks/use-campaign-generation-config";
+import {
+  useProviderAudiences,
+  useProviderConnections,
+} from "@/hooks/use-providers";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/$id/")({
   head: () => ({ meta: [{ title: "Campaña · Musicdibs Enterprise" }] }),
@@ -41,7 +59,11 @@ function formatDateTime(iso: string): string {
 function CampaignDetailPage() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
+  const { tenant } = useAuth();
   const { data, isLoading, isError, refetch } = useCampaignDetail(id);
+  const { data: config } = useCampaignGenerationConfig(id);
+  const { data: audiences } = useProviderAudiences(tenant?.id);
+  const { data: connections } = useProviderConnections(tenant?.id);
 
   useGenerationJobsRealtime(id);
 
@@ -62,6 +84,49 @@ function CampaignDetailPage() {
       });
     },
   });
+
+  // Single source of truth: same mapping the Builder Review uses.
+  const configSummary = useMemo<CampaignConfigSummary | null>(() => {
+    if (!data) return null;
+    const { campaign } = data;
+
+    const audience = config?.provider_audience_id
+      ? (audiences ?? []).find((a) => a.id === config.provider_audience_id) ??
+        null
+      : null;
+
+    let providerLabel: string | null = null;
+    if (config?.provider_connection_id) {
+      const connection = (connections ?? []).find(
+        (c) => c.id === config.provider_connection_id,
+      );
+      if (connection) {
+        try {
+          providerLabel = getProviderMeta(connection.provider_type).label;
+        } catch {
+          providerLabel = connection.provider_type;
+        }
+      }
+    }
+
+    return {
+      generationMode: (config?.generation_mode ?? campaign.type ?? null) as
+        | CampaignConfigSummary["generationMode"],
+      audienceName: audience?.name ?? null,
+      audienceSize: campaign.total_contacts ?? audience?.contacts_count ?? null,
+      providerLabel,
+      lyricsGoal: config?.lyrics_goal ?? campaign.goal ?? null,
+      lyricsPrompt: config?.lyrics_prompt ?? campaign.ai_prompt ?? null,
+      musicStyle: config?.music_style ?? campaign.music_style ?? null,
+      voiceType: (config?.voice_type ?? null) as
+        | CampaignConfigSummary["voiceType"],
+      language: config?.language ?? campaign.language ?? null,
+      mood: config?.mood ?? campaign.tone ?? null,
+      includeFirstName: config?.include_first_name ?? false,
+      estimatedCredits:
+        config?.estimated_credits ?? Number(campaign.cost_estimate ?? 0),
+    };
+  }, [data, config, audiences, connections]);
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -85,6 +150,7 @@ function CampaignDetailPage() {
 
   const { campaign, stats } = data;
   const isGenerating = campaign.status === "generating";
+  const canEdit = isCampaignEditable(campaign.status);
   const generatedPct =
     campaign.total_contacts > 0
       ? Math.round((campaign.generated_count / campaign.total_contacts) * 100)
@@ -120,6 +186,10 @@ function CampaignDetailPage() {
     },
   ];
 
+  const configRows = configSummary
+    ? buildCampaignConfigRows(configSummary)
+    : [];
+
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
       <BackLink />
@@ -134,7 +204,7 @@ function CampaignDetailPage() {
             <CampaignStatusBadge status={campaign.status} />
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {campaign.vertical} · {campaign.type} ·{" "}
+            {campaign.vertical} ·{" "}
             {campaign.total_contacts.toLocaleString("es-ES")} contactos
           </p>
         </div>
@@ -145,6 +215,30 @@ function CampaignDetailPage() {
           </Link>
         </Button>
       </div>
+
+      {/* Acciones (solo en borrador) */}
+      {canEdit ? (
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Button asChild className="sm:w-auto">
+            <Link to="/campaigns/$id/edit" params={{ id }}>
+              <Pencil className="mr-1.5 h-4 w-4" />
+              Editar campaña
+            </Link>
+          </Button>
+          <Button
+            variant="secondary"
+            disabled
+            className="relative sm:w-auto"
+            title="Disponible próximamente"
+          >
+            <Wand2 className="mr-1.5 h-4 w-4" />
+            Generar campaña
+            <Badge variant="secondary" className="ml-2 bg-muted text-xs">
+              Próximamente
+            </Badge>
+          </Button>
+        </div>
+      ) : null}
 
       {/* Generación en curso */}
       {isGenerating ? (
@@ -177,6 +271,47 @@ function CampaignDetailPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      {/* Configuración de AI Music Studio */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 font-display text-lg">
+            <Sparkles className="h-4 w-4 text-primary" />
+            Configuración de {AI_MUSIC_STUDIO}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <dl className="divide-y divide-border rounded-xl border">
+            {configRows.map((r) => (
+              <div
+                key={r.label}
+                className="flex items-center justify-between gap-4 px-4 py-3"
+              >
+                <dt className="text-sm text-muted-foreground">{r.label}</dt>
+                <dd className="text-right text-sm font-medium">{r.value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          {configSummary?.lyricsGoal ? (
+            <div className="rounded-xl border p-4">
+              <p className="text-xs font-medium text-muted-foreground">
+                Objetivo de la campaña
+              </p>
+              <p className="mt-1 text-sm">{configSummary.lyricsGoal}</p>
+            </div>
+          ) : null}
+
+          {configSummary?.lyricsPrompt ? (
+            <div className="rounded-xl border p-4">
+              <p className="text-xs font-medium text-muted-foreground">
+                Instrucciones para la letra
+              </p>
+              <p className="mt-1 text-sm">{configSummary.lyricsPrompt}</p>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
 
       {/* Estadísticas */}
       <Card>
@@ -212,13 +347,8 @@ function CampaignDetailPage() {
         </CardHeader>
         <CardContent>
           <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
-            <Detail label="Objetivo" value={campaign.goal ?? "—"} />
-            <Detail label="Idioma" value={campaign.language} />
+            <Detail label="Vertical" value={campaign.vertical} />
             <Detail label="Canal" value={campaign.delivery_channel} />
-            <Detail
-              label="Estilo musical"
-              value={campaign.music_style ?? "—"}
-            />
             <Detail label="Creada" value={formatDateTime(campaign.created_at)} />
             <Detail
               label="Enviada"
