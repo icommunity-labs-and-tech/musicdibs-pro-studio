@@ -28,6 +28,7 @@ import {
 } from "@/lib/campaign-generation-summary";
 import {
   AI_MUSIC_STUDIO,
+  calculateEstimatedCredits,
   type GenerationMode,
 } from "@/lib/campaign-generation-options";
 import { getProviderMeta } from "@/lib/providers";
