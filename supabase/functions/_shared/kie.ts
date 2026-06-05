@@ -18,6 +18,7 @@
 // ============================================================================
 
 import {
+  KIE_CODE_MESSAGES_ES,
   KIE_INVALID_RESPONSE_ES,
   KIE_NETWORK_ES,
   KieError,
