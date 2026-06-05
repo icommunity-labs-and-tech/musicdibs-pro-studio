@@ -283,6 +283,14 @@ function ConnectDialog({
   );
 }
 
+const AUDIENCE_TYPE_LABEL: Record<string, string> = {
+  list: "Lista",
+  segment: "Segmento",
+  automation: "Automatización",
+};
+
+const numberFmt = new Intl.NumberFormat("es-ES");
+
 function AudiencesSection({ tenantId }: { tenantId: string | undefined }) {
   const audiences = useProviderAudiences(tenantId);
 
@@ -294,8 +302,8 @@ function AudiencesSection({ tenantId }: { tenantId: string | undefined }) {
           Audiencias
         </CardTitle>
         <CardDescription>
-          Listas, segmentos y automatizaciones sincronizadas desde tus
-          proveedores.
+          Listas y segmentos sincronizados desde tus proveedores. Solo se
+          almacenan metadatos — nunca datos de contactos.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -309,23 +317,46 @@ function AudiencesSection({ tenantId }: { tenantId: string | undefined }) {
           />
         ) : (
           <div className="space-y-2">
-            {audiences.data!.map((a) => (
-              <div
-                key={a.id}
-                className="flex items-center gap-3 rounded-xl border bg-card/50 px-3 py-2.5"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{a.name}</p>
-                  <p className="text-xs capitalize text-muted-foreground">
-                    {a.audience_type}
-                  </p>
+            {audiences.data!.map((a) => {
+              // Estimated personalized campaign cost: 1 credit per contact.
+              // Display only — the credit engine is not implemented yet.
+              const estimatedCredits = a.contacts_count;
+              return (
+                <div
+                  key={a.id}
+                  className="flex flex-wrap items-center gap-3 rounded-xl border bg-card/50 px-3 py-2.5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{a.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="capitalize">
+                        {AUDIENCE_TYPE_LABEL[a.audience_type] ?? a.audience_type}
+                      </span>
+                      {a.last_sync_at
+                        ? ` · Sincronizado ${new Date(
+                            a.last_sync_at,
+                          ).toLocaleDateString("es-ES")}`
+                        : ""}
+                    </p>
+                  </div>
+                  <Badge variant="secondary">
+                    {numberFmt.format(a.contacts_count)} contactos
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="gap-1"
+                    title="Coste estimado: 1 crédito por contacto"
+                  >
+                    <Coins className="h-3 w-3" />
+                    {numberFmt.format(estimatedCredits)} créditos
+                  </Badge>
                 </div>
-                <Badge variant="secondary">{a.contacts_count} contactos</Badge>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
+
