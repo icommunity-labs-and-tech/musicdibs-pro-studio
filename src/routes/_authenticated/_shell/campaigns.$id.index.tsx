@@ -166,6 +166,43 @@ function CampaignDetailPage() {
       ? Math.round((campaign.generated_count / campaign.total_contacts) * 100)
       : 0;
 
+  // Generation Status panel — derived from the latest batch (placeholder
+  // zeros until a batch exists). No generation runs in this sprint.
+  const batchProgress = getBatchProgress(batch ?? null);
+
+  // Confirmation modal inputs. Single song = 1 job; personalized = 1 per contact.
+  const generationMode = configSummary?.generationMode ?? null;
+  const audienceSize =
+    configSummary?.audienceSize ?? campaign.total_contacts ?? 0;
+  const estimatedCredits = configSummary?.estimatedCredits ?? 0;
+  const totalJobs = generationMode === "single_song" ? 1 : audienceSize;
+
+  const handleConfirmGeneration = () => {
+    if (!tenant?.id || !generationMode) return;
+    generateCampaign.mutate(
+      {
+        tenantId: tenant.id,
+        campaignId: id,
+        generationMode,
+        totalJobs,
+        estimatedCredits,
+      },
+      {
+        onSuccess: () => {
+          setGenerateOpen(false);
+          toast.success("Lote de generación creado", {
+            description: "La campaña está lista para generar.",
+          });
+        },
+        onError: (e: unknown) => {
+          toast.error("No pudimos crear el lote de generación", {
+            description: e instanceof Error ? e.message : undefined,
+          });
+        },
+      },
+    );
+  };
+
   const openRate =
     stats && stats.emails_sent > 0
       ? (stats.emails_opened / stats.emails_sent) * 100
