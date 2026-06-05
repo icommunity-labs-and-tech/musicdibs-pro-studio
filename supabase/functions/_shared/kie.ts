@@ -259,13 +259,20 @@ export function parseLyricsCallback(body: unknown): ParsedLyricsCallback {
     variants[0].status === "complete" &&
     variants[0].text.length > 0;
 
+  // Translate the documented code to Spanish. When the transport code is 200
+  // but the content itself failed (no usable variant), treat it as a failed
+  // generation (501) so the user still gets a clear, actionable message.
+  const code = typeof root.code === "number" ? root.code : null;
   return {
     ok: firstOk,
     taskId,
     variants,
-    errorMessage: firstOk ? null : root.msg ?? "Lyrics generation failed",
+    errorMessage: firstOk
+      ? null
+      : translateKieError(code === 200 ? 501 : code, root.msg ?? null),
   };
 }
+
 
 export interface ParsedMusicCallback {
   ok: boolean;
