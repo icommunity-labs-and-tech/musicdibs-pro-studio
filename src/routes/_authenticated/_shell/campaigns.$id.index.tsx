@@ -273,16 +273,12 @@ function CampaignDetailPage() {
             </Link>
           </Button>
           <Button
-            variant="secondary"
-            disabled
-            className="relative sm:w-auto"
-            title="Disponible próximamente"
+            className="sm:w-auto"
+            onClick={() => setGenerateOpen(true)}
+            disabled={!generationMode}
           >
             <Wand2 className="mr-1.5 h-4 w-4" />
             Generar campaña
-            <Badge variant="secondary" className="ml-2 bg-muted text-xs">
-              Próximamente
-            </Badge>
           </Button>
         </div>
       ) : null}
