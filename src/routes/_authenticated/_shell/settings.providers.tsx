@@ -100,10 +100,12 @@ function ProviderCard({
 }) {
   const [open, setOpen] = useState(false);
   const disconnect = useDisconnectProvider(tenantId);
+  const sync = useSyncAudiences(tenantId);
 
   const status: ProviderStatus = connection?.status ?? "disconnected";
   const isConnected = status === "connected";
   const statusMeta = STATUS_META[status];
+  const canSync = isConnected && SYNC_ENABLED[provider.type];
 
   async function handleDisconnect() {
     try {
@@ -111,6 +113,17 @@ function ProviderCard({
       toast.success(`${provider.label} desconectado`);
     } catch (e) {
       toast.error("No pudimos desconectar el proveedor", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    }
+  }
+
+  async function handleSync() {
+    try {
+      const result = await sync.mutateAsync(provider.type);
+      toast.success(`${result.synced_count} audiencias sincronizadas`);
+    } catch (e) {
+      toast.error("No pudimos sincronizar las audiencias", {
         description: e instanceof Error ? e.message : undefined,
       });
     }
