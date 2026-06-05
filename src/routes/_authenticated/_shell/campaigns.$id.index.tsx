@@ -62,6 +62,20 @@ function formatDateTime(iso: string): string {
   });
 }
 
+const BATCH_STATUS_LABELS: Record<string, string> = {
+  draft: "Borrador",
+  queued: "En cola",
+  processing: "Procesando",
+  completed: "Completado",
+  failed: "Fallido",
+};
+
+function getBatchStatusLabel(status: string): string {
+  return BATCH_STATUS_LABELS[status] ?? status;
+}
+
+
+
 function CampaignDetailPage() {
   const { id } = Route.useParams();
   const queryClient = useQueryClient();
