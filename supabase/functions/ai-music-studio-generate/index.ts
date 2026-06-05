@@ -12,6 +12,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 import { corsHeaders, json, log } from "../_shared/ai-studio.ts";
+import { KieError } from "../_shared/kie-errors.ts";
 import {
   loadConfig,
   startLyricsForJob,
@@ -162,6 +163,16 @@ Deno.serve(async (req: Request) => {
 
     return json({ success: true, batch_id: batch.id, job_id: job.id, action });
   } catch (err) {
+    if (err instanceof KieError) {
+      // Keep the provider's real cause (e.g. code 402 "Insufficient Credits")
+      // in server logs only — the user still sees the safe Spanish message.
+      log("generate", "kie_error", {
+        code: err.code,
+        httpStatus: err.httpStatus,
+        rawMessage: err.rawMessage,
+      });
+      return json({ error: err.message }, 500);
+    }
     log("generate", "error", { message: err instanceof Error ? err.message : "unknown" });
     return json({ error: err instanceof Error ? err.message : String(err) }, 500);
   }
