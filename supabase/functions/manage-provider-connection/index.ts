@@ -123,6 +123,89 @@ Deno.serve(async (req: Request) => {
       })
     }
 
+    // ── sync_audiences ─────────────────────────────────────────────────────────
+    // Pulls AUDIENCE METADATA ONLY (id, name, count, type) from the provider and
+    // upserts it into provider_audiences. NEVER fetches/stores subscriber PII.
+    if (action === "sync_audiences") {
+      const { data: conn, error: connErr } = await supabase
+        .from("provider_connections")
+        .select("id, encrypted_credentials, status")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("provider_type", providerType)
+        .maybeSingle()
+      if (connErr) throw connErr
+      if (!conn) return json({ error: "Provider no conectado" }, 404)
+
+      const creds = decryptCredentials(conn.encrypted_credentials)
+      const apiKey = typeof creds?.apiKey === "string" ? creds.apiKey : ""
+      if (!apiKey) return json({ error: "Credenciales no disponibles" }, 400)
+
+      // Only MailerLite has a real integration in TASK 002.
+      if (providerType !== "mailerlite") {
+        return json({ error: "Sincronización no disponible para este proveedor todavía" }, 400)
+      }
+
+      const connector = new MailerLiteConnector(apiKey)
+
+      const validation = await connector.validateCredentials()
+      if (!validation.valid) {
+        await supabase
+          .from("provider_connections")
+          .update({ status: "error" })
+          .eq("id", conn.id)
+        return json({ error: validation.message ?? "Credenciales inválidas" }, 400)
+      }
+
+      const audiences = await connector.syncAudiences()
+      const now = new Date().toISOString()
+
+      // Upsert metadata-only rows (no PII fields are ever written).
+      if (audiences.length > 0) {
+        const rows = audiences.map((a) => ({
+          tenant_id: profile.tenant_id,
+          provider_connection_id: conn.id,
+          external_id: a.external_id,
+          name: a.name,
+          audience_type: a.audience_type,
+          contacts_count: a.contacts_count,
+          last_sync_at: now,
+        }))
+        const { error: upsertErr } = await supabase
+          .from("provider_audiences")
+          .upsert(rows, { onConflict: "provider_connection_id,external_id" })
+        if (upsertErr) throw upsertErr
+      }
+
+      // Remove audiences that no longer exist upstream (metadata hygiene).
+      const keepIds = audiences.map((a) => a.external_id)
+      let staleQuery = supabase
+        .from("provider_audiences")
+        .delete()
+        .eq("provider_connection_id", conn.id)
+      if (keepIds.length > 0) {
+        staleQuery = staleQuery.not(
+          "external_id",
+          "in",
+          `(${keepIds.map((id) => `"${id}"`).join(",")})`,
+        )
+      }
+      const { error: delErr } = await staleQuery
+      if (delErr) throw delErr
+
+      // Mark connection as freshly synced & healthy.
+      await supabase
+        .from("provider_connections")
+        .update({ status: "connected", last_sync_at: now })
+        .eq("id", conn.id)
+
+      return json({
+        success: true,
+        provider_type: providerType,
+        synced_count: audiences.length,
+        last_sync_at: now,
+      })
+    }
+
     return json({ error: "Invalid action" }, 400)
   } catch (err) {
     // Never log credentials; only a generic message.
