@@ -157,19 +157,36 @@ function ProviderCard({
               ).toLocaleDateString("es-ES")}`
             : "Sin sincronizar"}
         </p>
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           {isConnected ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDisconnect}
-              disabled={disconnect.isPending}
-            >
-              {disconnect.isPending ? (
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            <>
+              {canSync ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleSync}
+                  disabled={sync.isPending}
+                >
+                  {sync.isPending ? (
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="mr-1.5 h-4 w-4" />
+                  )}
+                  Sincronizar audiencias
+                </Button>
               ) : null}
-              Desconectar
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDisconnect}
+                disabled={disconnect.isPending}
+              >
+                {disconnect.isPending ? (
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                ) : null}
+                Desconectar
+              </Button>
+            </>
           ) : (
             <Button size="sm" onClick={() => setOpen(true)}>
               <Plug className="mr-1.5 h-4 w-4" />
@@ -178,6 +195,7 @@ function ProviderCard({
           )}
         </div>
       </CardContent>
+
 
       <ConnectDialog
         open={open}
