@@ -38,7 +38,7 @@ import {
   GENERATION_MOODS,
   GENERATION_MUSIC_STYLES,
   VOICE_TYPES,
-  estimateCredits,
+  calculateEstimatedCredits,
   type GenerationLanguage,
   type GenerationMode,
   type VoiceType,
@@ -151,7 +151,7 @@ export function CampaignBuilder({
 
   const estimatedCredits = useMemo(
     () =>
-      estimateCredits(
+      calculateEstimatedCredits(
         state.generationMode,
         selectedAudience?.contacts_count ?? 0,
       ),
