@@ -514,6 +514,125 @@ export type Database = {
           },
         ]
       }
+      generation_assets: {
+        Row: {
+          asset_type: string
+          campaign_id: string
+          created_at: string
+          generation_job_id: string
+          id: string
+          lyrics_content: string | null
+          metadata: Json | null
+          public_url: string | null
+          status: string
+          storage_path: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          asset_type: string
+          campaign_id: string
+          created_at?: string
+          generation_job_id: string
+          id?: string
+          lyrics_content?: string | null
+          metadata?: Json | null
+          public_url?: string | null
+          status?: string
+          storage_path?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          asset_type?: string
+          campaign_id?: string
+          created_at?: string
+          generation_job_id?: string
+          id?: string
+          lyrics_content?: string | null
+          metadata?: Json | null
+          public_url?: string | null
+          status?: string
+          storage_path?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generation_assets_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generation_assets_generation_job_id_fkey"
+            columns: ["generation_job_id"]
+            isOneToOne: false
+            referencedRelation: "generation_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      generation_batches: {
+        Row: {
+          campaign_id: string
+          completed_at: string | null
+          completed_jobs: number
+          created_at: string
+          credits_consumed: number
+          credits_reserved: number
+          failed_jobs: number
+          generation_mode: string
+          id: string
+          started_at: string | null
+          status: string
+          tenant_id: string
+          total_jobs: number
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          completed_at?: string | null
+          completed_jobs?: number
+          created_at?: string
+          credits_consumed?: number
+          credits_reserved?: number
+          failed_jobs?: number
+          generation_mode: string
+          id?: string
+          started_at?: string | null
+          status?: string
+          tenant_id: string
+          total_jobs?: number
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          completed_at?: string | null
+          completed_jobs?: number
+          created_at?: string
+          credits_consumed?: number
+          credits_reserved?: number
+          failed_jobs?: number
+          generation_mode?: string
+          id?: string
+          started_at?: string | null
+          status?: string
+          tenant_id?: string
+          total_jobs?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generation_batches_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generation_jobs: {
         Row: {
           attempts: number
@@ -525,7 +644,11 @@ export type Database = {
           created_at: string
           duration_seconds: number
           error_message: string | null
+          external_contact_id: string | null
+          generation_batch_id: string | null
           id: string
+          lyrics_status: string
+          music_status: string
           output_metadata: Json | null
           output_url: string | null
           prompt: string | null
@@ -535,6 +658,7 @@ export type Database = {
           status: string
           style: string | null
           tenant_id: string
+          updated_at: string
         }
         Insert: {
           attempts?: number
@@ -546,7 +670,11 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           error_message?: string | null
+          external_contact_id?: string | null
+          generation_batch_id?: string | null
           id?: string
+          lyrics_status?: string
+          music_status?: string
           output_metadata?: Json | null
           output_url?: string | null
           prompt?: string | null
@@ -556,6 +684,7 @@ export type Database = {
           status?: string
           style?: string | null
           tenant_id: string
+          updated_at?: string
         }
         Update: {
           attempts?: number
@@ -567,7 +696,11 @@ export type Database = {
           created_at?: string
           duration_seconds?: number
           error_message?: string | null
+          external_contact_id?: string | null
+          generation_batch_id?: string | null
           id?: string
+          lyrics_status?: string
+          music_status?: string
           output_metadata?: Json | null
           output_url?: string | null
           prompt?: string | null
@@ -577,6 +710,7 @@ export type Database = {
           status?: string
           style?: string | null
           tenant_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -584,6 +718,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generation_jobs_generation_batch_id_fkey"
+            columns: ["generation_batch_id"]
+            isOneToOne: false
+            referencedRelation: "generation_batches"
             referencedColumns: ["id"]
           },
           {
