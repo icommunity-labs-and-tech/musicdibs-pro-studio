@@ -140,14 +140,18 @@ export class KieMusicProvider implements Pick<
       }));
     const callbackType = root.data?.callbackType ?? null;
     const isError = root.code !== 200 || callbackType === "error";
+    const code = typeof root.code === "number" ? root.code : null;
     return {
       ok: !isError,
       complete: callbackType === "complete" && tracks.length > 0,
       taskId: root.data?.task_id ?? null,
       tracks,
-      errorMessage: isError ? root.msg ?? "Music generation failed" : null,
+      errorMessage: isError
+        ? translateKieError(code === 200 ? 501 : code, root.msg ?? null)
+        : null,
     };
   }
+
 
   // Not implemented by the music provider.
   generateLyrics(): Promise<LyricsRequestResult> {
