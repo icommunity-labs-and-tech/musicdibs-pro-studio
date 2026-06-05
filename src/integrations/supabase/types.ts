@@ -664,6 +664,83 @@ export type Database = {
           },
         ]
       }
+      provider_audiences: {
+        Row: {
+          audience_type: string
+          contacts_count: number
+          created_at: string
+          external_id: string
+          id: string
+          last_sync_at: string | null
+          name: string
+          provider_connection_id: string
+          tenant_id: string
+        }
+        Insert: {
+          audience_type: string
+          contacts_count?: number
+          created_at?: string
+          external_id: string
+          id?: string
+          last_sync_at?: string | null
+          name: string
+          provider_connection_id: string
+          tenant_id: string
+        }
+        Update: {
+          audience_type?: string
+          contacts_count?: number
+          created_at?: string
+          external_id?: string
+          id?: string
+          last_sync_at?: string | null
+          name?: string
+          provider_connection_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_audiences_provider_connection_id_fkey"
+            columns: ["provider_connection_id"]
+            isOneToOne: false
+            referencedRelation: "provider_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_connections: {
+        Row: {
+          created_at: string
+          encrypted_credentials: Json | null
+          id: string
+          last_sync_at: string | null
+          provider_type: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          encrypted_credentials?: Json | null
+          id?: string
+          last_sync_at?: string | null
+          provider_type: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          encrypted_credentials?: Json | null
+          id?: string
+          last_sync_at?: string | null
+          provider_type?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tenant_api_keys: {
         Row: {
           created_at: string
