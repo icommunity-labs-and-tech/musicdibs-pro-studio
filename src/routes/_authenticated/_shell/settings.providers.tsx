@@ -349,7 +349,7 @@ function AudiencesSection({ tenantId }: { tenantId: string | undefined }) {
                   <Badge
                     variant="outline"
                     className="gap-1"
-                    title="Coste estimado: 1 crédito por contacto"
+                    title="Las campañas personalizadas consumen 1 crédito por destinatario, con un coste mínimo por campaña de 100 créditos."
                   >
                     <Coins className="h-3 w-3" />
                     {numberFmt.format(estimatedCredits)} créditos
