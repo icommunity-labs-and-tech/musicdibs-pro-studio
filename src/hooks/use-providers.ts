@@ -54,6 +54,22 @@ export function useProviderConnections(tenantId: string | undefined) {
   });
 }
 
+// Credentials are NEVER written from the browser. The manage-provider-connection
+// edge function encrypts and persists them server-side with the service role.
+async function callProviderFn(payload: {
+  action: "connect" | "disconnect" | "test_connection";
+  provider_type: ProviderType;
+  api_key?: string;
+}) {
+  const { data, error } = await supabase.functions.invoke(
+    "manage-provider-connection",
+    { body: payload },
+  );
+  if (error) throw error;
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
 export function useConnectProvider(tenantId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -65,24 +81,12 @@ export function useConnectProvider(tenantId: string | undefined) {
       apiKey: string;
     }) => {
       if (!tenantId) throw new Error("Tenant no disponible");
-
-      // Run the (mocked) connector flow before persisting.
-      const connector = createConnector(providerType);
-      const result = await connector.connect({ apiKey });
-
-      // NOTE: credentials are stored as-is for now (mock). A future task will
-      // encrypt these server-side before persistence.
-      const { error } = await supabase.from("provider_connections").upsert(
-        {
-          tenant_id: tenantId,
-          provider_type: providerType,
-          status: result.status,
-          encrypted_credentials: { apiKey },
-          last_sync_at: null,
-        },
-        { onConflict: "tenant_id,provider_type" },
-      );
-      if (error) throw error;
+      // The API key leaves the browser exactly once, to the edge function.
+      await callProviderFn({
+        action: "connect",
+        provider_type: providerType,
+        api_key: apiKey,
+      });
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
@@ -97,16 +101,10 @@ export function useDisconnectProvider(tenantId: string | undefined) {
   return useMutation({
     mutationFn: async (providerType: ProviderType) => {
       if (!tenantId) throw new Error("Tenant no disponible");
-
-      const connector = createConnector(providerType);
-      await connector.disconnect();
-
-      const { error } = await supabase
-        .from("provider_connections")
-        .update({ status: "disconnected", encrypted_credentials: null })
-        .eq("tenant_id", tenantId)
-        .eq("provider_type", providerType);
-      if (error) throw error;
+      await callProviderFn({
+        action: "disconnect",
+        provider_type: providerType,
+      });
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
