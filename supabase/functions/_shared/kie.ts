@@ -11,7 +11,18 @@
 //
 // BRANDING: nothing here is ever surfaced to customers. The UI only shows
 // "Powered by AI Music Studio".
+//
+// ERROR HANDLING: every request and callback funnels its failures through the
+// KIE/Suno error catalogue (kie-errors.ts) so no raw/English provider error is
+// ever stored or shown — all user-facing messages are Spanish.
 // ============================================================================
+
+import {
+  KIE_INVALID_RESPONSE_ES,
+  KIE_NETWORK_ES,
+  KieError,
+  translateKieError,
+} from "./kie-errors.ts";
 
 // ── Config shapes (mirror campaign_generation_configs) ──────────────────────
 export interface GenerationConfigInput {
