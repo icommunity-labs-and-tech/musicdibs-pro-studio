@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2, Plug, Users2 } from "lucide-react";
+import { Coins, Loader2, Plug, RefreshCw, Users2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAuth } from "@/components/auth/auth-provider";
@@ -30,9 +30,13 @@ import {
   useDisconnectProvider,
   useProviderAudiences,
   useProviderConnections,
+  useSyncAudiences,
   type ProviderConnection,
 } from "@/hooks/use-providers";
 import { PROVIDERS, type ProviderMeta, type ProviderStatus } from "@/lib/providers";
+
+// Providers with a real metadata-sync integration available today.
+const SYNC_ENABLED: Record<string, boolean> = { mailerlite: true, brevo: false };
 
 export const Route = createFileRoute("/_authenticated/_shell/settings/providers")({
   component: ProvidersPage,
