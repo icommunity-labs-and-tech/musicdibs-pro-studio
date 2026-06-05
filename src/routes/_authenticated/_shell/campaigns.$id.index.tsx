@@ -71,6 +71,10 @@ function CampaignDetailPage() {
   const { data: audiences } = useProviderAudiences(tenant?.id);
   const { data: connections } = useProviderConnections(tenant?.id);
 
+  const { data: batch } = useCampaignBatch(id);
+  const generateCampaign = useGenerateCampaign();
+  const [generateOpen, setGenerateOpen] = useState(false);
+
   useGenerationJobsRealtime(id);
 
   const syncStats = useMutation({
