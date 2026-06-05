@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
 import { encryptCredentials, decryptCredentials } from "./encryption.ts"
+import { MailerLiteConnector } from "./MailerLiteConnector.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
