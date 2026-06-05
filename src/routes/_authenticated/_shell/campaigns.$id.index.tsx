@@ -283,6 +283,38 @@ function CampaignDetailPage() {
         </div>
       ) : null}
 
+      {/* Estado de generación */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 font-display text-lg">
+            <Layers className="h-4 w-4 text-primary" />
+            Estado de generación
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Metric
+              label="Estado del lote"
+              value={batch ? getBatchStatusLabel(batch.status) : "No generado"}
+            />
+            <Metric
+              label="Trabajos"
+              value={batchProgress.totalJobs.toLocaleString("es-ES")}
+            />
+            <Metric
+              label="Completados"
+              value={batchProgress.completedJobs.toLocaleString("es-ES")}
+            />
+            <Metric
+              label="Fallidos"
+              value={batchProgress.failedJobs.toLocaleString("es-ES")}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+
+
       {/* Generación en curso */}
       {isGenerating ? (
         <Card>
