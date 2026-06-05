@@ -56,7 +56,7 @@ export function useProviderConnections(tenantId: string | undefined) {
 // Credentials are NEVER written from the browser. The manage-provider-connection
 // edge function encrypts and persists them server-side with the service role.
 async function callProviderFn(payload: {
-  action: "connect" | "disconnect" | "test_connection";
+  action: "connect" | "disconnect" | "test_connection" | "sync_audiences";
   provider_type: ProviderType;
   api_key?: string;
 }) {
@@ -108,6 +108,35 @@ export function useDisconnectProvider(tenantId: string | undefined) {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ["provider-connections", tenantId],
+      });
+    },
+  });
+}
+
+export interface SyncAudiencesResult {
+  success: boolean;
+  provider_type: ProviderType;
+  synced_count: number;
+  last_sync_at: string;
+}
+
+export function useSyncAudiences(tenantId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (providerType: ProviderType): Promise<SyncAudiencesResult> => {
+      if (!tenantId) throw new Error("Tenant no disponible");
+      // All MailerLite calls run server-side; the API key never leaves the server.
+      return (await callProviderFn({
+        action: "sync_audiences",
+        provider_type: providerType,
+      })) as SyncAudiencesResult;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["provider-connections", tenantId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["provider-audiences", tenantId],
       });
     },
   });

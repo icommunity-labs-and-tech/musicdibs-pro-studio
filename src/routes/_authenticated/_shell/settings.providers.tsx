@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Loader2, Plug, Users2 } from "lucide-react";
+import { Coins, Loader2, Plug, RefreshCw, Users2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAuth } from "@/components/auth/auth-provider";
@@ -30,9 +30,13 @@ import {
   useDisconnectProvider,
   useProviderAudiences,
   useProviderConnections,
+  useSyncAudiences,
   type ProviderConnection,
 } from "@/hooks/use-providers";
 import { PROVIDERS, type ProviderMeta, type ProviderStatus } from "@/lib/providers";
+
+// Providers with a real metadata-sync integration available today.
+const SYNC_ENABLED: Record<string, boolean> = { mailerlite: true, brevo: false };
 
 export const Route = createFileRoute("/_authenticated/_shell/settings/providers")({
   component: ProvidersPage,
@@ -96,10 +100,12 @@ function ProviderCard({
 }) {
   const [open, setOpen] = useState(false);
   const disconnect = useDisconnectProvider(tenantId);
+  const sync = useSyncAudiences(tenantId);
 
   const status: ProviderStatus = connection?.status ?? "disconnected";
   const isConnected = status === "connected";
   const statusMeta = STATUS_META[status];
+  const canSync = isConnected && SYNC_ENABLED[provider.type];
 
   async function handleDisconnect() {
     try {
@@ -107,6 +113,17 @@ function ProviderCard({
       toast.success(`${provider.label} desconectado`);
     } catch (e) {
       toast.error("No pudimos desconectar el proveedor", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    }
+  }
+
+  async function handleSync() {
+    try {
+      const result = await sync.mutateAsync(provider.type);
+      toast.success(`${result.synced_count} audiencias sincronizadas`);
+    } catch (e) {
+      toast.error("No pudimos sincronizar las audiencias", {
         description: e instanceof Error ? e.message : undefined,
       });
     }
@@ -140,19 +157,36 @@ function ProviderCard({
               ).toLocaleDateString("es-ES")}`
             : "Sin sincronizar"}
         </p>
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           {isConnected ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDisconnect}
-              disabled={disconnect.isPending}
-            >
-              {disconnect.isPending ? (
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            <>
+              {canSync ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleSync}
+                  disabled={sync.isPending}
+                >
+                  {sync.isPending ? (
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="mr-1.5 h-4 w-4" />
+                  )}
+                  Sincronizar audiencias
+                </Button>
               ) : null}
-              Desconectar
-            </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDisconnect}
+                disabled={disconnect.isPending}
+              >
+                {disconnect.isPending ? (
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                ) : null}
+                Desconectar
+              </Button>
+            </>
           ) : (
             <Button size="sm" onClick={() => setOpen(true)}>
               <Plug className="mr-1.5 h-4 w-4" />
@@ -161,6 +195,7 @@ function ProviderCard({
           )}
         </div>
       </CardContent>
+
 
       <ConnectDialog
         open={open}
@@ -248,6 +283,14 @@ function ConnectDialog({
   );
 }
 
+const AUDIENCE_TYPE_LABEL: Record<string, string> = {
+  list: "Lista",
+  segment: "Segmento",
+  automation: "Automatización",
+};
+
+const numberFmt = new Intl.NumberFormat("es-ES");
+
 function AudiencesSection({ tenantId }: { tenantId: string | undefined }) {
   const audiences = useProviderAudiences(tenantId);
 
@@ -259,8 +302,8 @@ function AudiencesSection({ tenantId }: { tenantId: string | undefined }) {
           Audiencias
         </CardTitle>
         <CardDescription>
-          Listas, segmentos y automatizaciones sincronizadas desde tus
-          proveedores.
+          Listas y segmentos sincronizados desde tus proveedores. Solo se
+          almacenan metadatos — nunca datos de contactos.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -274,23 +317,46 @@ function AudiencesSection({ tenantId }: { tenantId: string | undefined }) {
           />
         ) : (
           <div className="space-y-2">
-            {audiences.data!.map((a) => (
-              <div
-                key={a.id}
-                className="flex items-center gap-3 rounded-xl border bg-card/50 px-3 py-2.5"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{a.name}</p>
-                  <p className="text-xs capitalize text-muted-foreground">
-                    {a.audience_type}
-                  </p>
+            {audiences.data!.map((a) => {
+              // Estimated personalized campaign cost: 1 credit per contact.
+              // Display only — the credit engine is not implemented yet.
+              const estimatedCredits = a.contacts_count;
+              return (
+                <div
+                  key={a.id}
+                  className="flex flex-wrap items-center gap-3 rounded-xl border bg-card/50 px-3 py-2.5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{a.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="capitalize">
+                        {AUDIENCE_TYPE_LABEL[a.audience_type] ?? a.audience_type}
+                      </span>
+                      {a.last_sync_at
+                        ? ` · Sincronizado ${new Date(
+                            a.last_sync_at,
+                          ).toLocaleDateString("es-ES")}`
+                        : ""}
+                    </p>
+                  </div>
+                  <Badge variant="secondary">
+                    {numberFmt.format(a.contacts_count)} contactos
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="gap-1"
+                    title="Coste estimado: 1 crédito por contacto"
+                  >
+                    <Coins className="h-3 w-3" />
+                    {numberFmt.format(estimatedCredits)} créditos
+                  </Badge>
                 </div>
-                <Badge variant="secondary">{a.contacts_count} contactos</Badge>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>
     </Card>
   );
 }
+

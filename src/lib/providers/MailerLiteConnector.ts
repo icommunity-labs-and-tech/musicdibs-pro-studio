@@ -1,6 +1,10 @@
-// MailerLite connector — PLACEHOLDER ONLY.
-// No real MailerLite API calls yet. Every method returns mocked values so the
-// Provider Framework UI and persistence layer can be built and tested first.
+// MailerLite connector — CLIENT-SIDE STUB.
+//
+// The REAL MailerLite API integration runs server-side in the edge function
+// `supabase/functions/manage-provider-connection` (see MailerLiteConnector.ts
+// there). For security, the API key never leaves the server, so no real
+// MailerLite calls happen in the browser. This class stays as a typed stub to
+// satisfy the Provider Framework contract on the client.
 
 import {
   BaseProviderConnector,
