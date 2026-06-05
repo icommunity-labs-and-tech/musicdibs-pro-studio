@@ -2,7 +2,7 @@ import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 import { useAuth } from "@/components/auth/auth-provider";
 import { FullScreenLoader } from "@/components/app/full-screen-loader";
 
-export const Route = createFileRoute("/_authenticated/admin")({
+export const Route = createFileRoute("/_authenticated/_shell/admin")({
   component: AdminGuard,
 });
 
