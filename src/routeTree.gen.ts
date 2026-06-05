@@ -37,6 +37,7 @@ import { Route as AuthenticatedShellSettingsProvidersRouteImport } from './route
 import { Route as AuthenticatedShellSettingsBillingRouteImport } from './routes/_authenticated/_shell/settings.billing'
 import { Route as AuthenticatedShellCampaignsNewRouteImport } from './routes/_authenticated/_shell/campaigns.new'
 import { Route as AuthenticatedShellCampaignsIdIndexRouteImport } from './routes/_authenticated/_shell/campaigns.$id.index'
+import { Route as AuthenticatedShellCampaignsIdEditRouteImport } from './routes/_authenticated/_shell/campaigns.$id.edit'
 import { Route as AuthenticatedShellCampaignsIdQueueRouteImport } from './routes/_authenticated/_shell/campaigns.$id.queue'
 import { Route as AuthenticatedShellCampaignsIdEditRouteImport } from './routes/_authenticated/_shell/campaigns.$id.edit'
 import { Route as AuthenticatedShellAdminTenantsIdRouteImport } from './routes/_authenticated/_shell/admin/tenants.$id'
