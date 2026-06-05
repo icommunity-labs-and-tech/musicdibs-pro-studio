@@ -43,6 +43,9 @@ import {
   useProviderAudiences,
   useProviderConnections,
 } from "@/hooks/use-providers";
+import { useCampaignBatch, useGenerateCampaign } from "@/hooks/use-generation";
+import { getBatchProgress } from "@/lib/generation";
+import { GenerateCampaignDialog } from "@/components/app/generate-campaign-dialog";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/$id/")({
   head: () => ({ meta: [{ title: "Campaña · Musicdibs Enterprise" }] }),
