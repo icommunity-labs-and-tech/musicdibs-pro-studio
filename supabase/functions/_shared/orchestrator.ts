@@ -11,6 +11,7 @@
 
 import { KieClient, type GenerationConfigInput } from "./kie.ts";
 import { callbackUrl, log, signCallback } from "./ai-studio.ts";
+import { KIE_GENERIC_ES } from "./kie-errors.ts";
 
 // deno-lint-ignore no-explicit-any
 type SupabaseLike = any;
@@ -19,12 +20,17 @@ type JobRow = any;
 
 export function getKieClient(): KieClient {
   const apiKey = Deno.env.get("KIE_API_KEY");
-  if (!apiKey) throw new Error("KIE_API_KEY is not configured");
+  if (!apiKey) {
+    // Misconfiguration — never expose internals; log the real cause separately.
+    log("kie", "missing_api_key", {});
+    throw new Error(KIE_GENERIC_ES);
+  }
   return new KieClient({
     apiKey,
     baseUrl: Deno.env.get("KIE_BASE_URL") ?? undefined,
   });
 }
+
 
 export async function loadConfig(
   supabase: SupabaseLike,
