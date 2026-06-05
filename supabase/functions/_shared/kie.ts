@@ -135,32 +135,52 @@ export class KieClient {
     path: string,
     body: Record<string, unknown>,
   ): Promise<{ taskId: string }> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+    // ── Transport layer (network / fetch failures) ──────────────────────────
+    let res: Response;
+    try {
+      res = await fetch(`${this.baseUrl}${path}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (networkErr) {
+      // Network/DNS/timeout: no business code available.
+      throw new KieError({
+        rawMessage:
+          networkErr instanceof Error ? networkErr.message : String(networkErr),
+      });
+    }
 
+    // ── Body parsing (non-JSON / malformed responses) ───────────────────────
     let parsed: { code?: number; msg?: string; data?: { taskId?: string } };
     try {
       parsed = await res.json();
     } catch {
-      throw new Error(`KIE returned non-JSON response (HTTP ${res.status})`);
+      // Use the HTTP status as the business code when the body isn't JSON so a
+      // documented 4xx/5xx still maps to a precise Spanish message.
+      if (typeof KIE_CODE_MESSAGES_ES[res.status] === "undefined") {
+        throw new KieError({ rawMessage: KIE_INVALID_RESPONSE_ES, httpStatus: res.status });
+      }
+      throw new KieError({ code: res.status, httpStatus: res.status });
     }
 
+    // ── Business layer (documented KIE/Suno codes) ──────────────────────────
     if (!res.ok || parsed.code !== 200 || !parsed.data?.taskId) {
-      throw new Error(
-        `KIE request failed (HTTP ${res.status}, code ${parsed.code}): ${
-          parsed.msg ?? "unknown error"
-        }`,
-      );
+      // Prefer the documented business code; fall back to the HTTP status.
+      const code = typeof parsed.code === "number" ? parsed.code : res.status;
+      throw new KieError({
+        code,
+        rawMessage: parsed.msg ?? null,
+        httpStatus: res.status,
+      });
     }
 
     return { taskId: parsed.data.taskId };
   }
+
 
   /** POST /api/v1/lyrics — returns the lyrics task id. */
   async generateLyrics(
