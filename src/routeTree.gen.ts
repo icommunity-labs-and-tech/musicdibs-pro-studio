@@ -38,6 +38,7 @@ import { Route as AuthenticatedShellSettingsBillingRouteImport } from './routes/
 import { Route as AuthenticatedShellCampaignsNewRouteImport } from './routes/_authenticated/_shell/campaigns.new'
 import { Route as AuthenticatedShellCampaignsIdIndexRouteImport } from './routes/_authenticated/_shell/campaigns.$id.index'
 import { Route as AuthenticatedShellCampaignsIdQueueRouteImport } from './routes/_authenticated/_shell/campaigns.$id.queue'
+import { Route as AuthenticatedShellCampaignsIdEditRouteImport } from './routes/_authenticated/_shell/campaigns.$id.edit'
 import { Route as AuthenticatedShellAdminTenantsIdRouteImport } from './routes/_authenticated/_shell/admin/tenants.$id'
 
 const TelcoRoute = TelcoRouteImport.update({
@@ -197,6 +198,12 @@ const AuthenticatedShellCampaignsIdQueueRoute =
     path: '/campaigns/$id/queue',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
+const AuthenticatedShellCampaignsIdEditRoute =
+  AuthenticatedShellCampaignsIdEditRouteImport.update({
+    id: '/campaigns/$id/edit',
+    path: '/campaigns/$id/edit',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
 const AuthenticatedShellAdminTenantsIdRoute =
   AuthenticatedShellAdminTenantsIdRouteImport.update({
     id: '/tenants/$id',
@@ -231,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/campaigns/': typeof AuthenticatedShellCampaignsIndexRoute
   '/settings/': typeof AuthenticatedShellSettingsIndexRoute
   '/admin/tenants/$id': typeof AuthenticatedShellAdminTenantsIdRoute
+  '/campaigns/$id/edit': typeof AuthenticatedShellCampaignsIdEditRoute
   '/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/campaigns/$id/': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
@@ -259,6 +267,7 @@ export interface FileRoutesByTo {
   '/campaigns': typeof AuthenticatedShellCampaignsIndexRoute
   '/settings': typeof AuthenticatedShellSettingsIndexRoute
   '/admin/tenants/$id': typeof AuthenticatedShellAdminTenantsIdRoute
+  '/campaigns/$id/edit': typeof AuthenticatedShellCampaignsIdEditRoute
   '/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/campaigns/$id': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
@@ -292,6 +301,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/campaigns/': typeof AuthenticatedShellCampaignsIndexRoute
   '/_authenticated/_shell/settings/': typeof AuthenticatedShellSettingsIndexRoute
   '/_authenticated/_shell/admin/tenants/$id': typeof AuthenticatedShellAdminTenantsIdRoute
+  '/_authenticated/_shell/campaigns/$id/edit': typeof AuthenticatedShellCampaignsIdEditRoute
   '/_authenticated/_shell/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/_authenticated/_shell/campaigns/$id/': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
@@ -324,6 +334,7 @@ export interface FileRouteTypes {
     | '/campaigns/'
     | '/settings/'
     | '/admin/tenants/$id'
+    | '/campaigns/$id/edit'
     | '/campaigns/$id/queue'
     | '/campaigns/$id/'
   fileRoutesByTo: FileRoutesByTo
@@ -352,6 +363,7 @@ export interface FileRouteTypes {
     | '/campaigns'
     | '/settings'
     | '/admin/tenants/$id'
+    | '/campaigns/$id/edit'
     | '/campaigns/$id/queue'
     | '/campaigns/$id'
   id:
@@ -384,6 +396,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/campaigns/'
     | '/_authenticated/_shell/settings/'
     | '/_authenticated/_shell/admin/tenants/$id'
+    | '/_authenticated/_shell/campaigns/$id/edit'
     | '/_authenticated/_shell/campaigns/$id/queue'
     | '/_authenticated/_shell/campaigns/$id/'
   fileRoutesById: FileRoutesById
@@ -607,6 +620,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellCampaignsIdQueueRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
+    '/_authenticated/_shell/campaigns/$id/edit': {
+      id: '/_authenticated/_shell/campaigns/$id/edit'
+      path: '/campaigns/$id/edit'
+      fullPath: '/campaigns/$id/edit'
+      preLoaderRoute: typeof AuthenticatedShellCampaignsIdEditRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
     '/_authenticated/_shell/admin/tenants/$id': {
       id: '/_authenticated/_shell/admin/tenants/$id'
       path: '/tenants/$id'
@@ -665,6 +685,7 @@ interface AuthenticatedShellRouteChildren {
   AuthenticatedShellTeamRoute: typeof AuthenticatedShellTeamRoute
   AuthenticatedShellCampaignsNewRoute: typeof AuthenticatedShellCampaignsNewRoute
   AuthenticatedShellCampaignsIndexRoute: typeof AuthenticatedShellCampaignsIndexRoute
+  AuthenticatedShellCampaignsIdEditRoute: typeof AuthenticatedShellCampaignsIdEditRoute
   AuthenticatedShellCampaignsIdQueueRoute: typeof AuthenticatedShellCampaignsIdQueueRoute
   AuthenticatedShellCampaignsIdIndexRoute: typeof AuthenticatedShellCampaignsIdIndexRoute
 }
@@ -680,6 +701,8 @@ const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
   AuthenticatedShellTeamRoute: AuthenticatedShellTeamRoute,
   AuthenticatedShellCampaignsNewRoute: AuthenticatedShellCampaignsNewRoute,
   AuthenticatedShellCampaignsIndexRoute: AuthenticatedShellCampaignsIndexRoute,
+  AuthenticatedShellCampaignsIdEditRoute:
+    AuthenticatedShellCampaignsIdEditRoute,
   AuthenticatedShellCampaignsIdQueueRoute:
     AuthenticatedShellCampaignsIdQueueRoute,
   AuthenticatedShellCampaignsIdIndexRoute:
