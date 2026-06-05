@@ -34,6 +34,7 @@ import {
   type ProviderConnection,
 } from "@/hooks/use-providers";
 import { PROVIDERS, type ProviderMeta, type ProviderStatus } from "@/lib/providers";
+import { calculateEstimatedCredits } from "@/lib/campaign-generation-options";
 
 // Providers with a real metadata-sync integration available today.
 const SYNC_ENABLED: Record<string, boolean> = { mailerlite: true, brevo: false };
