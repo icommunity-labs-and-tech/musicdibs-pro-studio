@@ -56,7 +56,7 @@ export function useProviderConnections(tenantId: string | undefined) {
 // Credentials are NEVER written from the browser. The manage-provider-connection
 // edge function encrypts and persists them server-side with the service role.
 async function callProviderFn(payload: {
-  action: "connect" | "disconnect" | "test_connection";
+  action: "connect" | "disconnect" | "test_connection" | "sync_audiences";
   provider_type: ProviderType;
   api_key?: string;
 }) {
