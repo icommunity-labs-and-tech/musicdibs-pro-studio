@@ -150,6 +150,7 @@ export class KieClient {
     } catch (networkErr) {
       // Network/DNS/timeout: no business code available.
       throw new KieError({
+        userMessage: KIE_NETWORK_ES,
         rawMessage:
           networkErr instanceof Error ? networkErr.message : String(networkErr),
       });
@@ -163,10 +164,11 @@ export class KieClient {
       // Use the HTTP status as the business code when the body isn't JSON so a
       // documented 4xx/5xx still maps to a precise Spanish message.
       if (typeof KIE_CODE_MESSAGES_ES[res.status] === "undefined") {
-        throw new KieError({ rawMessage: KIE_INVALID_RESPONSE_ES, httpStatus: res.status });
+        throw new KieError({ userMessage: KIE_INVALID_RESPONSE_ES, httpStatus: res.status });
       }
       throw new KieError({ code: res.status, httpStatus: res.status });
     }
+
 
     // ── Business layer (documented KIE/Suno codes) ──────────────────────────
     if (!res.ok || parsed.code !== 200 || !parsed.data?.taskId) {
