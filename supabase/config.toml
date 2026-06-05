@@ -1,1 +1,9 @@
 project_id = "asolssebjyjyfbggraew"
+
+# Public callbacks invoked by the AI Music Studio engine — no user JWT.
+# Both endpoints validate a signed token bound to the generation job.
+[functions.ai-music-studio-lyrics-callback]
+verify_jwt = false
+
+[functions.ai-music-studio-music-callback]
+verify_jwt = false
