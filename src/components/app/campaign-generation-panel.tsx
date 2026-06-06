@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Download, Loader2, Music4, RefreshCw, Sparkles } from "lucide-react";
 
 import { AudioPlayer } from "@/components/app/audio-player";
