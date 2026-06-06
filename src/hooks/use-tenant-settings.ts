@@ -85,6 +85,9 @@ export interface SettingsUpdate {
   website?: string | null;
   timezone?: string | null;
   api_keys?: ApiKeys;
+  sender_name?: string | null;
+  sender_email?: string | null;
+  reply_to_email?: string | null;
 }
 
 export function useUpdateTenantSettings(tenantId: string | undefined) {
