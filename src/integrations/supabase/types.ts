@@ -233,6 +233,7 @@ export type Database = {
         Row: {
           ai_prompt: string | null
           ai_provider: string
+          approved_asset_id: string | null
           audio_url: string | null
           click_rate: number | null
           completion_rate: number | null
@@ -268,6 +269,7 @@ export type Database = {
         Insert: {
           ai_prompt?: string | null
           ai_provider?: string
+          approved_asset_id?: string | null
           audio_url?: string | null
           click_rate?: number | null
           completion_rate?: number | null
@@ -303,6 +305,7 @@ export type Database = {
         Update: {
           ai_prompt?: string | null
           ai_provider?: string
+          approved_asset_id?: string | null
           audio_url?: string | null
           click_rate?: number | null
           completion_rate?: number | null
@@ -336,6 +339,13 @@ export type Database = {
           vertical?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "campaigns_approved_asset_id_fkey"
+            columns: ["approved_asset_id"]
+            isOneToOne: false
+            referencedRelation: "generation_assets"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "campaigns_contact_list_id_fkey"
             columns: ["contact_list_id"]
@@ -522,11 +532,14 @@ export type Database = {
           completion_count: number
           cover_asset_id: string | null
           created_at: string
+          cta_title: string | null
+          cta_url: string | null
           download_count: number
           experience_token: string
           generation_job_id: string | null
           id: string
           lyrics_asset_id: string | null
+          message_content: string | null
           play_count: number
           status: string
           tenant_id: string
@@ -541,11 +554,14 @@ export type Database = {
           completion_count?: number
           cover_asset_id?: string | null
           created_at?: string
+          cta_title?: string | null
+          cta_url?: string | null
           download_count?: number
           experience_token: string
           generation_job_id?: string | null
           id?: string
           lyrics_asset_id?: string | null
+          message_content?: string | null
           play_count?: number
           status?: string
           tenant_id: string
@@ -560,11 +576,14 @@ export type Database = {
           completion_count?: number
           cover_asset_id?: string | null
           created_at?: string
+          cta_title?: string | null
+          cta_url?: string | null
           download_count?: number
           experience_token?: string
           generation_job_id?: string | null
           id?: string
           lyrics_asset_id?: string | null
+          message_content?: string | null
           play_count?: number
           status?: string
           tenant_id?: string
@@ -618,6 +637,7 @@ export type Database = {
           duration_seconds: number | null
           external_asset_id: string | null
           generation_job_id: string
+          generation_round: number
           id: string
           lyrics_content: string | null
           metadata: Json | null
@@ -635,6 +655,7 @@ export type Database = {
           duration_seconds?: number | null
           external_asset_id?: string | null
           generation_job_id: string
+          generation_round?: number
           id?: string
           lyrics_content?: string | null
           metadata?: Json | null
@@ -652,6 +673,7 @@ export type Database = {
           duration_seconds?: number | null
           external_asset_id?: string | null
           generation_job_id?: string
+          generation_round?: number
           id?: string
           lyrics_content?: string | null
           metadata?: Json | null
@@ -689,6 +711,7 @@ export type Database = {
           credits_reserved: number
           failed_jobs: number
           generation_mode: string
+          generation_round: number
           id: string
           started_at: string | null
           status: string
@@ -705,6 +728,7 @@ export type Database = {
           credits_reserved?: number
           failed_jobs?: number
           generation_mode: string
+          generation_round?: number
           id?: string
           started_at?: string | null
           status?: string
@@ -721,6 +745,7 @@ export type Database = {
           credits_reserved?: number
           failed_jobs?: number
           generation_mode?: string
+          generation_round?: number
           id?: string
           started_at?: string | null
           status?: string
@@ -753,6 +778,7 @@ export type Database = {
           external_lyrics_task_id: string | null
           external_music_task_id: string | null
           generation_batch_id: string | null
+          generation_round: number
           id: string
           lyrics_status: string
           lyrics_title: string | null
@@ -783,6 +809,7 @@ export type Database = {
           external_lyrics_task_id?: string | null
           external_music_task_id?: string | null
           generation_batch_id?: string | null
+          generation_round?: number
           id?: string
           lyrics_status?: string
           lyrics_title?: string | null
@@ -813,6 +840,7 @@ export type Database = {
           external_lyrics_task_id?: string | null
           external_music_task_id?: string | null
           generation_batch_id?: string | null
+          generation_round?: number
           id?: string
           lyrics_status?: string
           lyrics_title?: string | null
