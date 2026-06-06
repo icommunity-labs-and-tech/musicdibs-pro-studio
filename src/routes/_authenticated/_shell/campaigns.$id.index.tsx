@@ -340,15 +340,28 @@ function CampaignDetailPage() {
         />
       ) : null}
 
-      {/* Página de experiencia (cuando hay audio generado) */}
-      {audioAsset ? (
+      {/* Revisión y aprobación de versiones (Single Song) */}
+      {inReviewPhase ? (
+        <CampaignReviewPanel
+          campaignId={id}
+          status={campaign.status}
+          assets={assets ?? []}
+          approvedAssetId={approvedAssetId}
+          onRegenerate={handleConfirmGeneration}
+          isRegenerating={generateCampaign.isPending}
+        />
+      ) : null}
+
+      {/* Página de experiencia (gated: solo desde campaña aprobada) */}
+      {inReviewPhase ? (
         <ExperiencePanel
           campaignId={id}
           tenantId={tenant?.id}
           generationJobId={job?.id ?? null}
-          audioAssetId={audioAsset.id}
+          audioAssetId={approvedAudioAsset?.id ?? null}
           lyricsAssetId={lyricsAsset?.id ?? null}
           defaultTitle={campaign.name}
+          approved={isApproved}
         />
       ) : null}
 
