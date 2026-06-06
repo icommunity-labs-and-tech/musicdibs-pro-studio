@@ -23,7 +23,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { isCampaignEditable } from "@/lib/campaign-status";
+import {
+  isCampaignApproved,
+  isCampaignEditable,
+  isCampaignReviewing,
+} from "@/lib/campaign-status";
 import {
   buildCampaignConfigRows,
   type CampaignConfigSummary,
