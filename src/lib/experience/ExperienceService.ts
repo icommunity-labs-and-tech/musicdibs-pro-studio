@@ -82,7 +82,7 @@ export const ExperienceService = {
         experience_token: generateExperienceToken(),
         title: input.title,
         status: "draft",
-        branding: (input.branding ?? {}) as Record<string, unknown>,
+        branding: (input.branding ?? {}) as unknown as Json,
       })
       .select("*")
       .single();
@@ -96,7 +96,7 @@ export const ExperienceService = {
   ): Promise<ExperiencePage> {
     const { data, error } = await supabase
       .from("experience_pages")
-      .update({ branding: branding as Record<string, unknown> })
+      .update({ branding: branding as unknown as Json })
       .eq("id", id)
       .select("*")
       .single();
