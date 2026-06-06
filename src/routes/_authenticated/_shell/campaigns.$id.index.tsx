@@ -83,6 +83,7 @@ function CampaignDetailPage() {
   const { data: batch } = useCampaignBatch(id);
   const { data: job } = useCampaignJob(id);
   const { data: assets } = useCampaignAssets(id);
+  const { data: experience } = useCampaignExperience(id);
   const generateCampaign = useGenerateCampaign();
   const retryLyrics = useRetryLyrics();
   const retryMusic = useRetryMusic();
