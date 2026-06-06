@@ -122,6 +122,7 @@ Deno.serve(async (req: Request) => {
           public_url: audio.publicUrl,
           external_asset_id: track.externalId,
           duration_seconds: track.durationSeconds,
+          generation_round: job.generation_round ?? 1,
           metadata: { variant_index: i, title: track.title, cover_path: imagePath },
           provider_metadata: { ...track.raw, task_id: parsed.taskId },
         });
