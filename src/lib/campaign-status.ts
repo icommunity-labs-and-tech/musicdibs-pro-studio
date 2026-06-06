@@ -8,8 +8,12 @@ export type CampaignStatus =
   | "draft"
   | "ready_to_generate"
   | "generating"
+  | "reviewing"
+  | "approved"
   | "completed"
   | "failed"
+  | "published"
+  | "scheduled"
   | "sent"
   // legacy
   | "queued"
@@ -21,6 +25,26 @@ export const EDITABLE_STATUSES: CampaignStatus[] = ["draft"];
 
 export function isCampaignEditable(status: string): boolean {
   return (EDITABLE_STATUSES as string[]).includes(status);
+}
+
+/**
+ * Experience Pages (and downstream publish/send/schedule actions) may only be
+ * created from an approved campaign. Statuses at/after approval qualify.
+ */
+export const APPROVED_OR_BEYOND: CampaignStatus[] = [
+  "approved",
+  "published",
+  "scheduled",
+  "sent",
+];
+
+export function isCampaignApproved(status: string): boolean {
+  return (APPROVED_OR_BEYOND as string[]).includes(status);
+}
+
+/** True while the user is reviewing generated versions (pre-approval). */
+export function isCampaignReviewing(status: string): boolean {
+  return status === "reviewing";
 }
 
 type CampaignRow = Database["public"]["Tables"]["campaigns"]["Row"];
@@ -43,6 +67,25 @@ export const CAMPAIGN_STATUS_META: Record<
   generating: {
     label: "Generando",
     badgeClass: "bg-teal text-night-900 hover:bg-teal border-transparent",
+  },
+  reviewing: {
+    label: "En revisión",
+    badgeClass:
+      "bg-gold-light text-night-900 hover:bg-gold-light border-transparent",
+  },
+  approved: {
+    label: "Aprobada",
+    badgeClass:
+      "bg-success text-success-foreground hover:bg-success border-transparent",
+  },
+  published: {
+    label: "Publicada",
+    badgeClass: "bg-teal text-night-900 hover:bg-teal border-transparent",
+  },
+  scheduled: {
+    label: "Programada",
+    badgeClass:
+      "bg-warning text-warning-foreground hover:bg-warning border-transparent",
   },
   completed: {
     label: "Completada",

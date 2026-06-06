@@ -19,6 +19,7 @@ export interface GenerationAsset {
   external_asset_id: string | null;
   duration_seconds: number | null;
   metadata: Record<string, unknown> | null;
+  generation_round: number;
   created_at: string;
 }
 
@@ -113,7 +114,7 @@ async function fetchAssets(campaignId: string): Promise<GenerationAsset[]> {
   const { data, error } = await supabase
     .from("generation_assets")
     .select(
-      "id, asset_type, status, storage_path, public_url, lyrics_content, external_asset_id, duration_seconds, metadata, created_at",
+      "id, asset_type, status, storage_path, public_url, lyrics_content, external_asset_id, duration_seconds, metadata, generation_round, created_at",
     )
     .eq("campaign_id", campaignId)
     .order("created_at", { ascending: true });
@@ -130,6 +131,47 @@ export function useCampaignAssets(campaignId: string) {
 }
 
 export type { GenerationBatchRow };
+
+// ── Review & Approval (TASK 006-C) ──────────────────────────────────────────
+// Approval is a layer on top of the existing assets: the user selects which
+// generated audio asset becomes the campaign's approved version, then approves
+// it. Only approved campaigns can spawn Experience Pages / publish actions.
+
+/** Persist the user's chosen winning version (campaigns.approved_asset_id). */
+export function useSelectApprovedAsset(campaignId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (assetId: string) => {
+      const { error } = await supabase
+        .from("campaigns")
+        .update({ approved_asset_id: assetId, updated_at: new Date().toISOString() })
+        .eq("id", campaignId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+    },
+  });
+}
+
+/** Approve the selected version: campaign status → "approved". */
+export function useApproveCampaign(campaignId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("campaigns")
+        .update({ status: "approved", updated_at: new Date().toISOString() })
+        .eq("id", campaignId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+    },
+  });
+}
+
+
 
 /**
  * Realtime: any generation_jobs change for the campaign refreshes the job,

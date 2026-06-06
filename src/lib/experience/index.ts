@@ -5,5 +5,9 @@ export {
   ExperiencePublicService,
   buildExperienceUrl,
   generateExperienceToken,
+  EXPERIENCE_BASE_URL,
 } from "./ExperienceService";
-export type { CreateExperienceInput } from "./ExperienceService";
+export type {
+  CreateExperienceInput,
+  ExperienceContent,
+} from "./ExperienceService";

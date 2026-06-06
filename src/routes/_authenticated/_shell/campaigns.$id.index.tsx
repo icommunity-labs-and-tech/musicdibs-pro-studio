@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
 import { CampaignGenerationPanel } from "@/components/app/campaign-generation-panel";
+import { CampaignReviewPanel } from "@/components/app/campaign-review-panel";
 import { ExperiencePanel } from "@/components/app/experience-panel";
 import { useAuth } from "@/components/auth/auth-provider";
 
@@ -22,7 +23,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { isCampaignEditable } from "@/lib/campaign-status";
+import {
+  isCampaignApproved,
+  isCampaignEditable,
+  isCampaignReviewing,
+} from "@/lib/campaign-status";
 import {
   buildCampaignConfigRows,
   type CampaignConfigSummary,
@@ -173,10 +178,20 @@ function CampaignDetailPage() {
   const canEdit = isCampaignEditable(campaign.status);
   const hasGeneration = Boolean(job || (batch && batch.status !== "draft"));
 
-  const audioAsset = (assets ?? []).find(
-    (a) => a.asset_type === "audio" && a.public_url,
-  );
+  const approvedAssetId =
+    (campaign as { approved_asset_id?: string | null }).approved_asset_id ??
+    null;
   const lyricsAsset = (assets ?? []).find((a) => a.asset_type === "lyrics");
+  // Experience uses the explicitly approved version (never auto-picks one).
+  const approvedAudioAsset = (assets ?? []).find(
+    (a) => a.id === approvedAssetId,
+  );
+
+  const isReviewing = isCampaignReviewing(campaign.status);
+  const isApproved = isCampaignApproved(campaign.status);
+  // Legacy "completed" campaigns predate the review flow — still let users
+  // review/approve them so their generated versions can be published.
+  const inReviewPhase = isReviewing || isApproved || campaign.status === "completed";
 
   // Confirmation modal inputs. Single song only in this sprint.
   const generationMode = (configSummary?.generationMode || null) as
@@ -327,15 +342,28 @@ function CampaignDetailPage() {
         />
       ) : null}
 
-      {/* Página de experiencia (cuando hay audio generado) */}
-      {audioAsset ? (
+      {/* Revisión y aprobación de versiones (Single Song) */}
+      {inReviewPhase ? (
+        <CampaignReviewPanel
+          campaignId={id}
+          status={campaign.status}
+          assets={assets ?? []}
+          approvedAssetId={approvedAssetId}
+          onRegenerate={handleConfirmGeneration}
+          isRegenerating={generateCampaign.isPending}
+        />
+      ) : null}
+
+      {/* Página de experiencia (gated: solo desde campaña aprobada) */}
+      {inReviewPhase ? (
         <ExperiencePanel
           campaignId={id}
           tenantId={tenant?.id}
           generationJobId={job?.id ?? null}
-          audioAssetId={audioAsset.id}
+          audioAssetId={approvedAudioAsset?.id ?? null}
           lyricsAssetId={lyricsAsset?.id ?? null}
           defaultTitle={campaign.name}
+          approved={isApproved}
         />
       ) : null}
 

@@ -122,6 +122,7 @@ Deno.serve(async (req: Request) => {
           public_url: audio.publicUrl,
           external_asset_id: track.externalId,
           duration_seconds: track.durationSeconds,
+          generation_round: job.generation_round ?? 1,
           metadata: { variant_index: i, title: track.title, cover_path: imagePath },
           provider_metadata: { ...track.raw, task_id: parsed.taskId },
         });
@@ -158,8 +159,10 @@ Deno.serve(async (req: Request) => {
         .eq("id", job.generation_batch_id);
     }
 
+    // Generation finished → campaign enters REVIEW (user must approve a
+    // version before it can be used in an Experience Page). We never auto-pick.
     const campaignPatch: Record<string, unknown> = {
-      status: "completed",
+      status: "reviewing",
       generated_count: 1,
       updated_at: new Date().toISOString(),
     };

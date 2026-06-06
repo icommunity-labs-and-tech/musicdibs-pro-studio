@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ExperienceService,
   type ExperienceBranding,
+  type ExperienceContent,
   type ExperiencePage,
   type ExperienceStatus,
   type CreateExperienceInput,
@@ -34,6 +35,17 @@ export function useUpdateExperienceBranding(campaignId: string) {
   return useMutation({
     mutationFn: (vars: { id: string; branding: ExperienceBranding }) =>
       ExperienceService.updateBranding(vars.id, vars.branding),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["experience", campaignId] });
+    },
+  });
+}
+
+export function useUpdateExperienceContent(campaignId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (vars: { id: string; content: ExperienceContent }) =>
+      ExperienceService.updateContent(vars.id, vars.content),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["experience", campaignId] });
     },

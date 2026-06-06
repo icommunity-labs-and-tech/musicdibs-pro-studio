@@ -27,13 +27,20 @@ export function generateExperienceToken(): string {
     .slice(0, 20);
 }
 
-/** Build the shareable public URL for a token in the current environment. */
+/**
+ * Public base URL for Experience Pages. Driven by EXPERIENCE_BASE_URL
+ * (exposed to the client as VITE_EXPERIENCE_BASE_URL) and defaulting to the
+ * production domain. We never derive this from window.location so preview
+ * builds don't leak lovable.app links into shared experiences.
+ */
+export const EXPERIENCE_BASE_URL: string =
+  (
+    (import.meta.env.VITE_EXPERIENCE_BASE_URL as string | undefined) ?? ""
+  ).trim() || "https://enterprise.musicdibs.com";
+
+/** Build the shareable public URL for a token. */
 export function buildExperienceUrl(token: string): string {
-  const origin =
-    typeof window !== "undefined" && window.location?.origin
-      ? window.location.origin
-      : "https://enterprise.musicdibs.com";
-  return `${origin}/play/${token}`;
+  return `${EXPERIENCE_BASE_URL.replace(/\/+$/, "")}/play/${token}`;
 }
 
 export interface CreateExperienceInput {
@@ -45,6 +52,13 @@ export interface CreateExperienceInput {
   coverAssetId?: string | null;
   title: string;
   branding?: ExperienceBranding;
+}
+
+/** Configurable, owner-facing content for an Experience Page. */
+export interface ExperienceContent {
+  message_content?: string | null;
+  cta_title?: string | null;
+  cta_url?: string | null;
 }
 
 function mapRow(row: Record<string, unknown>): ExperiencePage {
@@ -97,6 +111,25 @@ export const ExperienceService = {
     const { data, error } = await supabase
       .from("experience_pages")
       .update({ branding: branding as unknown as Json })
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error) throw error;
+    return mapRow(data);
+  },
+
+  /** Update the owner-configurable message + CTA shown on the play page. */
+  async updateContent(
+    id: string,
+    content: ExperienceContent,
+  ): Promise<ExperiencePage> {
+    const { data, error } = await supabase
+      .from("experience_pages")
+      .update({
+        message_content: content.message_content ?? null,
+        cta_title: content.cta_title ?? null,
+        cta_url: content.cta_url ?? null,
+      })
       .eq("id", id)
       .select("*")
       .single();

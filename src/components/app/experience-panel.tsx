@@ -8,6 +8,8 @@ import {
   EyeOff,
   Headphones,
   Loader2,
+  Lock,
+  MessageSquare,
   Play,
   Share2,
   Sparkles,
@@ -20,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { AI_MUSIC_STUDIO } from "@/lib/campaign-generation-options";
 import { buildExperienceUrl, type ExperienceBranding } from "@/lib/experience";
 import { ExperiencePublishSection } from "@/components/app/experience-publish-section";
@@ -28,6 +31,7 @@ import {
   useCreateExperience,
   useSetExperienceStatus,
   useUpdateExperienceBranding,
+  useUpdateExperienceContent,
 } from "@/hooks/use-experience";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -49,6 +53,14 @@ export interface ExperiencePanelProps {
   audioAssetId: string | null;
   lyricsAssetId: string | null;
   defaultTitle: string;
+  /** Experiences can only be created/managed from an approved campaign. */
+  approved: boolean;
+}
+
+interface ExperienceContentDraft {
+  message_content: string;
+  cta_title: string;
+  cta_url: string;
 }
 
 export function ExperiencePanel({
@@ -58,17 +70,31 @@ export function ExperiencePanel({
   audioAssetId,
   lyricsAssetId,
   defaultTitle,
+  approved,
 }: ExperiencePanelProps) {
   const { data: experience, isLoading } = useCampaignExperience(campaignId);
   const createExperience = useCreateExperience();
   const setStatus = useSetExperienceStatus(campaignId);
   const updateBranding = useUpdateExperienceBranding(campaignId);
+  const updateContent = useUpdateExperienceContent(campaignId);
 
   const [copied, setCopied] = useState(false);
   const [branding, setBranding] = useState<ExperienceBranding>({});
+  const [content, setContent] = useState<ExperienceContentDraft>({
+    message_content: "",
+    cta_title: "",
+    cta_url: "",
+  });
 
   useEffect(() => {
-    if (experience) setBranding(experience.branding ?? {});
+    if (experience) {
+      setBranding(experience.branding ?? {});
+      setContent({
+        message_content: experience.message_content ?? "",
+        cta_title: experience.cta_title ?? "",
+        cta_url: experience.cta_url ?? "",
+      });
+    }
   }, [experience]);
 
   const handleCreate = () => {
@@ -137,6 +163,27 @@ export function ExperiencePanel({
     );
   };
 
+  const handleSaveContent = () => {
+    if (!experience) return;
+    updateContent.mutate(
+      {
+        id: experience.id,
+        content: {
+          message_content: content.message_content.trim() || null,
+          cta_title: content.cta_title.trim() || null,
+          cta_url: content.cta_url.trim() || null,
+        },
+      },
+      {
+        onSuccess: () => toast.success("Experiencia actualizada"),
+        onError: (e: unknown) =>
+          toast.error("No pudimos guardar el contenido", {
+            description: e instanceof Error ? e.message : undefined,
+          }),
+      },
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -146,14 +193,21 @@ export function ExperiencePanel({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        {isLoading ? (
+        {!approved ? (
+          <div className="flex items-start gap-3 rounded-xl border border-warning/40 bg-warning/5 p-4">
+            <Lock className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+            <p className="text-sm">
+              Aprueba una versión generada antes de continuar.
+            </p>
+          </div>
+        ) : isLoading ? (
           <p className="text-sm text-muted-foreground">Cargando…</p>
         ) : !experience ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Publica esta canción como una página de experiencia pública con
-              reproductor, letra y tu marca. Obtendrás un enlace para insertar en
-              tus campañas de tu plataforma de marketing.
+              Publica la versión aprobada como una página de experiencia pública
+              con reproductor y tu marca. Obtendrás un enlace para insertar en tus
+              campañas de tu plataforma de marketing.
             </p>
             <Button onClick={handleCreate} disabled={createExperience.isPending}>
               {createExperience.isPending ? (
@@ -184,6 +238,14 @@ export function ExperiencePanel({
                 download_count: experience.download_count,
               }}
             />
+
+            <ExperienceContentSettings
+              content={content}
+              setContent={setContent}
+              onSave={handleSaveContent}
+              saving={updateContent.isPending}
+            />
+
             <ExperiencePublishSection
               experience={experience}
               tenantId={tenantId}
@@ -199,6 +261,72 @@ export function ExperiencePanel({
     </Card>
   );
 }
+
+function ExperienceContentSettings({
+  content,
+  setContent,
+  onSave,
+  saving,
+}: {
+  content: ExperienceContentDraft;
+  setContent: (c: ExperienceContentDraft) => void;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  return (
+    <div className="space-y-3 rounded-xl border p-4">
+      <p className="flex items-center gap-1.5 text-sm font-medium">
+        <MessageSquare className="h-4 w-4 text-primary" />
+        Mensaje de la experiencia
+      </p>
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">
+          Mensaje (opcional)
+        </Label>
+        <Textarea
+          value={content.message_content}
+          placeholder={
+            "Gracias por formar parte de nuestra comunidad. Usa el código WELCOME25 antes del 31 de julio."
+          }
+          rows={3}
+          onChange={(e) =>
+            setContent({ ...content, message_content: e.target.value })
+          }
+        />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">
+            Título del botón (CTA)
+          </Label>
+          <Input
+            value={content.cta_title}
+            placeholder="Descubre más"
+            onChange={(e) =>
+              setContent({ ...content, cta_title: e.target.value })
+            }
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">
+            Enlace del botón (CTA)
+          </Label>
+          <Input
+            value={content.cta_url}
+            placeholder="https://tu-web.com"
+            onChange={(e) => setContent({ ...content, cta_url: e.target.value })}
+          />
+        </div>
+      </div>
+      <Button size="sm" variant="outline" onClick={onSave} disabled={saving}>
+        {saving ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
+        Guardar mensaje
+      </Button>
+    </div>
+  );
+}
+
+
 
 function ExperienceBody({
   url,
