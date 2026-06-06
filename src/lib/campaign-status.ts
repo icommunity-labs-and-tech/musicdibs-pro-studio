@@ -68,6 +68,25 @@ export const CAMPAIGN_STATUS_META: Record<
     label: "Generando",
     badgeClass: "bg-teal text-night-900 hover:bg-teal border-transparent",
   },
+  reviewing: {
+    label: "En revisión",
+    badgeClass:
+      "bg-gold-light text-night-900 hover:bg-gold-light border-transparent",
+  },
+  approved: {
+    label: "Aprobada",
+    badgeClass:
+      "bg-success text-success-foreground hover:bg-success border-transparent",
+  },
+  published: {
+    label: "Publicada",
+    badgeClass: "bg-teal text-night-900 hover:bg-teal border-transparent",
+  },
+  scheduled: {
+    label: "Programada",
+    badgeClass:
+      "bg-warning text-warning-foreground hover:bg-warning border-transparent",
+  },
   completed: {
     label: "Completada",
     badgeClass:
