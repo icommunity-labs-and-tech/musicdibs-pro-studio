@@ -281,6 +281,37 @@ function CampaignDetailPage() {
     },
   ];
 
+  const playCompletionRate =
+    experience && experience.play_count > 0
+      ? Math.round((experience.completion_count / experience.play_count) * 100)
+      : null;
+
+  const playbackMetricCards: { label: string; value: string; hint?: string }[] =
+    experience
+      ? [
+          {
+            label: "Reproducciones",
+            value: experience.play_count.toLocaleString("es-ES"),
+          },
+          {
+            label: "Oyentes únicos",
+            value: experience.unique_visitors.toLocaleString("es-ES"),
+          },
+          {
+            label: "Completadas",
+            value: experience.completion_count.toLocaleString("es-ES"),
+            hint:
+              playCompletionRate !== null
+                ? `${playCompletionRate}% tasa`
+                : undefined,
+          },
+          {
+            label: "Descargas",
+            value: experience.download_count.toLocaleString("es-ES"),
+          },
+        ]
+      : [];
+
   const configRows = configSummary
     ? buildCampaignConfigRows(configSummary)
     : [];
