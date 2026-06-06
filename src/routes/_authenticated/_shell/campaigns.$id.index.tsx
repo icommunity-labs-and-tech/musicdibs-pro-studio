@@ -189,7 +189,9 @@ function CampaignDetailPage() {
 
   const isReviewing = isCampaignReviewing(campaign.status);
   const isApproved = isCampaignApproved(campaign.status);
-  const inReviewPhase = isReviewing || isApproved;
+  // Legacy "completed" campaigns predate the review flow — still let users
+  // review/approve them so their generated versions can be published.
+  const inReviewPhase = isReviewing || isApproved || campaign.status === "completed";
 
   // Confirmation modal inputs. Single song only in this sprint.
   const generationMode = (configSummary?.generationMode || null) as
