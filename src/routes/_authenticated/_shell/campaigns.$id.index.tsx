@@ -326,6 +326,18 @@ function CampaignDetailPage() {
         />
       ) : null}
 
+      {/* Página de experiencia (cuando hay audio generado) */}
+      {audioAsset ? (
+        <ExperiencePanel
+          campaignId={id}
+          tenantId={tenant?.id}
+          generationJobId={job?.id ?? null}
+          audioAssetId={audioAsset.id}
+          lyricsAssetId={lyricsAsset?.id ?? null}
+          defaultTitle={campaign.name}
+        />
+      ) : null}
+
       {/* Configuración de AI Music Studio */}
       <Card>
         <CardHeader>
