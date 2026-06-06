@@ -478,28 +478,3 @@ function Field({
     </div>
   );
 }
-
-function Stat({
-  icon,
-  label,
-  value,
-  hint,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: number;
-  hint?: string;
-}) {
-  return (
-    <div className="rounded-xl border bg-muted/30 p-4">
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        {icon}
-        <p className="text-xs font-medium">{label}</p>
-      </div>
-      <p className="mt-1 font-display text-2xl font-bold">
-        {value.toLocaleString("es-ES")}
-      </p>
-      {hint ? <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p> : null}
-    </div>
-  );
-}
