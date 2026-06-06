@@ -27,13 +27,20 @@ export function generateExperienceToken(): string {
     .slice(0, 20);
 }
 
-/** Build the shareable public URL for a token in the current environment. */
+/**
+ * Public base URL for Experience Pages. Driven by EXPERIENCE_BASE_URL
+ * (exposed to the client as VITE_EXPERIENCE_BASE_URL) and defaulting to the
+ * production domain. We never derive this from window.location so preview
+ * builds don't leak lovable.app links into shared experiences.
+ */
+export const EXPERIENCE_BASE_URL: string =
+  (
+    (import.meta.env.VITE_EXPERIENCE_BASE_URL as string | undefined) ?? ""
+  ).trim() || "https://enterprise.musicdibs.com";
+
+/** Build the shareable public URL for a token. */
 export function buildExperienceUrl(token: string): string {
-  const origin =
-    typeof window !== "undefined" && window.location?.origin
-      ? window.location.origin
-      : "https://enterprise.musicdibs.com";
-  return `${origin}/play/${token}`;
+  return `${EXPERIENCE_BASE_URL.replace(/\/+$/, "")}/play/${token}`;
 }
 
 export interface CreateExperienceInput {
