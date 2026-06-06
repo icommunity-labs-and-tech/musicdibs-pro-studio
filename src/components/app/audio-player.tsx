@@ -68,6 +68,10 @@ export function AudioPlayer({
     } else {
       void audio.play();
       setPlaying(true);
+      if (!hasPlayedRef.current) {
+        hasPlayedRef.current = true;
+        onPlay?.();
+      }
     }
   }
 
