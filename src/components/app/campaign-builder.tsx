@@ -314,6 +314,12 @@ export function CampaignBuilder({
             <StepAudience
               audiences={audiences ?? []}
               loading={audiencesLoading}
+              syncing={syncAudiences.isPending}
+              onRefresh={() => {
+                (connections ?? [])
+                  .filter((c) => c.status === "connected")
+                  .forEach((c) => syncAudiences.mutate(c.provider_type));
+              }}
               selectedId={state.audienceId}
               onSelect={(id) => update("audienceId", id)}
               providerLabelByConnection={providerLabelByConnection}
