@@ -48,6 +48,9 @@ export interface ExperiencePublic {
   title: string;
   status: ExperienceStatus;
   branding: ExperienceBranding;
+  message_content: string | null;
+  cta_title: string | null;
+  cta_url: string | null;
   audio_url: string | null;
   duration_seconds: number | null;
   cover_url: string | null;
