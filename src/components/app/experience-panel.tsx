@@ -455,18 +455,6 @@ function ExperienceBody({
               />
             </div>
           </div>
-          <Field
-            label="Texto del botón (CTA)"
-            value={branding.cta_text ?? ""}
-            placeholder="Descubre más"
-            onChange={(v) => setBranding({ ...branding, cta_text: v })}
-          />
-          <Field
-            label="Enlace del botón (CTA)"
-            value={branding.cta_url ?? ""}
-            placeholder="https://tu-web.com"
-            onChange={(v) => setBranding({ ...branding, cta_url: v })}
-          />
         </div>
         <Button
           size="sm"
