@@ -452,22 +452,6 @@ function ExperienceBody({
           Guardar branding
         </Button>
       </div>
-
-      {/* Analytics */}
-      <div>
-        <p className="mb-2 text-sm font-medium">Analítica de reproducción</p>
-        <div className="grid gap-3 sm:grid-cols-4">
-          <Stat icon={<Play className="h-4 w-4" />} label="Reproducciones" value={stats.play_count} />
-          <Stat icon={<Users className="h-4 w-4" />} label="Oyentes únicos" value={stats.unique_visitors} />
-          <Stat
-            icon={<Headphones className="h-4 w-4" />}
-            label="Completadas"
-            value={stats.completion_count}
-            hint={completionRate !== null ? `${completionRate}% tasa` : undefined}
-          />
-          <Stat icon={<Download className="h-4 w-4" />} label="Descargas" value={stats.download_count} />
-        </div>
-      </div>
     </div>
   );
 }
