@@ -17,6 +17,9 @@ export interface TenantSettings {
   website: string | null;
   timezone: string | null;
   api_keys: ApiKeys;
+  sender_name: string | null;
+  sender_email: string | null;
+  reply_to_email: string | null;
 }
 
 function parseApiKeys(value: unknown): ApiKeys {
