@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AI_MUSIC_STUDIO } from "@/lib/campaign-generation-options";
 import { buildExperienceUrl, type ExperienceBranding } from "@/lib/experience";
+import { ExperiencePublishSection } from "@/components/app/experience-publish-section";
 import {
   useCampaignExperience,
   useCreateExperience,
