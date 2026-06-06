@@ -1,13 +1,16 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
   ArrowRight,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Coins,
   Loader2,
   Music2,
   PenLine,
+  RefreshCw,
   Rocket,
   Sparkles,
   UserCheck,
@@ -51,6 +54,7 @@ import { getProviderMeta } from "@/lib/providers";
 import {
   useProviderAudiences,
   useProviderConnections,
+  useSyncAudiences,
   type ProviderAudienceRow,
 } from "@/hooks/use-providers";
 import {
