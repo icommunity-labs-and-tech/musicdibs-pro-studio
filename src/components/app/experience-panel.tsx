@@ -8,6 +8,8 @@ import {
   EyeOff,
   Headphones,
   Loader2,
+  Lock,
+  MessageSquare,
   Play,
   Share2,
   Sparkles,
@@ -20,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { AI_MUSIC_STUDIO } from "@/lib/campaign-generation-options";
 import { buildExperienceUrl, type ExperienceBranding } from "@/lib/experience";
 import { ExperiencePublishSection } from "@/components/app/experience-publish-section";
@@ -28,6 +31,7 @@ import {
   useCreateExperience,
   useSetExperienceStatus,
   useUpdateExperienceBranding,
+  useUpdateExperienceContent,
 } from "@/hooks/use-experience";
 
 const STATUS_LABELS: Record<string, string> = {
