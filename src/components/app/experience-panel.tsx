@@ -333,7 +333,6 @@ function ExperienceBody({
   setBranding,
   onSaveBranding,
   savingBranding,
-  stats,
 }: {
   url: string;
   status: string;
@@ -345,18 +344,9 @@ function ExperienceBody({
   setBranding: (b: ExperienceBranding) => void;
   onSaveBranding: () => void;
   savingBranding: boolean;
-  stats: {
-    play_count: number;
-    unique_visitors: number;
-    completion_count: number;
-    download_count: number;
-  };
 }) {
   const isPublished = status === "published";
-  const completionRate =
-    stats.play_count > 0
-      ? Math.round((stats.completion_count / stats.play_count) * 100)
-      : null;
+
 
   return (
     <div className="space-y-5">
