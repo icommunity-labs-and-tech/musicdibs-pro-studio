@@ -39,49 +39,6 @@ function StageBadge({ status }: { status: StageStatus }) {
   );
 }
 
-function formatDuration(seconds: number | null): string {
-  if (!seconds || !Number.isFinite(seconds)) return "—";
-  const m = Math.floor(seconds / 60);
-  const s = Math.round(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function DownloadButton({ url, filename }: { url: string; filename: string }) {
-  const [downloading, setDownloading] = useState(false);
-
-  async function handleDownload() {
-    setDownloading(true);
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("download failed");
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(objectUrl);
-    } catch {
-      // Fallback: open in a new tab if the blob fetch fails (e.g. CORS).
-      window.open(url, "_blank", "noopener,noreferrer");
-    } finally {
-      setDownloading(false);
-    }
-  }
-
-  return (
-    <Button size="sm" variant="outline" onClick={handleDownload} disabled={downloading}>
-      {downloading ? (
-        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-      ) : (
-        <Download className="mr-1.5 h-4 w-4" />
-      )}
-      Descargar
-    </Button>
-  );
-}
 
 
 function StudioFooter() {
