@@ -15,14 +15,21 @@ function formatTime(seconds: number): string {
 export function AudioPlayer({
   src,
   className,
+  onPlay,
+  onEnded,
 }: {
   src: string;
   className?: string;
+  /** Fires the first time playback starts for the current source. */
+  onPlay?: () => void;
+  /** Fires when playback reaches the end. */
+  onEnded?: () => void;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
+  const hasPlayedRef = useRef(false);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -30,7 +37,10 @@ export function AudioPlayer({
 
     const onTime = () => setCurrent(audio.currentTime);
     const onMeta = () => setDuration(audio.duration);
-    const onEnd = () => setPlaying(false);
+    const onEnd = () => {
+      setPlaying(false);
+      onEnded?.();
+    };
 
     audio.addEventListener("timeupdate", onTime);
     audio.addEventListener("loadedmetadata", onMeta);
@@ -40,12 +50,13 @@ export function AudioPlayer({
       audio.removeEventListener("loadedmetadata", onMeta);
       audio.removeEventListener("ended", onEnd);
     };
-  }, []);
+  }, [onEnded]);
 
   // Reset when the source changes.
   useEffect(() => {
     setPlaying(false);
     setCurrent(0);
+    hasPlayedRef.current = false;
   }, [src]);
 
   function toggle() {
