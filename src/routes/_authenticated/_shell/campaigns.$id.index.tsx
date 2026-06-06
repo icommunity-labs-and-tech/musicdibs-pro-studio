@@ -54,6 +54,7 @@ import {
   useRetryMusic,
 } from "@/hooks/use-generation";
 import { GenerateCampaignDialog } from "@/components/app/generate-campaign-dialog";
+import { useCampaignExperience } from "@/hooks/use-experience";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/$id/")({
   head: () => ({ meta: [{ title: "Campaña · Musicdibs Enterprise" }] }),
