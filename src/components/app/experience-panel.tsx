@@ -53,6 +53,14 @@ export interface ExperiencePanelProps {
   audioAssetId: string | null;
   lyricsAssetId: string | null;
   defaultTitle: string;
+  /** Experiences can only be created/managed from an approved campaign. */
+  approved: boolean;
+}
+
+interface ExperienceContentDraft {
+  message_content: string;
+  cta_title: string;
+  cta_url: string;
 }
 
 export function ExperiencePanel({
@@ -62,17 +70,31 @@ export function ExperiencePanel({
   audioAssetId,
   lyricsAssetId,
   defaultTitle,
+  approved,
 }: ExperiencePanelProps) {
   const { data: experience, isLoading } = useCampaignExperience(campaignId);
   const createExperience = useCreateExperience();
   const setStatus = useSetExperienceStatus(campaignId);
   const updateBranding = useUpdateExperienceBranding(campaignId);
+  const updateContent = useUpdateExperienceContent(campaignId);
 
   const [copied, setCopied] = useState(false);
   const [branding, setBranding] = useState<ExperienceBranding>({});
+  const [content, setContent] = useState<ExperienceContentDraft>({
+    message_content: "",
+    cta_title: "",
+    cta_url: "",
+  });
 
   useEffect(() => {
-    if (experience) setBranding(experience.branding ?? {});
+    if (experience) {
+      setBranding(experience.branding ?? {});
+      setContent({
+        message_content: experience.message_content ?? "",
+        cta_title: experience.cta_title ?? "",
+        cta_url: experience.cta_url ?? "",
+      });
+    }
   }, [experience]);
 
   const handleCreate = () => {
