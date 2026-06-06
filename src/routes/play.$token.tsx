@@ -31,6 +31,18 @@ function track(token: string, field: ExperienceStatField) {
   void ExperiencePublicService.track(token, field);
 }
 
+/**
+ * Make a user-entered CTA link absolute. Without a protocol the browser
+ * resolves the value relative to the current page (…/play/…), which is wrong.
+ */
+function normalizeCtaUrl(raw: string): string {
+  const url = raw.trim();
+  if (!url) return "";
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith("mailto:") || url.startsWith("tel:")) return url;
+  return `https://${url.replace(/^\/+/, "")}`;
+}
+
 function PlayPage() {
   const { token } = Route.useParams();
   const visitorTrackedRef = useRef(false);
