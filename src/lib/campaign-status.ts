@@ -8,8 +8,12 @@ export type CampaignStatus =
   | "draft"
   | "ready_to_generate"
   | "generating"
+  | "reviewing"
+  | "approved"
   | "completed"
   | "failed"
+  | "published"
+  | "scheduled"
   | "sent"
   // legacy
   | "queued"
@@ -21,6 +25,26 @@ export const EDITABLE_STATUSES: CampaignStatus[] = ["draft"];
 
 export function isCampaignEditable(status: string): boolean {
   return (EDITABLE_STATUSES as string[]).includes(status);
+}
+
+/**
+ * Experience Pages (and downstream publish/send/schedule actions) may only be
+ * created from an approved campaign. Statuses at/after approval qualify.
+ */
+export const APPROVED_OR_BEYOND: CampaignStatus[] = [
+  "approved",
+  "published",
+  "scheduled",
+  "sent",
+];
+
+export function isCampaignApproved(status: string): boolean {
+  return (APPROVED_OR_BEYOND as string[]).includes(status);
+}
+
+/** True while the user is reviewing generated versions (pre-approval). */
+export function isCampaignReviewing(status: string): boolean {
+  return status === "reviewing";
 }
 
 type CampaignRow = Database["public"]["Tables"]["campaigns"]["Row"];
