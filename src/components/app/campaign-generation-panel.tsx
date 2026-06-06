@@ -53,7 +53,6 @@ function StudioFooter() {
 export interface CampaignGenerationPanelProps {
   job: GenerationJob | null;
   batch: GenerationBatchRow | null;
-  assets: GenerationAsset[];
   isRetryingLyrics: boolean;
   isRetryingMusic: boolean;
   onRetryLyrics: () => void;
@@ -63,7 +62,6 @@ export interface CampaignGenerationPanelProps {
 export function CampaignGenerationPanel({
   job,
   batch,
-  assets,
   isRetryingLyrics,
   isRetryingMusic,
   onRetryLyrics,
@@ -71,8 +69,6 @@ export function CampaignGenerationPanel({
 }: CampaignGenerationPanelProps) {
   const lyricsStatus = job?.lyrics_status ?? "pending";
   const musicStatus = job?.music_status ?? "pending";
-  const audioAssets = assets.filter((a) => a.asset_type === "audio" && a.public_url);
-  const isCompleted = musicStatus === "completed" && audioAssets.length > 0;
   const isActive =
     job != null &&
     job.status !== "completed" &&
@@ -171,36 +167,6 @@ export function CampaignGenerationPanel({
           </div>
         ) : null}
 
-        {/* Generated songs */}
-        {isCompleted ? (
-          <div className="space-y-3">
-            <h3 className="font-display text-base font-semibold">Canciones generadas</h3>
-            <div className="space-y-4">
-              {audioAssets.map((asset, index) => {
-                const versionLabel = `Versión ${String.fromCharCode(65 + index)}`;
-                const title =
-                  (asset.metadata?.title as string | undefined) ?? versionLabel;
-                return (
-                  <div key={asset.id} className="space-y-2 rounded-xl border p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold">{versionLabel}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {title} · {formatDuration(asset.duration_seconds)}
-                        </p>
-                      </div>
-                      <DownloadButton
-                        url={asset.public_url ?? "#"}
-                        filename={`${(title || versionLabel).replace(/[^\w.-]+/g, "_")}.mp3`}
-                      />
-                    </div>
-                    {asset.public_url ? <AudioPlayer src={asset.public_url} /> : null}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
 
         <StudioFooter />
       </CardContent>
