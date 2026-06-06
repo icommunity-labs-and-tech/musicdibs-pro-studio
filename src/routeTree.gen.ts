@@ -34,6 +34,7 @@ import { Route as AuthenticatedShellAdminRouteImport } from './routes/_authentic
 import { Route as AuthenticatedShellSettingsIndexRouteImport } from './routes/_authenticated/_shell/settings.index'
 import { Route as AuthenticatedShellCampaignsIndexRouteImport } from './routes/_authenticated/_shell/campaigns.index'
 import { Route as AuthenticatedShellAdminIndexRouteImport } from './routes/_authenticated/_shell/admin/index'
+import { Route as AuthenticatedShellSettingsSenderRouteImport } from './routes/_authenticated/_shell/settings.sender'
 import { Route as AuthenticatedShellSettingsProvidersRouteImport } from './routes/_authenticated/_shell/settings.providers'
 import { Route as AuthenticatedShellSettingsBillingRouteImport } from './routes/_authenticated/_shell/settings.billing'
 import { Route as AuthenticatedShellCampaignsNewRouteImport } from './routes/_authenticated/_shell/campaigns.new'
@@ -174,6 +175,12 @@ const AuthenticatedShellAdminIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedShellAdminRoute,
   } as any)
+const AuthenticatedShellSettingsSenderRoute =
+  AuthenticatedShellSettingsSenderRouteImport.update({
+    id: '/sender',
+    path: '/sender',
+    getParentRoute: () => AuthenticatedShellSettingsRoute,
+  } as any)
 const AuthenticatedShellSettingsProvidersRoute =
   AuthenticatedShellSettingsProvidersRouteImport.update({
     id: '/providers',
@@ -241,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/campaigns/new': typeof AuthenticatedShellCampaignsNewRoute
   '/settings/billing': typeof AuthenticatedShellSettingsBillingRoute
   '/settings/providers': typeof AuthenticatedShellSettingsProvidersRoute
+  '/settings/sender': typeof AuthenticatedShellSettingsSenderRoute
   '/admin/': typeof AuthenticatedShellAdminIndexRoute
   '/campaigns/': typeof AuthenticatedShellCampaignsIndexRoute
   '/settings/': typeof AuthenticatedShellSettingsIndexRoute
@@ -271,6 +279,7 @@ export interface FileRoutesByTo {
   '/campaigns/new': typeof AuthenticatedShellCampaignsNewRoute
   '/settings/billing': typeof AuthenticatedShellSettingsBillingRoute
   '/settings/providers': typeof AuthenticatedShellSettingsProvidersRoute
+  '/settings/sender': typeof AuthenticatedShellSettingsSenderRoute
   '/admin': typeof AuthenticatedShellAdminIndexRoute
   '/campaigns': typeof AuthenticatedShellCampaignsIndexRoute
   '/settings': typeof AuthenticatedShellSettingsIndexRoute
@@ -306,6 +315,7 @@ export interface FileRoutesById {
   '/_authenticated/_shell/campaigns/new': typeof AuthenticatedShellCampaignsNewRoute
   '/_authenticated/_shell/settings/billing': typeof AuthenticatedShellSettingsBillingRoute
   '/_authenticated/_shell/settings/providers': typeof AuthenticatedShellSettingsProvidersRoute
+  '/_authenticated/_shell/settings/sender': typeof AuthenticatedShellSettingsSenderRoute
   '/_authenticated/_shell/admin/': typeof AuthenticatedShellAdminIndexRoute
   '/_authenticated/_shell/campaigns/': typeof AuthenticatedShellCampaignsIndexRoute
   '/_authenticated/_shell/settings/': typeof AuthenticatedShellSettingsIndexRoute
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/campaigns/new'
     | '/settings/billing'
     | '/settings/providers'
+    | '/settings/sender'
     | '/admin/'
     | '/campaigns/'
     | '/settings/'
@@ -370,6 +381,7 @@ export interface FileRouteTypes {
     | '/campaigns/new'
     | '/settings/billing'
     | '/settings/providers'
+    | '/settings/sender'
     | '/admin'
     | '/campaigns'
     | '/settings'
@@ -404,6 +416,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/campaigns/new'
     | '/_authenticated/_shell/settings/billing'
     | '/_authenticated/_shell/settings/providers'
+    | '/_authenticated/_shell/settings/sender'
     | '/_authenticated/_shell/admin/'
     | '/_authenticated/_shell/campaigns/'
     | '/_authenticated/_shell/settings/'
@@ -605,6 +618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellAdminIndexRouteImport
       parentRoute: typeof AuthenticatedShellAdminRoute
     }
+    '/_authenticated/_shell/settings/sender': {
+      id: '/_authenticated/_shell/settings/sender'
+      path: '/sender'
+      fullPath: '/settings/sender'
+      preLoaderRoute: typeof AuthenticatedShellSettingsSenderRouteImport
+      parentRoute: typeof AuthenticatedShellSettingsRoute
+    }
     '/_authenticated/_shell/settings/providers': {
       id: '/_authenticated/_shell/settings/providers'
       path: '/providers'
@@ -677,6 +697,7 @@ const AuthenticatedShellAdminRouteWithChildren =
 interface AuthenticatedShellSettingsRouteChildren {
   AuthenticatedShellSettingsBillingRoute: typeof AuthenticatedShellSettingsBillingRoute
   AuthenticatedShellSettingsProvidersRoute: typeof AuthenticatedShellSettingsProvidersRoute
+  AuthenticatedShellSettingsSenderRoute: typeof AuthenticatedShellSettingsSenderRoute
   AuthenticatedShellSettingsIndexRoute: typeof AuthenticatedShellSettingsIndexRoute
 }
 
@@ -686,6 +707,8 @@ const AuthenticatedShellSettingsRouteChildren: AuthenticatedShellSettingsRouteCh
       AuthenticatedShellSettingsBillingRoute,
     AuthenticatedShellSettingsProvidersRoute:
       AuthenticatedShellSettingsProvidersRoute,
+    AuthenticatedShellSettingsSenderRoute:
+      AuthenticatedShellSettingsSenderRoute,
     AuthenticatedShellSettingsIndexRoute: AuthenticatedShellSettingsIndexRoute,
   }
 
