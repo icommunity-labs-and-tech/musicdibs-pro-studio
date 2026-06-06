@@ -132,6 +132,47 @@ export function useCampaignAssets(campaignId: string) {
 
 export type { GenerationBatchRow };
 
+// ── Review & Approval (TASK 006-C) ──────────────────────────────────────────
+// Approval is a layer on top of the existing assets: the user selects which
+// generated audio asset becomes the campaign's approved version, then approves
+// it. Only approved campaigns can spawn Experience Pages / publish actions.
+
+/** Persist the user's chosen winning version (campaigns.approved_asset_id). */
+export function useSelectApprovedAsset(campaignId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (assetId: string) => {
+      const { error } = await supabase
+        .from("campaigns")
+        .update({ approved_asset_id: assetId, updated_at: new Date().toISOString() })
+        .eq("id", campaignId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+    },
+  });
+}
+
+/** Approve the selected version: campaign status → "approved". */
+export function useApproveCampaign(campaignId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("campaigns")
+        .update({ status: "approved", updated_at: new Date().toISOString() })
+        .eq("id", campaignId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+    },
+  });
+}
+
+
+
 /**
  * Realtime: any generation_jobs change for the campaign refreshes the job,
  * assets, batch and campaign queries (callbacks update the job on every stage
