@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Download, Music4, Sparkles } from "lucide-react";
+import { Music4, Sparkles } from "lucide-react";
 
 import { AudioPlayer } from "@/components/app/audio-player";
 import { Button } from "@/components/ui/button";
