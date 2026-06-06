@@ -112,22 +112,22 @@ function PlayPage() {
               </p>
             )}
 
-            {/* Actions */}
-            <div className="flex flex-col gap-3">
-              {data.audio_url ? (
-                <Button asChild variant="outline" className="w-full">
-                  <a
-                    href={data.audio_url}
-                    download
-                    onClick={() => track(token, "download_count")}
-                  >
-                    <Download className="mr-1.5 h-4 w-4" />
-                    Descargar canción
-                  </a>
-                </Button>
-              ) : null}
+            {/* Experience message (optional, configured by the owner) */}
+            {data.message_content ? (
+              <div className="rounded-2xl border bg-card p-5">
+                <p className="whitespace-pre-line text-center text-sm leading-relaxed">
+                  {data.message_content}
+                </p>
+              </div>
+            ) : null}
 
-              {data.branding?.cta_url && data.branding?.cta_text ? (
+            {/* CTA button */}
+            {(() => {
+              const ctaUrl = data.cta_url || data.branding?.cta_url || "";
+              const ctaTitle =
+                data.cta_title || data.branding?.cta_text || "";
+              if (!ctaUrl || !ctaTitle) return null;
+              return (
                 <Button
                   asChild
                   className="w-full"
@@ -137,28 +137,12 @@ function PlayPage() {
                       : undefined
                   }
                 >
-                  <a
-                    href={data.branding.cta_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {data.branding.cta_text}
+                  <a href={ctaUrl} target="_blank" rel="noopener noreferrer">
+                    {ctaTitle}
                   </a>
                 </Button>
-              ) : null}
-            </div>
-
-            {/* Lyrics */}
-            {data.lyrics ? (
-              <div className="rounded-2xl border bg-card p-5">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Letra
-                </p>
-                <p className="whitespace-pre-line text-sm leading-relaxed">
-                  {data.lyrics}
-                </p>
-              </div>
-            ) : null}
+              );
+            })()}
 
             <Footer />
           </div>
