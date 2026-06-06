@@ -8,6 +8,7 @@
 // ============================================================================
 
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import type {
   ExperienceBranding,
   ExperiencePage,
@@ -47,9 +48,10 @@ export interface CreateExperienceInput {
 }
 
 function mapRow(row: Record<string, unknown>): ExperiencePage {
+  const r = row as unknown as ExperiencePage;
   return {
-    ...(row as ExperiencePage),
-    branding: (row.branding as ExperienceBranding) ?? {},
+    ...r,
+    branding: (r.branding as ExperienceBranding) ?? {},
   };
 }
 
