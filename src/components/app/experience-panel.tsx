@@ -163,6 +163,27 @@ export function ExperiencePanel({
     );
   };
 
+  const handleSaveContent = () => {
+    if (!experience) return;
+    updateContent.mutate(
+      {
+        id: experience.id,
+        content: {
+          message_content: content.message_content.trim() || null,
+          cta_title: content.cta_title.trim() || null,
+          cta_url: content.cta_url.trim() || null,
+        },
+      },
+      {
+        onSuccess: () => toast.success("Experiencia actualizada"),
+        onError: (e: unknown) =>
+          toast.error("No pudimos guardar el contenido", {
+            description: e instanceof Error ? e.message : undefined,
+          }),
+      },
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -172,14 +193,21 @@ export function ExperiencePanel({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        {isLoading ? (
+        {!approved ? (
+          <div className="flex items-start gap-3 rounded-xl border border-warning/40 bg-warning/5 p-4">
+            <Lock className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+            <p className="text-sm">
+              Aprueba una versión generada antes de continuar.
+            </p>
+          </div>
+        ) : isLoading ? (
           <p className="text-sm text-muted-foreground">Cargando…</p>
         ) : !experience ? (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Publica esta canción como una página de experiencia pública con
-              reproductor, letra y tu marca. Obtendrás un enlace para insertar en
-              tus campañas de tu plataforma de marketing.
+              Publica la versión aprobada como una página de experiencia pública
+              con reproductor y tu marca. Obtendrás un enlace para insertar en tus
+              campañas de tu plataforma de marketing.
             </p>
             <Button onClick={handleCreate} disabled={createExperience.isPending}>
               {createExperience.isPending ? (
@@ -210,6 +238,14 @@ export function ExperiencePanel({
                 download_count: experience.download_count,
               }}
             />
+
+            <ExperienceContentSettings
+              content={content}
+              setContent={setContent}
+              onSave={handleSaveContent}
+              saving={updateContent.isPending}
+            />
+
             <ExperiencePublishSection
               experience={experience}
               tenantId={tenantId}
