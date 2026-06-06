@@ -62,6 +62,9 @@ function ProvidersPage() {
         </p>
       </div>
 
+      <MailerLitePlanNotice />
+
+
       <div className="grid gap-4 sm:grid-cols-2">
         {connections.isLoading
           ? PROVIDERS.map((p) => (
