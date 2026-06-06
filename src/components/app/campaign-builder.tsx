@@ -488,9 +488,13 @@ function StepType({
 }
 
 // ── STEP 2 · Audience ────────────────────────────────────────────────────────
+const AUDIENCE_PAGE_SIZES = [25, 50, 100] as const;
+
 function StepAudience({
   audiences,
   loading,
+  syncing,
+  onRefresh,
   selectedId,
   onSelect,
   providerLabelByConnection,
@@ -499,12 +503,28 @@ function StepAudience({
 }: {
   audiences: ProviderAudienceRow[];
   loading: boolean;
+  syncing: boolean;
+  onRefresh: () => void;
   selectedId: string;
   onSelect: (id: string) => void;
   providerLabelByConnection: Map<string, string>;
   generationMode: GenerationMode | "";
   estimatedCredits: number;
 }) {
+  const [pageSize, setPageSize] = useState<number>(AUDIENCE_PAGE_SIZES[0]);
+  const [page, setPage] = useState(0);
+
+  const total = audiences.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const safePage = Math.min(page, pageCount - 1);
+  const start = safePage * pageSize;
+  const pageItems = audiences.slice(start, start + pageSize);
+
+  // Reset to the first page when the size changes or the list shrinks.
+  useEffect(() => {
+    if (page > pageCount - 1) setPage(0);
+  }, [page, pageCount]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-10 text-muted-foreground">
@@ -516,23 +536,82 @@ function StepAudience({
 
   if (audiences.length === 0) {
     return (
-      <EmptyState
-        icon={Users}
-        title="No hay audiencias sincronizadas"
-        description="Conecta un proveedor y sincroniza tus audiencias para seleccionarlas aquí."
-        action={
-          <Button asChild>
-            <Link to="/settings/providers">Ir a proveedores</Link>
+      <div className="space-y-4">
+        <div className="flex items-center justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            disabled={syncing}
+          >
+            <RefreshCw
+              className={cn("mr-1.5 h-4 w-4", syncing && "animate-spin")}
+            />
+            Actualizar grupos
           </Button>
-        }
-      />
+        </div>
+        <EmptyState
+          icon={Users}
+          title="No hay audiencias sincronizadas"
+          description="Conecta un proveedor y sincroniza tus audiencias para seleccionarlas aquí."
+          action={
+            <Button asChild>
+              <Link to="/settings/providers">Ir a proveedores</Link>
+            </Button>
+          }
+        />
+      </div>
     );
   }
 
   return (
     <>
+      {/* Toolbar: counter + page size + refresh */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">
+            {total.toLocaleString("es-ES")}
+          </span>{" "}
+          {total === 1 ? "grupo" : "grupos"}
+        </p>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Por página</span>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(v) => {
+                setPageSize(Number(v));
+                setPage(0);
+              }}
+            >
+              <SelectTrigger className="h-8 w-[72px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {AUDIENCE_PAGE_SIZES.map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRefresh}
+            disabled={syncing}
+          >
+            <RefreshCw
+              className={cn("mr-1.5 h-4 w-4", syncing && "animate-spin")}
+            />
+            {syncing ? "Actualizando…" : "Actualizar"}
+          </Button>
+        </div>
+      </div>
+
       <div className="space-y-3">
-        {audiences.map((a) => {
+        {pageItems.map((a) => {
           const active = selectedId === a.id;
           return (
             <button
@@ -564,6 +643,38 @@ function StepAudience({
           );
         })}
       </div>
+
+      {/* Pagination controls */}
+      {pageCount > 1 && (
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            {(start + 1).toLocaleString("es-ES")}–
+            {Math.min(start + pageSize, total).toLocaleString("es-ES")} de{" "}
+            {total.toLocaleString("es-ES")}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={safePage === 0}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              {safePage + 1} / {pageCount}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+              disabled={safePage >= pageCount - 1}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {selectedId && generationMode !== "" && (
         <div className="space-y-2 rounded-xl border border-primary/40 bg-primary/5 p-4">
