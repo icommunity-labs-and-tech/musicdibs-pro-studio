@@ -262,6 +262,72 @@ export function ExperiencePanel({
   );
 }
 
+function ExperienceContentSettings({
+  content,
+  setContent,
+  onSave,
+  saving,
+}: {
+  content: ExperienceContentDraft;
+  setContent: (c: ExperienceContentDraft) => void;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  return (
+    <div className="space-y-3 rounded-xl border p-4">
+      <p className="flex items-center gap-1.5 text-sm font-medium">
+        <MessageSquare className="h-4 w-4 text-primary" />
+        Mensaje de la experiencia
+      </p>
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">
+          Mensaje (opcional)
+        </Label>
+        <Textarea
+          value={content.message_content}
+          placeholder={
+            "Gracias por formar parte de nuestra comunidad. Usa el código WELCOME25 antes del 31 de julio."
+          }
+          rows={3}
+          onChange={(e) =>
+            setContent({ ...content, message_content: e.target.value })
+          }
+        />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">
+            Título del botón (CTA)
+          </Label>
+          <Input
+            value={content.cta_title}
+            placeholder="Descubre más"
+            onChange={(e) =>
+              setContent({ ...content, cta_title: e.target.value })
+            }
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">
+            Enlace del botón (CTA)
+          </Label>
+          <Input
+            value={content.cta_url}
+            placeholder="https://tu-web.com"
+            onChange={(e) => setContent({ ...content, cta_url: e.target.value })}
+          />
+        </div>
+      </div>
+      <Button size="sm" variant="outline" onClick={onSave} disabled={saving}>
+        {saving ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
+        Guardar mensaje
+      </Button>
+    </div>
+  );
+}
+
+
+
 function ExperienceBody({
   url,
   status,
