@@ -458,12 +458,30 @@ function CampaignDetailPage() {
             Sincronizar
           </Button>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {metricCards.map((m) => (
-              <Metric key={m.label} {...m} />
-            ))}
+        <CardContent className="space-y-6">
+          <div>
+            <p className="mb-2 text-sm font-medium text-muted-foreground">
+              Email
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {metricCards.map((m) => (
+                <Metric key={m.label} {...m} />
+              ))}
+            </div>
           </div>
+
+          {playbackMetricCards.length > 0 ? (
+            <div>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">
+                Analítica de reproducción
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {playbackMetricCards.map((m) => (
+                  <Metric key={m.label} {...m} />
+                ))}
+              </div>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
