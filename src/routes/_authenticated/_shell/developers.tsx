@@ -51,6 +51,7 @@ import {
   useTenantSettings,
   useUpdateTenantSettings,
 } from "@/hooks/use-tenant-settings";
+import { MailerLitePlanNotice } from "@/components/app/mailerlite-plan-notice";
 
 export const Route = createFileRoute("/_authenticated/_shell/developers")({
   head: () => ({ meta: [{ title: "Desarrolladores · Musicdibs Enterprise" }] }),
@@ -147,6 +148,7 @@ function SendingIntegrationsCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <MailerLitePlanNotice />
         <div className="space-y-1.5">
           <Label htmlFor="mailerlite-key">API key de MailerLite</Label>
           <Input

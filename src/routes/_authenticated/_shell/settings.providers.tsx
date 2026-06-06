@@ -35,6 +35,7 @@ import {
 } from "@/hooks/use-providers";
 import { PROVIDERS, type ProviderMeta, type ProviderStatus } from "@/lib/providers";
 import { calculateEstimatedCredits } from "@/lib/campaign-generation-options";
+import { MailerLitePlanNotice } from "@/components/app/mailerlite-plan-notice";
 
 // Providers with a real metadata-sync integration available today.
 const SYNC_ENABLED: Record<string, boolean> = { mailerlite: true, brevo: false };
@@ -60,6 +61,9 @@ function ProvidersPage() {
           campañas.
         </p>
       </div>
+
+      <MailerLitePlanNotice />
+
 
       <div className="grid gap-4 sm:grid-cols-2">
         {connections.isLoading
@@ -255,6 +259,12 @@ function ConnectDialog({
             Introduce tu API key. Sólo se almacenan metadatos de tus audiencias.
           </DialogDescription>
         </DialogHeader>
+
+        {provider.type === "mailerlite" ? (
+          <MailerLitePlanNotice variant="compact" />
+        ) : null}
+
+
 
         <div className="space-y-1.5">
           <Label htmlFor="provider-api-key">API Key</Label>
