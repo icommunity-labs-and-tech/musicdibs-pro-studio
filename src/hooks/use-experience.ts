@@ -41,6 +41,17 @@ export function useUpdateExperienceBranding(campaignId: string) {
   });
 }
 
+export function useUpdateExperienceContent(campaignId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (vars: { id: string; content: ExperienceContent }) =>
+      ExperienceService.updateContent(vars.id, vars.content),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["experience", campaignId] });
+    },
+  });
+}
+
 export function useSetExperienceStatus(campaignId: string) {
   const queryClient = useQueryClient();
   return useMutation({
