@@ -394,7 +394,7 @@ function Stat({
   value,
   hint,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: number;
   hint?: string;
