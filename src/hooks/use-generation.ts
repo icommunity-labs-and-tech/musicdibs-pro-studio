@@ -114,7 +114,7 @@ async function fetchAssets(campaignId: string): Promise<GenerationAsset[]> {
   const { data, error } = await supabase
     .from("generation_assets")
     .select(
-      "id, asset_type, status, storage_path, public_url, lyrics_content, external_asset_id, duration_seconds, metadata, created_at",
+      "id, asset_type, status, storage_path, public_url, lyrics_content, external_asset_id, duration_seconds, metadata, generation_round, created_at",
     )
     .eq("campaign_id", campaignId)
     .order("created_at", { ascending: true });
