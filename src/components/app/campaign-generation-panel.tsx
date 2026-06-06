@@ -1,13 +1,10 @@
-import { useState } from "react";
-import { Download, Loader2, Music4, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, Music4, RefreshCw, Sparkles } from "lucide-react";
 
-import { AudioPlayer } from "@/components/app/audio-player";
-import { GenerationWaveform } from "@/components/app/generation-waveform";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GenerationWaveform } from "@/components/app/generation-waveform";
 import { AI_MUSIC_STUDIO } from "@/lib/campaign-generation-options";
 import type {
-  GenerationAsset,
   GenerationBatchRow,
   GenerationJob,
 } from "@/hooks/use-generation";
