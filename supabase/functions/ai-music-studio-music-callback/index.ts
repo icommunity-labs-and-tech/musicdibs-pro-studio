@@ -159,8 +159,10 @@ Deno.serve(async (req: Request) => {
         .eq("id", job.generation_batch_id);
     }
 
+    // Generation finished → campaign enters REVIEW (user must approve a
+    // version before it can be used in an Experience Page). We never auto-pick.
     const campaignPatch: Record<string, unknown> = {
-      status: "completed",
+      status: "reviewing",
       generated_count: 1,
       updated_at: new Date().toISOString(),
     };
