@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
 import { CampaignGenerationPanel } from "@/components/app/campaign-generation-panel";
+import { ExperiencePanel } from "@/components/app/experience-panel";
 import { useAuth } from "@/components/auth/auth-provider";
 
 import { Button } from "@/components/ui/button";
