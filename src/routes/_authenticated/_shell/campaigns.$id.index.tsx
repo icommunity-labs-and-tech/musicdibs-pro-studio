@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
 import { CampaignGenerationPanel } from "@/components/app/campaign-generation-panel";
+import { ExperiencePanel } from "@/components/app/experience-panel";
 import { useAuth } from "@/components/auth/auth-provider";
 
 import { Button } from "@/components/ui/button";
@@ -172,6 +173,11 @@ function CampaignDetailPage() {
   const canEdit = isCampaignEditable(campaign.status);
   const hasGeneration = Boolean(job || (batch && batch.status !== "draft"));
 
+  const audioAsset = (assets ?? []).find(
+    (a) => a.asset_type === "audio" && a.public_url,
+  );
+  const lyricsAsset = (assets ?? []).find((a) => a.asset_type === "lyrics");
+
   // Confirmation modal inputs. Single song only in this sprint.
   const generationMode = (configSummary?.generationMode || null) as
     | GenerationMode
@@ -318,6 +324,18 @@ function CampaignDetailPage() {
           isRetryingMusic={retryMusic.isPending}
           onRetryLyrics={handleRetryLyrics}
           onRetryMusic={handleRetryMusic}
+        />
+      ) : null}
+
+      {/* Página de experiencia (cuando hay audio generado) */}
+      {audioAsset ? (
+        <ExperiencePanel
+          campaignId={id}
+          tenantId={tenant?.id}
+          generationJobId={job?.id ?? null}
+          audioAssetId={audioAsset.id}
+          lyricsAssetId={lyricsAsset?.id ?? null}
+          defaultTitle={campaign.name}
         />
       ) : null}
 

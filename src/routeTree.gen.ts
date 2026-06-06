@@ -20,6 +20,7 @@ import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as BancaRouteImport } from './routes/banca'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PlayTokenRouteImport } from './routes/play.$token'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedShellRouteImport } from './routes/_authenticated/_shell'
 import { Route as AuthenticatedShellTeamRouteImport } from './routes/_authenticated/_shell/team'
@@ -93,6 +94,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayTokenRoute = PlayTokenRouteImport.update({
+  id: '/play/$token',
+  path: '/play/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/styleguide': typeof StyleguideRoute
   '/telco': typeof TelcoRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/play/$token': typeof PlayTokenRoute
   '/admin': typeof AuthenticatedShellAdminRouteWithChildren
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/audit-log': typeof AuthenticatedShellAuditLogRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/styleguide': typeof StyleguideRoute
   '/telco': typeof TelcoRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/play/$token': typeof PlayTokenRoute
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/audit-log': typeof AuthenticatedShellAuditLogRoute
   '/contacts': typeof AuthenticatedShellContactsRoute
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/telco': typeof TelcoRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/play/$token': typeof PlayTokenRoute
   '/_authenticated/_shell/admin': typeof AuthenticatedShellAdminRouteWithChildren
   '/_authenticated/_shell/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/_authenticated/_shell/audit-log': typeof AuthenticatedShellAuditLogRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '/styleguide'
     | '/telco'
     | '/onboarding'
+    | '/play/$token'
     | '/admin'
     | '/analytics'
     | '/audit-log'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/styleguide'
     | '/telco'
     | '/onboarding'
+    | '/play/$token'
     | '/analytics'
     | '/audit-log'
     | '/contacts'
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | '/telco'
     | '/_authenticated/_shell'
     | '/_authenticated/onboarding'
+    | '/play/$token'
     | '/_authenticated/_shell/admin'
     | '/_authenticated/_shell/analytics'
     | '/_authenticated/_shell/audit-log'
@@ -413,6 +425,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StyleguideRoute: typeof StyleguideRoute
   TelcoRoute: typeof TelcoRoute
+  PlayTokenRoute: typeof PlayTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -492,6 +505,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/$token': {
+      id: '/play/$token'
+      path: '/play/$token'
+      fullPath: '/play/$token'
+      preLoaderRoute: typeof PlayTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/onboarding': {
@@ -738,17 +758,8 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StyleguideRoute: StyleguideRoute,
   TelcoRoute: TelcoRoute,
+  PlayTokenRoute: PlayTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
