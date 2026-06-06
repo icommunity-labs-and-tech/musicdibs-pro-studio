@@ -231,12 +231,6 @@ export function ExperiencePanel({
               setBranding={setBranding}
               onSaveBranding={handleSaveBranding}
               savingBranding={updateBranding.isPending}
-              stats={{
-                play_count: experience.play_count,
-                unique_visitors: experience.unique_visitors,
-                completion_count: experience.completion_count,
-                download_count: experience.download_count,
-              }}
             />
 
             <ExperienceContentSettings
