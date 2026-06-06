@@ -54,6 +54,13 @@ export interface CreateExperienceInput {
   branding?: ExperienceBranding;
 }
 
+/** Configurable, owner-facing content for an Experience Page. */
+export interface ExperienceContent {
+  message_content?: string | null;
+  cta_title?: string | null;
+  cta_url?: string | null;
+}
+
 function mapRow(row: Record<string, unknown>): ExperiencePage {
   const r = row as unknown as ExperiencePage;
   return {
