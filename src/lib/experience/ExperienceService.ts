@@ -118,6 +118,25 @@ export const ExperienceService = {
     return mapRow(data);
   },
 
+  /** Update the owner-configurable message + CTA shown on the play page. */
+  async updateContent(
+    id: string,
+    content: ExperienceContent,
+  ): Promise<ExperiencePage> {
+    const { data, error } = await supabase
+      .from("experience_pages")
+      .update({
+        message_content: content.message_content ?? null,
+        cta_title: content.cta_title ?? null,
+        cta_url: content.cta_url ?? null,
+      })
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (error) throw error;
+    return mapRow(data);
+  },
+
   async setStatus(
     id: string,
     status: ExperienceStatus,
