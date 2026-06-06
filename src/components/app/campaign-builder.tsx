@@ -122,11 +122,28 @@ export function CampaignBuilder({
     tenant?.id,
   );
   const { data: connections } = useProviderConnections(tenant?.id);
+  const syncAudiences = useSyncAudiences(tenant?.id);
 
   const [step, setStep] = useState(0);
   const [state, setState] = useState<BuilderState>(
     initialState ?? EMPTY_BUILDER_STATE,
   );
+
+  // On mount, refresh provider audiences (e.g. MailerLite groups) so step 2
+  // always shows the latest groups. Runs once per connected provider.
+  const syncedRef = useRef(false);
+  useEffect(() => {
+    if (syncedRef.current) return;
+    const active = (connections ?? []).filter(
+      (c) => c.status === "connected",
+    );
+    if (active.length === 0) return;
+    syncedRef.current = true;
+    active.forEach((c) => {
+      syncAudiences.mutate(c.provider_type);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connections]);
 
   const isSaving = createCampaign.isPending || updateCampaign.isPending;
 
