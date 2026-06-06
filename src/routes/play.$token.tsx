@@ -135,7 +135,9 @@ function PlayPage() {
 
             {/* CTA button */}
             {(() => {
-              const ctaUrl = data.cta_url || data.branding?.cta_url || "";
+              const ctaUrl = normalizeCtaUrl(
+                data.cta_url || data.branding?.cta_url || "",
+              );
               const ctaTitle =
                 data.cta_title || data.branding?.cta_text || "";
               if (!ctaUrl || !ctaTitle) return null;
