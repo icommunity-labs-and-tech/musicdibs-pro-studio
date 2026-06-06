@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Download, Loader2, Music4, RefreshCw, Sparkles } from "lucide-react";
 
 import { AudioPlayer } from "@/components/app/audio-player";
@@ -47,6 +48,44 @@ function formatDuration(seconds: number | null): string {
   const s = Math.round(seconds % 60);
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
+
+function DownloadButton({ url, filename }: { url: string; filename: string }) {
+  const [downloading, setDownloading] = useState(false);
+
+  async function handleDownload() {
+    setDownloading(true);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("download failed");
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      // Fallback: open in a new tab if the blob fetch fails (e.g. CORS).
+      window.open(url, "_blank", "noopener,noreferrer");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  return (
+    <Button size="sm" variant="outline" onClick={handleDownload} disabled={downloading}>
+      {downloading ? (
+        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+      ) : (
+        <Download className="mr-1.5 h-4 w-4" />
+      )}
+      Descargar
+    </Button>
+  );
+}
+
 
 function StudioFooter() {
   return (
@@ -196,12 +235,10 @@ export function CampaignGenerationPanel({
                           {title} · {formatDuration(asset.duration_seconds)}
                         </p>
                       </div>
-                      <Button asChild size="sm" variant="outline">
-                        <a href={asset.public_url ?? "#"} download>
-                          <Download className="mr-1.5 h-4 w-4" />
-                          Descargar
-                        </a>
-                      </Button>
+                      <DownloadButton
+                        url={asset.public_url ?? "#"}
+                        filename={`${(title || versionLabel).replace(/[^\w.-]+/g, "_")}.mp3`}
+                      />
                     </div>
                     {asset.public_url ? <AudioPlayer src={asset.public_url} /> : null}
                   </div>
