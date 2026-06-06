@@ -190,7 +190,11 @@ export function ExperiencePublishSection({
                         asChild
                         aria-label="Abrir en MailerLite"
                       >
-                        <a href={url} target="_blank" rel="noopener noreferrer">
+                        <a
+                          href="https://dashboard.mailerlite.com/campaigns/status/draft"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           <ExternalLink className="mr-1.5 h-4 w-4" />
                           Open in MailerLite
                         </a>

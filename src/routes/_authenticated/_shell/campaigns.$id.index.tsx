@@ -485,24 +485,6 @@ function CampaignDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Detalles */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display text-lg">Detalles</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
-            <Detail label="Vertical" value={campaign.vertical} />
-            <Detail label="Canal" value={campaign.delivery_channel} />
-            <Detail label="Creada" value={formatDateTime(campaign.created_at)} />
-            <Detail
-              label="Enviada"
-              value={campaign.sent_at ? formatDateTime(campaign.sent_at) : "—"}
-            />
-          </dl>
-        </CardContent>
-      </Card>
-
       <GenerateCampaignDialog
         open={generateOpen}
         onOpenChange={setGenerateOpen}
@@ -550,14 +532,6 @@ function Metric({
   );
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-4 border-b border-dashed py-1.5 last:border-0">
-      <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-medium capitalize">{value}</dd>
-    </div>
-  );
-}
 
 function DetailSkeleton() {
   return (
