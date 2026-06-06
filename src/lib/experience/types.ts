@@ -30,6 +30,11 @@ export interface ExperiencePage {
   lyrics_asset_id: string | null;
   cover_asset_id: string | null;
   branding: ExperienceBranding;
+  /** Optional message shown to the recipient on the play page. */
+  message_content: string | null;
+  /** Configurable call-to-action button. */
+  cta_title: string | null;
+  cta_url: string | null;
   play_count: number;
   unique_visitors: number;
   completion_count: number;
