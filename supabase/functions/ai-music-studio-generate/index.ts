@@ -70,8 +70,14 @@ Deno.serve(async (req: Request) => {
 
     log("generate", "start", { campaignId, action, tenantId: profile.tenant_id });
 
-    // ── Resolve / create the batch ──────────────────────────────────────────
-    const { data: existingBatch } = await supabase
+    // ── Resolve the batch / round ───────────────────────────────────────────
+    // Each review round is a full chain: Batch → Job → Assets. A fresh
+    // "generate" after a completed round is a REGENERATION: it creates a NEW
+    // batch with an incremented round (max 3 rounds). Retries reuse the
+    // current round's batch + job.
+    const MAX_ROUNDS = 3;
+
+    const { data: latestBatch } = await supabase
       .from("generation_batches")
       .select("*")
       .eq("campaign_id", campaignId)
@@ -79,8 +85,28 @@ Deno.serve(async (req: Request) => {
       .limit(1)
       .maybeSingle();
 
-    let batch = existingBatch;
-    if (!batch) {
+    let batch = latestBatch;
+
+    let startNewRound = false;
+    if (action === "generate" && latestBatch) {
+      const { data: completedJob } = await supabase
+        .from("generation_jobs")
+        .select("id")
+        .eq("generation_batch_id", latestBatch.id)
+        .eq("music_status", "completed")
+        .limit(1)
+        .maybeSingle();
+      if (completedJob) startNewRound = true;
+    }
+
+    if (startNewRound) {
+      const nextRound = (latestBatch!.generation_round ?? 1) + 1;
+      if (nextRound > MAX_ROUNDS) {
+        return json(
+          { error: "Has alcanzado el máximo de generaciones de revisión (3)." },
+          400,
+        );
+      }
       const { data: created, error: bErr } = await supabase
         .from("generation_batches")
         .insert({
@@ -88,6 +114,23 @@ Deno.serve(async (req: Request) => {
           campaign_id: campaignId,
           status: "processing",
           generation_mode: "single_song",
+          generation_round: nextRound,
+          total_jobs: 1,
+          started_at: new Date().toISOString(),
+        })
+        .select("*")
+        .single();
+      if (bErr) throw bErr;
+      batch = created;
+    } else if (!batch) {
+      const { data: created, error: bErr } = await supabase
+        .from("generation_batches")
+        .insert({
+          tenant_id: profile.tenant_id,
+          campaign_id: campaignId,
+          status: "processing",
+          generation_mode: "single_song",
+          generation_round: 1,
           total_jobs: 1,
           started_at: new Date().toISOString(),
         })
@@ -106,7 +149,7 @@ Deno.serve(async (req: Request) => {
         .eq("id", batch.id);
     }
 
-    // ── Resolve / create the single job ─────────────────────────────────────
+    // ── Resolve / create the job for this round's batch ──────────────────────
     const { data: existingJob } = await supabase
       .from("generation_jobs")
       .select("*")
@@ -125,6 +168,7 @@ Deno.serve(async (req: Request) => {
           generation_batch_id: batch.id,
           status: "processing",
           provider: "ai-music-studio",
+          generation_round: batch.generation_round ?? 1,
           lyrics_status: "pending",
           music_status: "pending",
         })
