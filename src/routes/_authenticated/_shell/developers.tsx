@@ -148,6 +148,7 @@ function SendingIntegrationsCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <MailerLitePlanNotice />
         <div className="space-y-1.5">
           <Label htmlFor="mailerlite-key">API key de MailerLite</Label>
           <Input
