@@ -514,6 +514,102 @@ export type Database = {
           },
         ]
       }
+      experience_pages: {
+        Row: {
+          audio_asset_id: string | null
+          branding: Json
+          campaign_id: string
+          completion_count: number
+          cover_asset_id: string | null
+          created_at: string
+          download_count: number
+          experience_token: string
+          generation_job_id: string | null
+          id: string
+          lyrics_asset_id: string | null
+          play_count: number
+          status: string
+          tenant_id: string
+          title: string
+          unique_visitors: number
+          updated_at: string
+        }
+        Insert: {
+          audio_asset_id?: string | null
+          branding?: Json
+          campaign_id: string
+          completion_count?: number
+          cover_asset_id?: string | null
+          created_at?: string
+          download_count?: number
+          experience_token: string
+          generation_job_id?: string | null
+          id?: string
+          lyrics_asset_id?: string | null
+          play_count?: number
+          status?: string
+          tenant_id: string
+          title?: string
+          unique_visitors?: number
+          updated_at?: string
+        }
+        Update: {
+          audio_asset_id?: string | null
+          branding?: Json
+          campaign_id?: string
+          completion_count?: number
+          cover_asset_id?: string | null
+          created_at?: string
+          download_count?: number
+          experience_token?: string
+          generation_job_id?: string | null
+          id?: string
+          lyrics_asset_id?: string | null
+          play_count?: number
+          status?: string
+          tenant_id?: string
+          title?: string
+          unique_visitors?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experience_pages_audio_asset_id_fkey"
+            columns: ["audio_asset_id"]
+            isOneToOne: false
+            referencedRelation: "generation_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experience_pages_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experience_pages_cover_asset_id_fkey"
+            columns: ["cover_asset_id"]
+            isOneToOne: false
+            referencedRelation: "generation_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experience_pages_generation_job_id_fkey"
+            columns: ["generation_job_id"]
+            isOneToOne: false
+            referencedRelation: "generation_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "experience_pages_lyrics_asset_id_fkey"
+            columns: ["lyrics_asset_id"]
+            isOneToOne: false
+            referencedRelation: "generation_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generation_assets: {
         Row: {
           asset_type: string
@@ -1496,8 +1592,13 @@ export type Database = {
         Args: { p_plan?: string; p_slug: string; p_tenant_name: string }
         Returns: Json
       }
+      get_experience: { Args: { p_token: string }; Returns: Json }
       increment_campaign_stat: {
         Args: { p_campaign_id: string; p_field: string; p_tenant_id: string }
+        Returns: undefined
+      }
+      increment_experience_stat: {
+        Args: { p_field: string; p_token: string }
         Returns: undefined
       }
       is_superadmin: { Args: never; Returns: boolean }
