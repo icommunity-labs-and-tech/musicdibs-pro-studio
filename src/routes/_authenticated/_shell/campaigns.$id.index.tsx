@@ -172,6 +172,11 @@ function CampaignDetailPage() {
   const canEdit = isCampaignEditable(campaign.status);
   const hasGeneration = Boolean(job || (batch && batch.status !== "draft"));
 
+  const audioAsset = (assets ?? []).find(
+    (a) => a.asset_type === "audio" && a.public_url,
+  );
+  const lyricsAsset = (assets ?? []).find((a) => a.asset_type === "lyrics");
+
   // Confirmation modal inputs. Single song only in this sprint.
   const generationMode = (configSummary?.generationMode || null) as
     | GenerationMode
