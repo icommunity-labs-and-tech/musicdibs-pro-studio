@@ -329,12 +329,11 @@ function CampaignDetailPage() {
         </div>
       ) : null}
 
-      {/* Progreso de generación + canciones generadas */}
+      {/* Progreso de generación */}
       {hasGeneration ? (
         <CampaignGenerationPanel
           job={job ?? null}
           batch={batch ?? null}
-          assets={assets ?? []}
           isRetryingLyrics={retryLyrics.isPending}
           isRetryingMusic={retryMusic.isPending}
           onRetryLyrics={handleRetryLyrics}

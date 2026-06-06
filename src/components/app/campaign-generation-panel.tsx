@@ -1,13 +1,10 @@
-import { useState } from "react";
-import { Download, Loader2, Music4, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, Music4, RefreshCw, Sparkles } from "lucide-react";
 
-import { AudioPlayer } from "@/components/app/audio-player";
-import { GenerationWaveform } from "@/components/app/generation-waveform";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GenerationWaveform } from "@/components/app/generation-waveform";
 import { AI_MUSIC_STUDIO } from "@/lib/campaign-generation-options";
 import type {
-  GenerationAsset,
   GenerationBatchRow,
   GenerationJob,
 } from "@/hooks/use-generation";
@@ -42,49 +39,6 @@ function StageBadge({ status }: { status: StageStatus }) {
   );
 }
 
-function formatDuration(seconds: number | null): string {
-  if (!seconds || !Number.isFinite(seconds)) return "—";
-  const m = Math.floor(seconds / 60);
-  const s = Math.round(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function DownloadButton({ url, filename }: { url: string; filename: string }) {
-  const [downloading, setDownloading] = useState(false);
-
-  async function handleDownload() {
-    setDownloading(true);
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("download failed");
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(objectUrl);
-    } catch {
-      // Fallback: open in a new tab if the blob fetch fails (e.g. CORS).
-      window.open(url, "_blank", "noopener,noreferrer");
-    } finally {
-      setDownloading(false);
-    }
-  }
-
-  return (
-    <Button size="sm" variant="outline" onClick={handleDownload} disabled={downloading}>
-      {downloading ? (
-        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-      ) : (
-        <Download className="mr-1.5 h-4 w-4" />
-      )}
-      Descargar
-    </Button>
-  );
-}
 
 
 function StudioFooter() {
@@ -99,7 +53,6 @@ function StudioFooter() {
 export interface CampaignGenerationPanelProps {
   job: GenerationJob | null;
   batch: GenerationBatchRow | null;
-  assets: GenerationAsset[];
   isRetryingLyrics: boolean;
   isRetryingMusic: boolean;
   onRetryLyrics: () => void;
@@ -109,7 +62,6 @@ export interface CampaignGenerationPanelProps {
 export function CampaignGenerationPanel({
   job,
   batch,
-  assets,
   isRetryingLyrics,
   isRetryingMusic,
   onRetryLyrics,
@@ -117,8 +69,6 @@ export function CampaignGenerationPanel({
 }: CampaignGenerationPanelProps) {
   const lyricsStatus = job?.lyrics_status ?? "pending";
   const musicStatus = job?.music_status ?? "pending";
-  const audioAssets = assets.filter((a) => a.asset_type === "audio" && a.public_url);
-  const isCompleted = musicStatus === "completed" && audioAssets.length > 0;
   const isActive =
     job != null &&
     job.status !== "completed" &&
@@ -217,36 +167,6 @@ export function CampaignGenerationPanel({
           </div>
         ) : null}
 
-        {/* Generated songs */}
-        {isCompleted ? (
-          <div className="space-y-3">
-            <h3 className="font-display text-base font-semibold">Canciones generadas</h3>
-            <div className="space-y-4">
-              {audioAssets.map((asset, index) => {
-                const versionLabel = `Versión ${String.fromCharCode(65 + index)}`;
-                const title =
-                  (asset.metadata?.title as string | undefined) ?? versionLabel;
-                return (
-                  <div key={asset.id} className="space-y-2 rounded-xl border p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold">{versionLabel}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {title} · {formatDuration(asset.duration_seconds)}
-                        </p>
-                      </div>
-                      <DownloadButton
-                        url={asset.public_url ?? "#"}
-                        filename={`${(title || versionLabel).replace(/[^\w.-]+/g, "_")}.mp3`}
-                      />
-                    </div>
-                    {asset.public_url ? <AudioPlayer src={asset.public_url} /> : null}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
 
         <StudioFooter />
       </CardContent>
