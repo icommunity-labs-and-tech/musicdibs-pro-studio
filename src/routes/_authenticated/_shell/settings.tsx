@@ -9,6 +9,7 @@ export const Route = createFileRoute("/_authenticated/_shell/settings")({
 
 const TABS = [
   { to: "/settings", label: "General", exact: true },
+  { to: "/settings/sender", label: "Remitente", exact: false },
   { to: "/settings/providers", label: "Proveedores", exact: false },
   { to: "/settings/billing", label: "Facturación", exact: false },
 ] as const;

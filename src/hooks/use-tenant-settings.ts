@@ -17,6 +17,9 @@ export interface TenantSettings {
   website: string | null;
   timezone: string | null;
   api_keys: ApiKeys;
+  sender_name: string | null;
+  sender_email: string | null;
+  reply_to_email: string | null;
 }
 
 function parseApiKeys(value: unknown): ApiKeys {
@@ -36,7 +39,9 @@ async function fetchTenantSettings(
 ): Promise<TenantSettings> {
   const { data, error } = await supabase
     .from("tenant_settings")
-    .select("id, support_email, website, timezone, api_keys")
+    .select(
+      "id, support_email, website, timezone, api_keys, sender_name, sender_email, reply_to_email",
+    )
     .eq("tenant_id", tenantId)
     .maybeSingle();
 
@@ -44,7 +49,14 @@ async function fetchTenantSettings(
 
   const row = data as Pick<
     TenantSettingsRow,
-    "id" | "support_email" | "website" | "timezone" | "api_keys"
+    | "id"
+    | "support_email"
+    | "website"
+    | "timezone"
+    | "api_keys"
+    | "sender_name"
+    | "sender_email"
+    | "reply_to_email"
   > | null;
 
   return {
@@ -53,6 +65,9 @@ async function fetchTenantSettings(
     website: row?.website ?? null,
     timezone: row?.timezone ?? null,
     api_keys: parseApiKeys(row?.api_keys),
+    sender_name: row?.sender_name ?? null,
+    sender_email: row?.sender_email ?? null,
+    reply_to_email: row?.reply_to_email ?? null,
   };
 }
 
@@ -70,6 +85,9 @@ export interface SettingsUpdate {
   website?: string | null;
   timezone?: string | null;
   api_keys?: ApiKeys;
+  sender_name?: string | null;
+  sender_email?: string | null;
+  reply_to_email?: string | null;
 }
 
 export function useUpdateTenantSettings(tenantId: string | undefined) {

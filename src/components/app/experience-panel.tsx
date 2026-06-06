@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AI_MUSIC_STUDIO } from "@/lib/campaign-generation-options";
 import { buildExperienceUrl, type ExperienceBranding } from "@/lib/experience";
+import { ExperiencePublishSection } from "@/components/app/experience-publish-section";
 import {
   useCampaignExperience,
   useCreateExperience,
@@ -164,24 +165,30 @@ export function ExperiencePanel({
             </Button>
           </div>
         ) : (
-          <ExperienceBody
-            url={buildExperienceUrl(experience.experience_token)}
-            status={experience.status}
-            copied={copied}
-            onCopy={handleCopy}
-            onTogglePublish={handleTogglePublish}
-            togglingPublish={setStatus.isPending}
-            branding={branding}
-            setBranding={setBranding}
-            onSaveBranding={handleSaveBranding}
-            savingBranding={updateBranding.isPending}
-            stats={{
-              play_count: experience.play_count,
-              unique_visitors: experience.unique_visitors,
-              completion_count: experience.completion_count,
-              download_count: experience.download_count,
-            }}
-          />
+          <>
+            <ExperienceBody
+              url={buildExperienceUrl(experience.experience_token)}
+              status={experience.status}
+              copied={copied}
+              onCopy={handleCopy}
+              onTogglePublish={handleTogglePublish}
+              togglingPublish={setStatus.isPending}
+              branding={branding}
+              setBranding={setBranding}
+              onSaveBranding={handleSaveBranding}
+              savingBranding={updateBranding.isPending}
+              stats={{
+                play_count: experience.play_count,
+                unique_visitors: experience.unique_visitors,
+                completion_count: experience.completion_count,
+                download_count: experience.download_count,
+              }}
+            />
+            <ExperiencePublishSection
+              experience={experience}
+              tenantId={tenantId}
+            />
+          </>
         )}
 
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">

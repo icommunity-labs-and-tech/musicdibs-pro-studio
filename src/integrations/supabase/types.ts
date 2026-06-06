@@ -1042,6 +1042,71 @@ export type Database = {
           },
         ]
       }
+      provider_campaigns: {
+        Row: {
+          created_at: string
+          experience_page_id: string
+          id: string
+          provider_campaign_id: string
+          provider_campaign_name: string
+          provider_campaign_status: string
+          provider_type: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          experience_page_id: string
+          id?: string
+          provider_campaign_id: string
+          provider_campaign_name: string
+          provider_campaign_status?: string
+          provider_type?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          experience_page_id?: string
+          id?: string
+          provider_campaign_id?: string
+          provider_campaign_name?: string
+          provider_campaign_status?: string
+          provider_type?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_campaigns_experience_page_id_fkey"
+            columns: ["experience_page_id"]
+            isOneToOne: false
+            referencedRelation: "experience_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_campaigns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_churn_signals"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "provider_campaigns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "provider_campaigns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_connections: {
         Row: {
           created_at: string
@@ -1262,6 +1327,9 @@ export type Database = {
           created_at: string
           id: string
           integrations: Json
+          reply_to_email: string | null
+          sender_email: string | null
+          sender_name: string | null
           support_email: string | null
           tenant_id: string
           timezone: string | null
@@ -1273,6 +1341,9 @@ export type Database = {
           created_at?: string
           id?: string
           integrations?: Json
+          reply_to_email?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
           support_email?: string | null
           tenant_id: string
           timezone?: string | null
@@ -1284,6 +1355,9 @@ export type Database = {
           created_at?: string
           id?: string
           integrations?: Json
+          reply_to_email?: string | null
+          sender_email?: string | null
+          sender_name?: string | null
           support_email?: string | null
           tenant_id?: string
           timezone?: string | null

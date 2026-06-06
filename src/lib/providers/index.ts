@@ -9,6 +9,7 @@ import { MailerLiteConnector } from "./MailerLiteConnector";
 import type { ProviderConnector, ProviderType } from "./ProviderConnector";
 
 export * from "./ProviderConnector";
+export * from "./CampaignProvider";
 export { MailerLiteConnector } from "./MailerLiteConnector";
 export { BrevoConnector } from "./BrevoConnector";
 
