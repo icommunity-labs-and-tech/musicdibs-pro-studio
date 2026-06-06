@@ -54,6 +54,7 @@ import {
   useRetryMusic,
 } from "@/hooks/use-generation";
 import { GenerateCampaignDialog } from "@/components/app/generate-campaign-dialog";
+import { useCampaignExperience } from "@/hooks/use-experience";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/$id/")({
   head: () => ({ meta: [{ title: "Campaña · Musicdibs Enterprise" }] }),
@@ -82,6 +83,7 @@ function CampaignDetailPage() {
   const { data: batch } = useCampaignBatch(id);
   const { data: job } = useCampaignJob(id);
   const { data: assets } = useCampaignAssets(id);
+  const { data: experience } = useCampaignExperience(id);
   const generateCampaign = useGenerateCampaign();
   const retryLyrics = useRetryLyrics();
   const retryMusic = useRetryMusic();
@@ -279,6 +281,37 @@ function CampaignDetailPage() {
     },
   ];
 
+  const playCompletionRate =
+    experience && experience.play_count > 0
+      ? Math.round((experience.completion_count / experience.play_count) * 100)
+      : null;
+
+  const playbackMetricCards: { label: string; value: string; hint?: string }[] =
+    experience
+      ? [
+          {
+            label: "Reproducciones",
+            value: experience.play_count.toLocaleString("es-ES"),
+          },
+          {
+            label: "Oyentes únicos",
+            value: experience.unique_visitors.toLocaleString("es-ES"),
+          },
+          {
+            label: "Completadas",
+            value: experience.completion_count.toLocaleString("es-ES"),
+            hint:
+              playCompletionRate !== null
+                ? `${playCompletionRate}% tasa`
+                : undefined,
+          },
+          {
+            label: "Descargas",
+            value: experience.download_count.toLocaleString("es-ES"),
+          },
+        ]
+      : [];
+
   const configRows = configSummary
     ? buildCampaignConfigRows(configSummary)
     : [];
@@ -425,12 +458,30 @@ function CampaignDetailPage() {
             Sincronizar
           </Button>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {metricCards.map((m) => (
-              <Metric key={m.label} {...m} />
-            ))}
+        <CardContent className="space-y-6">
+          <div>
+            <p className="mb-2 text-sm font-medium text-muted-foreground">
+              Email
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {metricCards.map((m) => (
+                <Metric key={m.label} {...m} />
+              ))}
+            </div>
           </div>
+
+          {playbackMetricCards.length > 0 ? (
+            <div>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">
+                Analítica de reproducción
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {playbackMetricCards.map((m) => (
+                  <Metric key={m.label} {...m} />
+                ))}
+              </div>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 

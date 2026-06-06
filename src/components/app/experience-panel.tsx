@@ -1,19 +1,15 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import {
   Check,
   Copy,
-  Download,
   ExternalLink,
   Eye,
   EyeOff,
-  Headphones,
   Loader2,
   Lock,
   MessageSquare,
-  Play,
   Share2,
   Sparkles,
-  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -231,12 +227,6 @@ export function ExperiencePanel({
               setBranding={setBranding}
               onSaveBranding={handleSaveBranding}
               savingBranding={updateBranding.isPending}
-              stats={{
-                play_count: experience.play_count,
-                unique_visitors: experience.unique_visitors,
-                completion_count: experience.completion_count,
-                download_count: experience.download_count,
-              }}
             />
 
             <ExperienceContentSettings
@@ -339,7 +329,6 @@ function ExperienceBody({
   setBranding,
   onSaveBranding,
   savingBranding,
-  stats,
 }: {
   url: string;
   status: string;
@@ -351,18 +340,9 @@ function ExperienceBody({
   setBranding: (b: ExperienceBranding) => void;
   onSaveBranding: () => void;
   savingBranding: boolean;
-  stats: {
-    play_count: number;
-    unique_visitors: number;
-    completion_count: number;
-    download_count: number;
-  };
 }) {
   const isPublished = status === "published";
-  const completionRate =
-    stats.play_count > 0
-      ? Math.round((stats.completion_count / stats.play_count) * 100)
-      : null;
+
 
   return (
     <div className="space-y-5">
@@ -455,18 +435,6 @@ function ExperienceBody({
               />
             </div>
           </div>
-          <Field
-            label="Texto del botón (CTA)"
-            value={branding.cta_text ?? ""}
-            placeholder="Descubre más"
-            onChange={(v) => setBranding({ ...branding, cta_text: v })}
-          />
-          <Field
-            label="Enlace del botón (CTA)"
-            value={branding.cta_url ?? ""}
-            placeholder="https://tu-web.com"
-            onChange={(v) => setBranding({ ...branding, cta_url: v })}
-          />
         </div>
         <Button
           size="sm"
@@ -479,22 +447,6 @@ function ExperienceBody({
           ) : null}
           Guardar branding
         </Button>
-      </div>
-
-      {/* Analytics */}
-      <div>
-        <p className="mb-2 text-sm font-medium">Analítica de reproducción</p>
-        <div className="grid gap-3 sm:grid-cols-4">
-          <Stat icon={<Play className="h-4 w-4" />} label="Reproducciones" value={stats.play_count} />
-          <Stat icon={<Users className="h-4 w-4" />} label="Oyentes únicos" value={stats.unique_visitors} />
-          <Stat
-            icon={<Headphones className="h-4 w-4" />}
-            label="Completadas"
-            value={stats.completion_count}
-            hint={completionRate !== null ? `${completionRate}% tasa` : undefined}
-          />
-          <Stat icon={<Download className="h-4 w-4" />} label="Descargas" value={stats.download_count} />
-        </div>
       </div>
     </div>
   );
@@ -519,31 +471,6 @@ function Field({
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
       />
-    </div>
-  );
-}
-
-function Stat({
-  icon,
-  label,
-  value,
-  hint,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: number;
-  hint?: string;
-}) {
-  return (
-    <div className="rounded-xl border bg-muted/30 p-4">
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        {icon}
-        <p className="text-xs font-medium">{label}</p>
-      </div>
-      <p className="mt-1 font-display text-2xl font-bold">
-        {value.toLocaleString("es-ES")}
-      </p>
-      {hint ? <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }
