@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ExperienceService,
   type ExperienceBranding,
+  type ExperienceContent,
   type ExperiencePage,
   type ExperienceStatus,
   type CreateExperienceInput,
