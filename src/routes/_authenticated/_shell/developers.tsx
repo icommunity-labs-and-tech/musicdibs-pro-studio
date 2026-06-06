@@ -51,6 +51,7 @@ import {
   useTenantSettings,
   useUpdateTenantSettings,
 } from "@/hooks/use-tenant-settings";
+import { MailerLitePlanNotice } from "@/components/app/mailerlite-plan-notice";
 
 export const Route = createFileRoute("/_authenticated/_shell/developers")({
   head: () => ({ meta: [{ title: "Desarrolladores · Musicdibs Enterprise" }] }),
