@@ -178,10 +178,18 @@ function CampaignDetailPage() {
   const canEdit = isCampaignEditable(campaign.status);
   const hasGeneration = Boolean(job || (batch && batch.status !== "draft"));
 
-  const audioAsset = (assets ?? []).find(
-    (a) => a.asset_type === "audio" && a.public_url,
-  );
+  const approvedAssetId =
+    (campaign as { approved_asset_id?: string | null }).approved_asset_id ??
+    null;
   const lyricsAsset = (assets ?? []).find((a) => a.asset_type === "lyrics");
+  // Experience uses the explicitly approved version (never auto-picks one).
+  const approvedAudioAsset = (assets ?? []).find(
+    (a) => a.id === approvedAssetId,
+  );
+
+  const isReviewing = isCampaignReviewing(campaign.status);
+  const isApproved = isCampaignApproved(campaign.status);
+  const inReviewPhase = isReviewing || isApproved;
 
   // Confirmation modal inputs. Single song only in this sprint.
   const generationMode = (configSummary?.generationMode || null) as
