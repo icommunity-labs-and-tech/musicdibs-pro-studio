@@ -19,6 +19,7 @@ export interface GenerationAsset {
   external_asset_id: string | null;
   duration_seconds: number | null;
   metadata: Record<string, unknown> | null;
+  generation_round: number;
   created_at: string;
 }
 
