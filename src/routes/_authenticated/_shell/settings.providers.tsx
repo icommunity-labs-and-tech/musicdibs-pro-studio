@@ -260,6 +260,12 @@ function ConnectDialog({
           </DialogDescription>
         </DialogHeader>
 
+        {provider.type === "mailerlite" ? (
+          <MailerLitePlanNotice variant="compact" />
+        ) : null}
+
+
+
         <div className="space-y-1.5">
           <Label htmlFor="provider-api-key">API Key</Label>
           <Input
