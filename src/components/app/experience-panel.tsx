@@ -1,19 +1,15 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import {
   Check,
   Copy,
-  Download,
   ExternalLink,
   Eye,
   EyeOff,
-  Headphones,
   Loader2,
   Lock,
   MessageSquare,
-  Play,
   Share2,
   Sparkles,
-  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 
