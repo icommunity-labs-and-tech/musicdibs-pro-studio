@@ -254,6 +254,8 @@ export function CampaignBuilder({
         state.generationMode === "personalized_song"
           ? state.includeFirstName
           : false,
+      emailSubject: state.emailSubject.trim() || null,
+      emailBody: state.emailBody.trim() || null,
       estimatedCredits,
     };
 
