@@ -217,6 +217,7 @@ function ProviderCard({
         onOpenChange={setOpen}
         provider={provider}
         tenantId={tenantId}
+        hasSavedKey={!!connection}
       />
     </Card>
   );
