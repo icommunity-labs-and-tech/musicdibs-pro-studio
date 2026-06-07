@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  ListChecks,
   Loader2,
   Pencil,
   RefreshCw,
@@ -334,12 +333,6 @@ function CampaignDetailPage() {
             {campaign.total_contacts.toLocaleString("es-ES")} contactos
           </p>
         </div>
-        <Button asChild variant="outline" size="sm" className="shrink-0">
-          <Link to="/campaigns/$id/queue" params={{ id }}>
-            <ListChecks className="mr-1.5 h-4 w-4" />
-            Ver cola
-          </Link>
-        </Button>
       </div>
 
       {/* Acciones (solo en borrador) */}
