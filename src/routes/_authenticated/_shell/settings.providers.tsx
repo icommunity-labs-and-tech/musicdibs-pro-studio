@@ -228,11 +228,14 @@ function ConnectDialog({
   onOpenChange,
   provider,
   tenantId,
+  hasSavedKey,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   provider: ProviderMeta;
   tenantId: string | undefined;
+  /** True when a credential is already stored for this provider. */
+  hasSavedKey: boolean;
 }) {
   const [apiKey, setApiKey] = useState("");
   const connect = useConnectProvider(tenantId);
@@ -242,15 +245,11 @@ function ConnectDialog({
     onOpenChange(false);
   }
 
-  async function handleConnect() {
-    if (!apiKey.trim()) {
-      toast.error("Introduce una API key");
-      return;
-    }
+  async function runConnect(key?: string) {
     try {
       await connect.mutateAsync({
         providerType: provider.type,
-        apiKey: apiKey.trim(),
+        apiKey: key,
       });
       toast.success(`${provider.label} conectado`);
       close();
@@ -261,23 +260,53 @@ function ConnectDialog({
     }
   }
 
+  async function handleConnect() {
+    if (!apiKey.trim()) {
+      toast.error("Introduce una API key");
+      return;
+    }
+    await runConnect(apiKey.trim());
+  }
+
   return (
     <Dialog open={open} onOpenChange={(o) => (o ? onOpenChange(o) : close())}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Conectar {provider.label}</DialogTitle>
           <DialogDescription>
-            Introduce tu API key. Sólo se almacenan metadatos de tus audiencias.
+            {hasSavedKey
+              ? "Puedes reconectar con la clave que ya guardaste o introducir una nueva. Sólo se almacenan metadatos de tus audiencias."
+              : "Introduce tu API key. Sólo se almacenan metadatos de tus audiencias."}
           </DialogDescription>
         </DialogHeader>
 
         <ProviderPlanNotice provider={provider.type} variant="compact" />
 
-
-
+        {hasSavedKey ? (
+          <div className="rounded-lg border bg-muted/40 p-3">
+            <p className="text-xs text-muted-foreground">
+              Hay una API key guardada para {provider.label}. Puedes reconectar
+              sin volver a introducirla.
+            </p>
+            <Button
+              size="sm"
+              className="mt-2"
+              variant="secondary"
+              onClick={() => runConnect()}
+              disabled={connect.isPending}
+            >
+              {connect.isPending ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : null}
+              Reconectar con la clave guardada
+            </Button>
+          </div>
+        ) : null}
 
         <div className="space-y-1.5">
-          <Label htmlFor="provider-api-key">API Key</Label>
+          <Label htmlFor="provider-api-key">
+            {hasSavedKey ? "Nueva API Key (opcional)" : "API Key"}
+          </Label>
           <Input
             id="provider-api-key"
             type="password"
