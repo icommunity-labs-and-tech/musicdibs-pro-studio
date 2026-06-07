@@ -15,6 +15,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SegurosRouteImport } from './routes/seguros'
 import { Route as RetailRouteImport } from './routes/retail'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DeliveryRouteImport } from './routes/delivery'
@@ -72,6 +73,11 @@ const SegurosRoute = SegurosRouteImport.update({
 const RetailRoute = RetailRouteImport.update({
   id: '/retail',
   path: '/retail',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -236,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/delivery': typeof DeliveryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/retail': typeof RetailRoute
   '/seguros': typeof SegurosRoute
   '/signup': typeof SignupRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/delivery': typeof DeliveryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/retail': typeof RetailRoute
   '/seguros': typeof SegurosRoute
   '/signup': typeof SignupRoute
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   '/delivery': typeof DeliveryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/retail': typeof RetailRoute
   '/seguros': typeof SegurosRoute
   '/signup': typeof SignupRoute
@@ -341,6 +350,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/retail'
     | '/seguros'
     | '/signup'
@@ -375,6 +385,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/retail'
     | '/seguros'
     | '/signup'
@@ -408,6 +419,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/forgot-password'
     | '/login'
+    | '/reset-password'
     | '/retail'
     | '/seguros'
     | '/signup'
@@ -445,6 +457,7 @@ export interface RootRouteChildren {
   DeliveryRoute: typeof DeliveryRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   RetailRoute: typeof RetailRoute
   SegurosRoute: typeof SegurosRoute
   SignupRoute: typeof SignupRoute
@@ -496,6 +509,13 @@ declare module '@tanstack/react-router' {
       path: '/retail'
       fullPath: '/retail'
       preLoaderRoute: typeof RetailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -795,6 +815,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeliveryRoute: DeliveryRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   RetailRoute: RetailRoute,
   SegurosRoute: SegurosRoute,
   SignupRoute: SignupRoute,
