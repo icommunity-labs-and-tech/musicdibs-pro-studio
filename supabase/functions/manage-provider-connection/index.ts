@@ -89,12 +89,30 @@ Deno.serve(async (req: Request) => {
       // Single active connector per tenant: connecting one disconnects the
       // rest (and clears their stored credentials). The active connector is the
       // single source of truth for the audiences/lists shown in the app.
-      const { error: deactErr } = await supabase
+      const { data: otherConns, error: otherErr } = await supabase
         .from("provider_connections")
-        .update({ status: "disconnected", encrypted_credentials: null })
+        .select("id")
         .eq("tenant_id", profile.tenant_id)
         .neq("provider_type", providerType)
-      if (deactErr) throw deactErr
+      if (otherErr) throw otherErr
+
+      if (otherConns && otherConns.length > 0) {
+        const otherIds = otherConns.map((c) => c.id)
+        // Drop audiences synced from the now-inactive providers so the app only
+        // ever shows lists from the connected provider.
+        const { error: audDelErr } = await supabase
+          .from("provider_audiences")
+          .delete()
+          .in("provider_connection_id", otherIds)
+        if (audDelErr) throw audDelErr
+
+        const { error: deactErr } = await supabase
+          .from("provider_connections")
+          .update({ status: "disconnected", encrypted_credentials: null })
+          .in("id", otherIds)
+        if (deactErr) throw deactErr
+      }
+
 
       // Response NEVER includes credentials.
       return json({ success: true, provider_type: providerType, status: "connected" })
