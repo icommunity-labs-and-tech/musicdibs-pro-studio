@@ -36,10 +36,23 @@ import {
   useProviderCampaign,
   useProviderCampaignActions,
 } from "@/hooks/use-provider-campaign";
-import { CAMPAIGN_STATUS_LABELS, type CampaignStatus } from "@/lib/providers";
+import {
+  CAMPAIGN_STATUS_LABELS,
+  getProviderMeta,
+  type CampaignStatus,
+  type ProviderType,
+} from "@/lib/providers";
 import { buildExperienceUrl, type ExperiencePage } from "@/lib/experience";
 
-const ML_DASHBOARD_URL = "https://dashboard.mailerlite.com/campaigns";
+// Provider dashboards where the user can edit/send the campaign manually.
+const PROVIDER_DASHBOARD: Record<ProviderType, string> = {
+  mailerlite: "https://dashboard.mailerlite.com/campaigns",
+  brevo: "https://app.brevo.com/",
+  resend: "https://resend.com/broadcasts",
+};
+
+// Providers that can create/send a campaign from MusicDibs today.
+const CAMPAIGN_PROVIDERS: ProviderType[] = ["mailerlite", "resend"];
 
 const STATUS_CLASSES: Record<CampaignStatus, string> = {
   draft: "bg-warning text-warning-foreground",
@@ -59,17 +72,20 @@ export function ExperiencePublishSection({
   const settings = useTenantSettings(tenantId ?? undefined);
   const providerCampaign = useProviderCampaign(experience.id, tenantId);
 
-  const mailerlite = connections.data?.find(
-    (c) => c.provider_type === "mailerlite",
+  // Single active connector: pick the connected campaign-capable provider.
+  const active = connections.data?.find(
+    (c) => c.status === "connected" && CAMPAIGN_PROVIDERS.includes(c.provider_type),
   );
-  const connected = mailerlite?.status === "connected";
+  const connected = !!active;
+  const providerType = active?.provider_type;
+  const providerLabel = providerType ? getProviderMeta(providerType).label : "";
   const isPublished = experience.status === "published";
 
   const senderName = settings.data?.sender_name?.trim() ?? "";
   const senderEmail = settings.data?.sender_email?.trim() ?? "";
   const senderConfigured = !!senderName && !!senderEmail;
 
-  if (!isPublished || !connected) return null;
+  if (!isPublished || !connected || !providerType) return null;
 
   const campaign = providerCampaign.data;
 
@@ -77,6 +93,7 @@ export function ExperiencePublishSection({
     <div className="space-y-4 rounded-xl border p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-medium">Distribución</p>
+        <Badge variant="outline">{providerLabel}</Badge>
       </div>
 
       {/* Sender guard — never fall back to a default sender for real sends. */}
@@ -87,7 +104,7 @@ export function ExperiencePublishSection({
             <p className="text-sm">
               Falta configurar el remitente (nombre y email). Complétalo antes
               de distribuir para evitar problemas de entregabilidad o un
-              remitente no verificado en MailerLite.
+              remitente no verificado en {providerLabel}.
             </p>
             <Button asChild variant="outline" size="sm">
               <Link to="/settings/sender">
@@ -107,15 +124,18 @@ export function ExperiencePublishSection({
           tenantId={tenantId}
           campaign={campaign}
           senderConfigured={senderConfigured}
+          providerLabel={providerLabel}
+          providerType={providerType}
         />
       ) : (
         <CreateDraftFlow
           experience={experience}
           tenantId={tenantId}
-          mailerliteConnectionId={mailerlite?.id}
+          activeConnectionId={active?.id}
           senderConfigured={senderConfigured}
           senderName={senderName}
           senderEmail={senderEmail}
+          providerLabel={providerLabel}
         />
       )}
     </div>
@@ -128,6 +148,8 @@ function DistributionCard({
   tenantId,
   campaign,
   senderConfigured,
+  providerLabel,
+  providerType,
 }: {
   experience: ExperiencePage;
   tenantId: string | null | undefined;
@@ -137,18 +159,21 @@ function DistributionCard({
     updated_at: string;
   };
   senderConfigured: boolean;
+  providerLabel: string;
+  providerType: ProviderType;
 }) {
   const actions = useProviderCampaignActions(experience.id);
   const status = campaign.provider_campaign_status;
   const isSent = status === "sent";
   const stats = useCampaignStats(experience.campaign_id, tenantId, isSent);
+  const dashboardUrl = PROVIDER_DASHBOARD[providerType];
 
   // Two-step send confirmation: step 1 (warning) → step 2 (final confirm).
   const [sendStep, setSendStep] = useState<0 | 1 | 2>(0);
 
   const handleUpdate = () => {
     actions.updateDraft.mutate(undefined, {
-      onSuccess: () => toast.success("Borrador actualizado en MailerLite"),
+      onSuccess: () => toast.success(`Borrador actualizado en ${providerLabel}`),
       onError: (e: unknown) =>
         toast.error("No se pudo actualizar el borrador", {
           description: e instanceof Error ? e.message : undefined,
@@ -171,7 +196,7 @@ function DistributionCard({
       onSuccess: () => {
         setSendStep(0);
         toast.success(
-          "¡Campaña enviada! Se está distribuyendo a través de MailerLite.",
+          `¡Campaña enviada! Se está distribuyendo a través de ${providerLabel}.`,
         );
       },
       onError: (e: unknown) => {
@@ -191,7 +216,7 @@ function DistributionCard({
             {campaign.provider_campaign_name}
           </p>
           <p className="text-xs text-muted-foreground">
-            MailerLite · Actualizada{" "}
+            {providerLabel} · Actualizada{" "}
             {new Date(campaign.updated_at).toLocaleString("es-ES")}
           </p>
         </div>
@@ -228,8 +253,7 @@ function DistributionCard({
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">
-              Aún no hay estadísticas. Sincroniza para obtener los datos de
-              MailerLite.
+              Aún no hay estadísticas disponibles para {providerLabel}.
             </p>
           )}
           <Button
@@ -249,7 +273,7 @@ function DistributionCard({
           </Button>
         </div>
       ) : (
-        /* Draft / scheduled → update + send + open ML */
+        /* Draft / scheduled → update + send + open provider */
         <div className="flex flex-wrap gap-2">
           <Button
             size="sm"
@@ -278,9 +302,9 @@ function DistributionCard({
           </Button>
 
           <Button size="sm" variant="outline" asChild>
-            <a href={ML_DASHBOARD_URL} target="_blank" rel="noopener noreferrer">
+            <a href={dashboardUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="mr-1.5 h-4 w-4" />
-              Editar y enviar desde MailerLite
+              Editar y enviar desde {providerLabel}
             </a>
           </Button>
         </div>
@@ -297,7 +321,7 @@ function DistributionCard({
           <DialogHeader>
             <DialogTitle>Enviar campaña</DialogTitle>
             <DialogDescription>
-              Esta campaña se enviará inmediatamente desde la cuenta MailerLite
+              Esta campaña se enviará inmediatamente desde la cuenta {providerLabel}{" "}
               conectada. Los contactos de la audiencia seleccionada recibirán el
               email en los próximos minutos. Esta acción no se puede deshacer.
             </DialogDescription>
@@ -330,7 +354,7 @@ function DistributionCard({
             <DialogTitle>¿Confirmas el envío?</DialogTitle>
             <DialogDescription>
               Una vez enviada, la campaña no podrá cancelarse ni modificarse
-              desde MusicDibs ni desde MailerLite.
+              desde MusicDibs ni desde {providerLabel}.
             </DialogDescription>
           </DialogHeader>
 
@@ -376,17 +400,19 @@ function MetricChip({ label, value }: { label: string; value: number }) {
 function CreateDraftFlow({
   experience,
   tenantId,
-  mailerliteConnectionId,
+  activeConnectionId,
   senderConfigured,
   senderName,
   senderEmail,
+  providerLabel,
 }: {
   experience: ExperiencePage;
   tenantId: string | null | undefined;
-  mailerliteConnectionId: string | undefined;
+  activeConnectionId: string | undefined;
   senderConfigured: boolean;
   senderName: string;
   senderEmail: string;
+  providerLabel: string;
 }) {
   const audiences = useProviderAudiences(tenantId ?? undefined);
   const createDraft = useCreateDraftCampaign(experience.id);
@@ -394,15 +420,17 @@ function CreateDraftFlow({
   const [open, setOpen] = useState(false);
   const [audienceId, setAudienceId] = useState<string>("");
 
-  const mlAudiences = useMemo(() => {
-    if (!mailerliteConnectionId) return [];
+  const providerAudiences = useMemo(() => {
+    if (!activeConnectionId) return [];
     return (audiences.data ?? []).filter(
-      (a) => a.provider_connection_id === mailerliteConnectionId,
+      (a) => a.provider_connection_id === activeConnectionId,
     );
-  }, [audiences.data, mailerliteConnectionId]);
+  }, [audiences.data, activeConnectionId]);
 
-  const targetable = mlAudiences.filter((a) => a.audience_type !== "automation");
-  const hasAutomations = mlAudiences.some(
+  const targetable = providerAudiences.filter(
+    (a) => a.audience_type !== "automation",
+  );
+  const hasAutomations = providerAudiences.some(
     (a) => a.audience_type === "automation",
   );
 
@@ -423,7 +451,7 @@ function CreateDraftFlow({
       },
       {
         onSuccess: () => {
-          toast.success("Borrador creado en MailerLite");
+          toast.success(`Borrador creado en ${providerLabel}`);
           setOpen(false);
           setAudienceId("");
         },
@@ -438,18 +466,18 @@ function CreateDraftFlow({
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        Crea un borrador en MailerLite con esta experiencia musical. Lo podrás
-        actualizar y enviar desde aquí o desde MailerLite.
+        Crea un borrador en {providerLabel} con esta experiencia musical. Lo
+        podrás actualizar y enviar desde aquí o desde {providerLabel}.
       </p>
       <Button size="sm" onClick={() => setOpen(true)}>
         <Send className="mr-1.5 h-4 w-4" />
-        Crear borrador en MailerLite
+        Crear borrador en {providerLabel}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Crear borrador en MailerLite</DialogTitle>
+            <DialogTitle>Crear borrador en {providerLabel}</DialogTitle>
             <DialogDescription>
               MusicDibs crea un borrador. Tú lo revisas y lo envías. Nunca
               enviamos correos sin tu confirmación.
@@ -459,8 +487,8 @@ function CreateDraftFlow({
           {!senderConfigured ? (
             <div className="space-y-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
               <p className="text-sm">
-                Configura el remitente (nombre y email) antes de publicar en
-                MailerLite.
+                Configura el remitente (nombre y email) antes de publicar en{" "}
+                {providerLabel}.
               </p>
               <Button asChild variant="outline" size="sm">
                 <Link to="/settings/sender">
