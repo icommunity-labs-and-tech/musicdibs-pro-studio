@@ -7,3 +7,8 @@ verify_jwt = false
 
 [functions.ai-music-studio-music-callback]
 verify_jwt = false
+
+# Invited users may have no session yet (email confirmation pending) when
+# accepting; the function validates the signed invitation token itself.
+[functions.accept-invitation]
+verify_jwt = false
