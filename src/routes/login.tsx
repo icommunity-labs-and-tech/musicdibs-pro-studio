@@ -5,13 +5,18 @@ import { toast } from "sonner";
 
 import { FullScreenLoader } from "@/components/app/full-screen-loader";
 import { AuthCardLayout } from "@/components/auth/auth-card-layout";
+import { PasswordInput } from "@/components/auth/password-input";
 import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { acceptInvitation } from "@/lib/accept-invitation";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    token: typeof search.token === "string" ? search.token : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Entrar · Musicdibs Enterprise" },
@@ -33,7 +38,8 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { session, loading } = useAuth();
+  const { session, loading, refresh } = useAuth();
+  const { token } = Route.useSearch();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,12 +51,22 @@ function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setSubmitting(false);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setSubmitting(false);
       toast.error("No pudimos iniciar sesión", { description: error.message });
       return;
     }
+
+    // Accept a pending invitation if the user arrived from an invite link.
+    if (token && data.user) {
+      const ok = await acceptInvitation(token, data.user.id);
+      if (ok) {
+        await refresh();
+        toast.success("Invitación aceptada");
+      }
+    }
+    setSubmitting(false);
     toast.success("Sesión iniciada");
     void navigate({ to: "/dashboard" });
   }
@@ -62,7 +78,11 @@ function LoginPage() {
       footer={
         <>
           ¿No tienes cuenta?{" "}
-          <Link to="/signup" className="font-medium text-gold-dark dark:text-gold-light hover:underline">
+          <Link
+            to="/signup"
+            search={token ? { token } : {}}
+            className="font-medium text-gold-dark dark:text-gold-light hover:underline"
+          >
             Crear una
           </Link>
         </>
@@ -82,10 +102,17 @@ function LoginPage() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
-          <Input
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Contraseña</Label>
+            <Link
+              to="/forgot-password"
+              className="text-xs font-medium text-gold-dark dark:text-gold-light hover:underline"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
+          <PasswordInput
             id="password"
-            type="password"
             autoComplete="current-password"
             required
             value={password}
