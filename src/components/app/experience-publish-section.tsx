@@ -87,7 +87,16 @@ export function ExperiencePublishSection({
 
   if (!isPublished || !connected || !providerType) return null;
 
-  const campaign = providerCampaign.data;
+  // Single active connector: only treat the stored draft as current when it
+  // belongs to the provider that is connected RIGHT NOW. A draft created with a
+  // previously-active provider (e.g. MailerLite) is orphaned once the tenant
+  // switches to another provider (e.g. Resend) — show the create flow instead
+  // of trying to act on a campaign in a disconnected provider's account.
+  const rawCampaign = providerCampaign.data;
+  const campaign =
+    rawCampaign && rawCampaign.provider_type === providerType
+      ? rawCampaign
+      : null;
 
   return (
     <div className="space-y-4 rounded-xl border p-4">
