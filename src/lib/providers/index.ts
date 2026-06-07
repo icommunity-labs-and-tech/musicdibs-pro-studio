@@ -3,15 +3,18 @@
 
 import mailerliteLogo from "@/assets/logos/mailerlite.svg";
 import brevoLogo from "@/assets/logos/brevo.svg";
+import resendLogo from "@/assets/logos/resend.svg";
 
 import { BrevoConnector } from "./BrevoConnector";
 import { MailerLiteConnector } from "./MailerLiteConnector";
+import { ResendConnector } from "./ResendConnector";
 import type { ProviderConnector, ProviderType } from "./ProviderConnector";
 
 export * from "./ProviderConnector";
 export * from "./CampaignProvider";
 export { MailerLiteConnector } from "./MailerLiteConnector";
 export { BrevoConnector } from "./BrevoConnector";
+export { ResendConnector } from "./ResendConnector";
 
 export interface ProviderMeta {
   type: ProviderType;
