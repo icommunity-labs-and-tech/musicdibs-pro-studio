@@ -35,10 +35,14 @@ import {
 } from "@/hooks/use-providers";
 import { PROVIDERS, type ProviderMeta, type ProviderStatus } from "@/lib/providers";
 import { calculateEstimatedCredits } from "@/lib/campaign-generation-options";
-import { MailerLitePlanNotice } from "@/components/app/mailerlite-plan-notice";
+import { ProviderPlanNotice } from "@/components/app/provider-plan-notice";
 
 // Providers with a real metadata-sync integration available today.
-const SYNC_ENABLED: Record<string, boolean> = { mailerlite: true, brevo: false };
+const SYNC_ENABLED: Record<string, boolean> = {
+  mailerlite: true,
+  brevo: false,
+  resend: true,
+};
 
 export const Route = createFileRoute("/_authenticated/_shell/settings/providers")({
   component: ProvidersPage,
@@ -58,11 +62,14 @@ function ProvidersPage() {
         <h2 className="font-display text-xl font-bold">Proveedores</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Conecta tu plataforma de marketing para sincronizar audiencias y
-          campañas.
+          campañas. Solo puede haber{" "}
+          <strong className="text-foreground">un conector activo a la vez</strong>
+          : al conectar uno, los demás se desconectan automáticamente. Las listas
+          se traen del proveedor que tengas conectado.
         </p>
       </div>
 
-      <MailerLitePlanNotice />
+
 
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -155,6 +162,9 @@ function ProviderCard({
         <CardDescription>{provider.description}</CardDescription>
       </CardHeader>
       <CardContent className="mt-auto space-y-3">
+        {isConnected ? (
+          <ProviderPlanNotice provider={provider.type} variant="compact" />
+        ) : null}
         <p className="text-xs text-muted-foreground">
           {connection?.last_sync_at
             ? `Última sincronización: ${new Date(
@@ -260,9 +270,8 @@ function ConnectDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {provider.type === "mailerlite" ? (
-          <MailerLitePlanNotice variant="compact" />
-        ) : null}
+        <ProviderPlanNotice provider={provider.type} variant="compact" />
+
 
 
 

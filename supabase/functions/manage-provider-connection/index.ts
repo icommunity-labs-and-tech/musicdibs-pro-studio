@@ -3,6 +3,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2"
 
 import { encryptCredentials, decryptCredentials } from "./encryption.ts"
 import { MailerLiteConnector } from "./MailerLiteConnector.ts"
+import { ResendConnector } from "./ResendConnector.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,8 +15,8 @@ const json = (data: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   })
 
-type ProviderType = "mailerlite" | "brevo"
-const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo"]
+type ProviderType = "mailerlite" | "brevo" | "resend"
+const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo", "resend"]
 
 /**
  * Validate credentials against the (still mocked) provider rules.
@@ -85,9 +86,38 @@ Deno.serve(async (req: Request) => {
       )
       if (error) throw error
 
+      // Single active connector per tenant: connecting one disconnects the
+      // rest (and clears their stored credentials). The active connector is the
+      // single source of truth for the audiences/lists shown in the app.
+      const { data: otherConns, error: otherErr } = await supabase
+        .from("provider_connections")
+        .select("id")
+        .eq("tenant_id", profile.tenant_id)
+        .neq("provider_type", providerType)
+      if (otherErr) throw otherErr
+
+      if (otherConns && otherConns.length > 0) {
+        const otherIds = otherConns.map((c) => c.id)
+        // Drop audiences synced from the now-inactive providers so the app only
+        // ever shows lists from the connected provider.
+        const { error: audDelErr } = await supabase
+          .from("provider_audiences")
+          .delete()
+          .in("provider_connection_id", otherIds)
+        if (audDelErr) throw audDelErr
+
+        const { error: deactErr } = await supabase
+          .from("provider_connections")
+          .update({ status: "disconnected", encrypted_credentials: null })
+          .in("id", otherIds)
+        if (deactErr) throw deactErr
+      }
+
+
       // Response NEVER includes credentials.
       return json({ success: true, provider_type: providerType, status: "connected" })
     }
+
 
     // ── disconnect ───────────────────────────────────────────────────────────
     if (action === "disconnect") {
@@ -140,12 +170,14 @@ Deno.serve(async (req: Request) => {
       const apiKey = typeof creds?.apiKey === "string" ? creds.apiKey : ""
       if (!apiKey) return json({ error: "Credenciales no disponibles" }, 400)
 
-      // Only MailerLite has a real integration in TASK 002.
-      if (providerType !== "mailerlite") {
+      // Real metadata-sync integrations: MailerLite and Resend.
+      if (providerType !== "mailerlite" && providerType !== "resend") {
         return json({ error: "Sincronización no disponible para este proveedor todavía" }, 400)
       }
 
-      const connector = new MailerLiteConnector(apiKey)
+      const connector = providerType === "resend"
+        ? new ResendConnector(apiKey)
+        : new MailerLiteConnector(apiKey)
 
       const validation = await connector.validateCredentials()
       if (!validation.valid) {
@@ -155,6 +187,7 @@ Deno.serve(async (req: Request) => {
           .eq("id", conn.id)
         return json({ error: validation.message ?? "Credenciales inválidas" }, 400)
       }
+
 
       const audiences = await connector.syncAudiences()
       const now = new Date().toISOString()
