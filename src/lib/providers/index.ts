@@ -37,6 +37,12 @@ export const PROVIDERS: ProviderMeta[] = [
     description: "Sincroniza listas, segmentos y automatizaciones desde Brevo.",
     logo: brevoLogo,
   },
+  {
+    type: "resend",
+    label: "Resend",
+    description: "Sincroniza tus audiencias de contactos desde Resend.",
+    logo: resendLogo,
+  },
 ];
 
 export function getProviderMeta(type: ProviderType): ProviderMeta {
