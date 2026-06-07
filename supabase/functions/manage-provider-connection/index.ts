@@ -68,11 +68,30 @@ Deno.serve(async (req: Request) => {
     // ── connect ────────────────────────────────────────────────────────────
     if (action === "connect") {
       const apiKey = typeof body.api_key === "string" ? body.api_key.trim() : ""
-      const check = validateApiKey(apiKey)
-      if (!check.valid) return json({ error: check.message }, 400)
 
-      // Encrypt server-side BEFORE persistence. Plaintext never stored.
-      const encrypted = encryptCredentials({ apiKey })
+      // Existing stored credentials for this provider (may be a previously
+      // connected-then-disconnected provider whose key we kept on file).
+      const { data: existing } = await supabase
+        .from("provider_connections")
+        .select("encrypted_credentials")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("provider_type", providerType)
+        .maybeSingle()
+
+      // Resolve which credentials to persist:
+      //  - A new key was provided → validate + encrypt it.
+      //  - No key, but we already have one stored → reconnect with it (the user
+      //    doesn't need to paste the API key again).
+      let encrypted: string
+      if (apiKey) {
+        const check = validateApiKey(apiKey)
+        if (!check.valid) return json({ error: check.message }, 400)
+        encrypted = encryptCredentials({ apiKey })
+      } else if (existing?.encrypted_credentials) {
+        encrypted = existing.encrypted_credentials
+      } else {
+        return json({ error: "API key requerida" }, 400)
+      }
 
       const { error } = await supabase.from("provider_connections").upsert(
         {
@@ -87,8 +106,9 @@ Deno.serve(async (req: Request) => {
       if (error) throw error
 
       // Single active connector per tenant: connecting one disconnects the
-      // rest (and clears their stored credentials). The active connector is the
-      // single source of truth for the audiences/lists shown in the app.
+      // rest. We KEEP their stored credentials so the user can reconnect later
+      // without re-entering the API key. The active connector remains the single
+      // source of truth for the audiences/lists shown in the app.
       const { data: otherConns, error: otherErr } = await supabase
         .from("provider_connections")
         .select("id")
@@ -106,9 +126,10 @@ Deno.serve(async (req: Request) => {
           .in("provider_connection_id", otherIds)
         if (audDelErr) throw audDelErr
 
+        // Deactivate but PRESERVE encrypted_credentials.
         const { error: deactErr } = await supabase
           .from("provider_connections")
-          .update({ status: "disconnected", encrypted_credentials: null })
+          .update({ status: "disconnected" })
           .in("id", otherIds)
         if (deactErr) throw deactErr
       }
@@ -121,9 +142,11 @@ Deno.serve(async (req: Request) => {
 
     // ── disconnect ───────────────────────────────────────────────────────────
     if (action === "disconnect") {
+      // Keep the encrypted credentials on file so the tenant can reconnect this
+      // provider later without re-entering the API key. Only flip the status.
       const { error } = await supabase
         .from("provider_connections")
-        .update({ status: "disconnected", encrypted_credentials: null })
+        .update({ status: "disconnected" })
         .eq("tenant_id", profile.tenant_id)
         .eq("provider_type", providerType)
       if (error) throw error

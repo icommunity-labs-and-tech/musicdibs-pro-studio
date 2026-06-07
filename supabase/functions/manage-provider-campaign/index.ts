@@ -5,8 +5,11 @@ import { decryptCredentials } from "./encryption.ts"
 import {
   MailerLiteCampaignProvider,
   type CampaignAudience,
+  type CampaignProviderResult,
+  type CampaignReportsResult,
   type DraftCampaignInput,
 } from "./MailerLiteCampaignProvider.ts"
+import { ResendCampaignProvider } from "./ResendCampaignProvider.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,6 +26,36 @@ const EXPERIENCE_BASE_URL = "https://enterprise.musicdibs.com"
 const AI_STUDIO = "Powered by AI Music Studio"
 
 type AudienceType = "list" | "segment" | "automation"
+type CampaignProviderType = "mailerlite" | "resend"
+
+const PROVIDER_LABEL: Record<CampaignProviderType, string> = {
+  mailerlite: "MailerLite",
+  resend: "Resend",
+}
+
+/**
+ * Provider-specific merge tags for personalization at send time.
+ * - MailerLite v2 uses {$name} and {$unsubscribe}.
+ * - Resend uses {{{FIRST_NAME|fallback}}} and {{{RESEND_UNSUBSCRIBE_URL}}}.
+ */
+const MERGE_TAGS: Record<CampaignProviderType, { name: string; unsubscribe: string }> = {
+  mailerlite: { name: "{$name}", unsubscribe: "{$unsubscribe}" },
+  resend: { name: "{{{FIRST_NAME|}}}", unsubscribe: "{{{RESEND_UNSUBSCRIBE_URL}}}" },
+}
+
+interface CampaignProvider {
+  createDraftCampaign(input: DraftCampaignInput): Promise<CampaignProviderResult>
+  updateDraftCampaign(id: string, input: DraftCampaignInput): Promise<CampaignProviderResult>
+  getCampaignStatus(id: string): Promise<CampaignProviderResult>
+  scheduleCampaign(id: string): Promise<CampaignProviderResult>
+  getCampaignReports(id: string): Promise<CampaignReportsResult>
+}
+
+function makeProvider(type: CampaignProviderType, key: string): CampaignProvider {
+  return type === "resend"
+    ? new ResendCampaignProvider(key)
+    : new MailerLiteCampaignProvider(key)
+}
 
 interface ExperienceBranding {
   logo_url?: string | null
@@ -40,15 +73,13 @@ function escapeHtml(s: string): string {
 }
 
 /**
- * Build the MailerLite email HTML.
+ * Build the email HTML.
  *
- * - Greeting uses {$name}, the MailerLite v2 merge tag for subscriber name.
- *   This personalises at send time both for Option A (Send Now from MEC)
- *   and Option B (user edits draft in ML then sends from there).
- * - emailBody is configured in Campaign Builder → Step Email (campaign_generation_configs).
- *   Falls back to generic copy when null.
+ * - Greeting uses the provider's name merge tag, personalised at send time.
+ * - emailBody is configured in Campaign Builder → Step Email
+ *   (campaign_generation_configs). Falls back to generic copy when null.
  * - emailSubject is only used for the <title> tag; the real subject is set on
- *   the ML campaign object via DraftCampaignInput.subject.
+ *   the campaign object.
  */
 function buildHtml(opts: {
   title: string
@@ -57,8 +88,10 @@ function buildHtml(opts: {
   branding: ExperienceBranding
   emailBody: string | null
   emailSubject: string | null
+  nameTag: string
+  unsubscribeTag: string
 }): string {
-  const { title, playUrl, coverUrl, branding, emailBody } = opts
+  const { title, playUrl, coverUrl, branding, emailBody, nameTag, unsubscribeTag } = opts
   const accent = branding.primary_color || "#C9973A"
   const ctaText = branding.cta_text || "Escuchar la canción"
   const safeTitle = escapeHtml(title)
@@ -80,10 +113,10 @@ function buildHtml(opts: {
 ${logo}
 ${cover}
 <tr><td style="font-size:22px;font-weight:bold;padding:0 0 16px;">${safeTitle}</td></tr>
-<tr><td style="font-size:15px;line-height:1.6;color:#374151;padding:0 0 4px;">Hola {$name},</td></tr>
+<tr><td style="font-size:15px;line-height:1.6;color:#374151;padding:0 0 4px;">Hola ${nameTag},</td></tr>
 <tr><td style="font-size:15px;line-height:1.6;color:#374151;padding:0 0 24px;">${safeBody}</td></tr>
 <tr><td style="padding:0 0 28px;"><a href="${playUrl}" style="display:inline-block;background:${accent};color:#ffffff;text-decoration:none;font-weight:bold;font-size:15px;padding:14px 28px;border-radius:999px;">${escapeHtml(ctaText)}</a></td></tr>
-<tr><td style="font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;padding:16px 0 0;">${AI_STUDIO} · <a href="{$unsubscribe}" style="color:#9ca3af;">Darse de baja</a></td></tr>
+<tr><td style="font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;padding:16px 0 0;">${AI_STUDIO} · <a href="${unsubscribeTag}" style="color:#9ca3af;">Darse de baja</a></td></tr>
 </table>
 </td></tr>
 </table>
@@ -121,18 +154,18 @@ Deno.serve(async (req: Request) => {
 
     // ── Shared helpers ────────────────────────────────────────────────────────
 
-    /** Resolve the tenant's MailerLite API key from provider_connections. */
-    async function getMailerliteKey(): Promise<
-      { key: string } | { error: string; status: number }
-    > {
+    /** Resolve a specific provider's API key (must be currently connected). */
+    async function getProviderKey(
+      providerType: CampaignProviderType,
+    ): Promise<{ key: string } | { error: string; status: number }> {
       const { data: conn } = await supabase
         .from("provider_connections")
         .select("encrypted_credentials, status")
         .eq("tenant_id", tenantId)
-        .eq("provider_type", "mailerlite")
+        .eq("provider_type", providerType)
         .maybeSingle()
       if (!conn || conn.status !== "connected") {
-        return { error: "MailerLite no está conectado.", status: 400 }
+        return { error: `${PROVIDER_LABEL[providerType]} no está conectado.`, status: 400 }
       }
       const creds = decryptCredentials(conn.encrypted_credentials)
       const key = typeof creds?.apiKey === "string" ? creds.apiKey : ""
@@ -140,23 +173,48 @@ Deno.serve(async (req: Request) => {
       return { key }
     }
 
+    /** Resolve the single currently-connected campaign provider. */
+    async function getActiveProvider(): Promise<
+      { providerType: CampaignProviderType; key: string } | { error: string; status: number }
+    > {
+      const { data: conns } = await supabase
+        .from("provider_connections")
+        .select("provider_type, encrypted_credentials, status")
+        .eq("tenant_id", tenantId)
+        .eq("status", "connected")
+      const conn = (conns ?? []).find(
+        (c) => c.provider_type === "mailerlite" || c.provider_type === "resend",
+      )
+      if (!conn) {
+        return {
+          error: "No hay ningún proveedor de envío conectado. Conecta MailerLite o Resend en Ajustes → Proveedores.",
+          status: 400,
+        }
+      }
+      const creds = decryptCredentials(conn.encrypted_credentials)
+      const key = typeof creds?.apiKey === "string" ? creds.apiKey : ""
+      if (!key) return { error: "Credenciales no disponibles.", status: 400 }
+      return { providerType: conn.provider_type as CampaignProviderType, key }
+    }
+
     /**
-     * Resolve the existing provider_campaign row for an experience page.
-     * Returns error object or { pc, keyRes }.
+     * Resolve the existing provider_campaign row for an experience page and the
+     * API key of the provider it belongs to.
      */
     async function resolveProviderCampaign(experiencePageId: string) {
       const { data: pc } = await supabase
         .from("provider_campaigns")
-        .select("id, provider_campaign_id, provider_campaign_name, provider_campaign_status")
+        .select("id, provider_type, provider_campaign_id, provider_campaign_name, provider_campaign_status")
         .eq("experience_page_id", experiencePageId)
         .eq("tenant_id", tenantId)
         .maybeSingle()
       if (!pc) {
-        return { error: "No se encontró campaña en MailerLite para esta experiencia. Crea el draft primero.", status: 404 }
+        return { error: "No se encontró campaña para esta experiencia. Crea el borrador primero.", status: 404 }
       }
-      const keyRes = await getMailerliteKey()
+      const providerType = (pc.provider_type as CampaignProviderType) ?? "mailerlite"
+      const keyRes = await getProviderKey(providerType)
       if ("error" in keyRes) return keyRes
-      return { pc, key: keyRes.key }
+      return { pc, providerType, key: keyRes.key }
     }
 
     /**
@@ -193,6 +251,11 @@ Deno.serve(async (req: Request) => {
         )
       }
 
+      // Resolve the active provider (MailerLite or Resend).
+      const activeRes = await getActiveProvider()
+      if ("error" in activeRes) return json({ error: activeRes.error }, activeRes.status)
+      const { providerType, key } = activeRes
+
       // Sender configuration (required).
       const { data: settings } = await supabase
         .from("tenant_settings")
@@ -203,7 +266,7 @@ Deno.serve(async (req: Request) => {
       const senderEmail = settings?.sender_email?.trim() ?? ""
       if (!senderName || !senderEmail) {
         return json(
-          { error: "Configura el remitente antes de publicar en MailerLite.", code: "sender_missing" },
+          { error: "Configura el remitente antes de crear la campaña.", code: "sender_missing" },
           400,
         )
       }
@@ -245,12 +308,19 @@ Deno.serve(async (req: Request) => {
       // Email content from campaign_generation_configs.
       const { emailSubject, emailBody } = await fetchEmailConfig(exp.campaign_id)
 
-      const keyRes = await getMailerliteKey()
-      if ("error" in keyRes) return json({ error: keyRes.error }, keyRes.status)
-
       const playUrl = `${EXPERIENCE_BASE_URL}/play/${exp.experience_token}`
       const branding = (exp.branding as ExperienceBranding | null) ?? {}
-      const html = buildHtml({ title: exp.title, playUrl, coverUrl, branding, emailBody, emailSubject })
+      const tags = MERGE_TAGS[providerType]
+      const html = buildHtml({
+        title: exp.title,
+        playUrl,
+        coverUrl,
+        branding,
+        emailBody,
+        emailSubject,
+        nameTag: tags.name,
+        unsubscribeTag: tags.unsubscribe,
+      })
 
       const subject = emailSubject?.trim() || exp.title
       const draft: DraftCampaignInput = {
@@ -266,10 +336,10 @@ Deno.serve(async (req: Request) => {
         } satisfies CampaignAudience,
       }
 
-      const provider = new MailerLiteCampaignProvider(keyRes.key)
+      const provider = makeProvider(providerType, key)
       const result = await provider.createDraftCampaign(draft)
       if (!result.ok || !result.campaignId) {
-        return json({ error: result.error ?? "No se pudo crear el draft en MailerLite." }, 502)
+        return json({ error: result.error ?? `No se pudo crear el borrador en ${PROVIDER_LABEL[providerType]}.` }, 502)
       }
 
       const { data: row, error: insErr } = await supabase
@@ -277,7 +347,7 @@ Deno.serve(async (req: Request) => {
         .insert({
           tenant_id: tenantId,
           experience_page_id: experiencePageId,
-          provider_type: "mailerlite",
+          provider_type: providerType,
           provider_campaign_id: result.campaignId,
           provider_campaign_name: result.campaignName || draft.name,
           provider_campaign_status: result.campaignStatus ?? "draft",
@@ -291,14 +361,14 @@ Deno.serve(async (req: Request) => {
 
     // ── update_draft ──────────────────────────────────────────────────────────
     // Regenerates the email HTML with the latest email_body/subject and
-    // pushes the update to MailerLite. Safe to call multiple times.
+    // pushes the update to the provider. Safe to call multiple times.
     if (action === "update_draft") {
       const experiencePageId = body.experience_page_id as string | undefined
       if (!experiencePageId) return json({ error: "experience_page_id requerido" }, 400)
 
       const resolved = await resolveProviderCampaign(experiencePageId)
       if ("error" in resolved) return json({ error: resolved.error }, resolved.status)
-      const { pc, key } = resolved
+      const { pc, providerType, key } = resolved
 
       if (pc.provider_campaign_status === "sent") {
         return json({ error: "No se puede actualizar una campaña ya enviada." }, 422)
@@ -330,89 +400,61 @@ Deno.serve(async (req: Request) => {
 
       const playUrl = `${EXPERIENCE_BASE_URL}/play/${exp.experience_token}`
       const branding = (exp.branding as ExperienceBranding | null) ?? {}
-      const html = buildHtml({ title: exp.title, playUrl, coverUrl, branding, emailBody, emailSubject })
+      const tags = MERGE_TAGS[providerType]
+      const html = buildHtml({
+        title: exp.title,
+        playUrl,
+        coverUrl,
+        branding,
+        emailBody,
+        emailSubject,
+        nameTag: tags.name,
+        unsubscribeTag: tags.unsubscribe,
+      })
       const subject = emailSubject?.trim() || exp.title
 
-      // We don't re-set audience on update — keep whatever was set at creation.
-      // ML PUT /campaigns/{id} accepts partial updates; we send emails[] only.
-      const mlRes = await fetch(`https://connect.mailerlite.com/api/campaigns/${pc.provider_campaign_id}`, {
-        method: "PUT",
-        headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          name: `${exp.title} — Music Experience`,
-          emails: [{
-            subject,
-            from_name: senderName,
-            from: senderEmail,
-            reply_to: settings?.reply_to_email?.trim() || undefined,
-            content: html,
-          }],
-        }),
-      })
+      const draft: DraftCampaignInput = {
+        name: `${exp.title} — Music Experience`,
+        subject,
+        fromName: senderName,
+        fromEmail: senderEmail,
+        replyTo: settings?.reply_to_email?.trim() || null,
+        html,
+        // Audience is fixed at creation; updateDraftCampaign ignores it.
+        audience: { externalId: "", audienceType: "list" },
+      }
 
-      if (!mlRes.ok) {
-        const errText = await mlRes.text().catch(() => "")
-        console.error("update_draft ML error:", mlRes.status, errText)
-        // Graceful degradation: if content is rejected (plan limitation), retry without it.
-        if (mlRes.status === 422) {
-          const retryRes = await fetch(`https://connect.mailerlite.com/api/campaigns/${pc.provider_campaign_id}`, {
-            method: "PUT",
-            headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json", "Accept": "application/json" },
-            body: JSON.stringify({
-              name: `${exp.title} — Music Experience`,
-              emails: [{ subject, from_name: senderName, from: senderEmail }],
-            }),
-          })
-          if (!retryRes.ok) {
-            return json({ error: `MailerLite rechazó la actualización (${retryRes.status}).` }, 502)
-          }
-        } else {
-          return json({ error: `MailerLite respondió con error ${mlRes.status}.` }, 502)
-        }
+      const provider = makeProvider(providerType, key)
+      const result = await provider.updateDraftCampaign(pc.provider_campaign_id, draft)
+      if (!result.ok) {
+        return json({ error: result.error ?? `No se pudo actualizar el borrador en ${PROVIDER_LABEL[providerType]}.` }, 502)
       }
 
       // Touch updated_at so frontend can detect the change.
       await supabase.from("provider_campaigns").update({ updated_at: new Date().toISOString() }).eq("id", pc.id)
 
-      return json({ success: true, message: "Draft actualizado en MailerLite." })
+      return json({ success: true, message: `Borrador actualizado en ${PROVIDER_LABEL[providerType]}.` })
     }
 
     // ── send_now ──────────────────────────────────────────────────────────────
-    // Schedules the MailerLite draft campaign for immediate delivery.
-    // Option A: user sends from MEC without opening MailerLite.
+    // Sends the draft campaign immediately. Option A: user sends from MEC
+    // without opening the provider's dashboard.
     if (action === "send_now") {
       const experiencePageId = body.experience_page_id as string | undefined
       if (!experiencePageId) return json({ error: "experience_page_id requerido" }, 400)
 
       const resolved = await resolveProviderCampaign(experiencePageId)
       if ("error" in resolved) return json({ error: resolved.error }, resolved.status)
-      const { pc, key } = resolved
+      const { pc, providerType, key } = resolved
 
       if (pc.provider_campaign_status === "sent") {
         return json({ error: "Esta campaña ya fue enviada." }, 422)
       }
 
-      // Call MailerLite schedule API.
-      const scheduleRes = await fetch(
-        `https://connect.mailerlite.com/api/campaigns/${pc.provider_campaign_id}/schedule`,
-        {
-          method: "POST",
-          headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify({ delivery: "instant" }),
-        },
-      )
-
-      if (!scheduleRes.ok) {
-        const errText = await scheduleRes.text().catch(() => "")
-        console.error("send_now ML schedule error:", scheduleRes.status, errText)
-        const mlErrMap: Record<number, string> = {
-          401: "La API key de MailerLite no es válida.",
-          403: "No tienes permisos para enviar esta campaña en MailerLite.",
-          404: "La campaña no existe en MailerLite. Puede que haya sido eliminada.",
-          422: "MailerLite rechazó el envío. Verifica que el remitente esté verificado y la audiencia tenga suscriptores.",
-          429: "MailerLite está limitando las peticiones. Inténtalo en unos minutos.",
-        }
-        return json({ error: mlErrMap[scheduleRes.status] ?? `MailerLite respondió con error ${scheduleRes.status}.` }, 502)
+      const provider = makeProvider(providerType, key)
+      const sendRes = await provider.scheduleCampaign(pc.provider_campaign_id)
+      if (!sendRes.ok) {
+        return json({ error: sendRes.error ?? `${PROVIDER_LABEL[providerType]} rechazó el envío.` }, 502)
       }
 
       const now = new Date().toISOString()
@@ -441,7 +483,7 @@ Deno.serve(async (req: Request) => {
           tenant_id: tenantId,
           type: "campaign_sent",
           title: "Campaña enviada",
-          body: `"${exp.title}" se está enviando a través de MailerLite.`,
+          body: `"${exp.title}" se está enviando a través de ${PROVIDER_LABEL[providerType]}.`,
           link: `/campaigns/${exp.campaign_id}`,
         }).throwOnError().catch(() => { /* non-critical */ })
 
@@ -457,7 +499,8 @@ Deno.serve(async (req: Request) => {
             payload: {
               campaign_id: exp.campaign_id,
               campaign_name: exp.title,
-              mailerlite_campaign_id: pc.provider_campaign_id,
+              provider_type: providerType,
+              provider_campaign_id: pc.provider_campaign_id,
               sent_at: now,
               source: "mec_send_now",
             },
@@ -469,36 +512,34 @@ Deno.serve(async (req: Request) => {
     }
 
     // ── sync ──────────────────────────────────────────────────────────────────
-    // Fetches ML campaign status + stats and updates the DB.
-    // Used by: "Sincronizar stats" button (Option A) and
-    //          polling to detect ML-side sends (Option B).
+    // Fetches the provider campaign status (+ stats where supported) and updates
+    // the DB. Used by the "Sincronizar stats" button and status polling.
     if (action === "sync") {
       const experiencePageId = body.experience_page_id as string | undefined
       if (!experiencePageId) return json({ error: "experience_page_id requerido" }, 400)
 
       const resolved = await resolveProviderCampaign(experiencePageId)
       if ("error" in resolved) return json({ error: resolved.error }, resolved.status)
-      const { pc, key } = resolved
+      const { pc, providerType, key } = resolved
 
-      const provider = new MailerLiteCampaignProvider(key)
+      const provider = makeProvider(providerType, key)
 
-      // 1. Get current ML campaign status.
+      // 1. Get current provider campaign status.
       const statusResult = await provider.getCampaignStatus(pc.provider_campaign_id)
       if (!statusResult.ok) {
-        return json({ error: statusResult.error ?? "No se pudo contactar MailerLite." }, 502)
+        return json({ error: statusResult.error ?? `No se pudo contactar ${PROVIDER_LABEL[providerType]}.` }, 502)
       }
 
-      const mlStatus = statusResult.campaignStatus ?? "draft"
-      const statusChanged = mlStatus !== pc.provider_campaign_status
+      const remoteStatus = statusResult.campaignStatus ?? "draft"
+      const statusChanged = remoteStatus !== pc.provider_campaign_status
 
-      // Persist any status change (catches Option B: user sent from ML).
+      // Persist any status change (catches Option B: user sent from provider).
       if (statusChanged) {
         await supabase.from("provider_campaigns")
-          .update({ provider_campaign_status: mlStatus, updated_at: new Date().toISOString() })
+          .update({ provider_campaign_status: remoteStatus, updated_at: new Date().toISOString() })
           .eq("id", pc.id)
 
-        // If ML reports sent and campaign was previously draft, update campaigns table.
-        if (mlStatus === "sent" && pc.provider_campaign_status === "draft") {
+        if (remoteStatus === "sent" && pc.provider_campaign_status === "draft") {
           const { data: exp } = await supabase
             .from("experience_pages").select("campaign_id, title").eq("id", experiencePageId).single()
 
@@ -511,7 +552,7 @@ Deno.serve(async (req: Request) => {
         }
       }
 
-      // 2. Fetch stats (only meaningful once sent).
+      // 2. Fetch stats (only meaningful once sent, and only where supported).
       const statsResult = await provider.getCampaignReports(pc.provider_campaign_id)
 
       let statsUpserted = false
@@ -537,7 +578,7 @@ Deno.serve(async (req: Request) => {
 
       return json({
         success: true,
-        provider_campaign_status: mlStatus,
+        provider_campaign_status: remoteStatus,
         status_changed: statusChanged,
         stats: statsResult.stats ?? null,
         stats_upserted: statsUpserted,
@@ -557,10 +598,11 @@ Deno.serve(async (req: Request) => {
         .maybeSingle()
       if (!row) return json({ error: "Campaña no encontrada." }, 404)
 
-      const keyRes = await getMailerliteKey()
+      const providerType = (row.provider_type as CampaignProviderType) ?? "mailerlite"
+      const keyRes = await getProviderKey(providerType)
       if ("error" in keyRes) return json({ error: keyRes.error }, keyRes.status)
 
-      const provider = new MailerLiteCampaignProvider(keyRes.key)
+      const provider = makeProvider(providerType, keyRes.key)
       const result = await provider.getCampaignStatus(row.provider_campaign_id)
       if (!result.ok) {
         return json({ error: result.error ?? "No se pudo sincronizar el estado." }, 502)
