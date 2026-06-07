@@ -137,21 +137,12 @@ export class MailerLiteCampaignProvider {
     // Graceful degradation: custom HTML needs the Advanced plan. On a content
     // validation error, retry without content so the draft is still created.
     if (res.status === 422) {
-      // TEMP DIAGNOSTIC: log the exact 422 body to distinguish a plan
-      // limitation from a payload/validation problem.
-      const diagBody = await res.clone().text().catch(() => "");
-      console.error("[create_draft] ML 422 with content:", diagBody);
       const retry = await fetch(`${MAILERLITE_API}/campaigns`, {
         method: "POST",
         headers: this.headers(),
         body: JSON.stringify(this.buildBody(input, false)),
       });
-      if (retry.ok) {
-        res = retry;
-      } else {
-        const retryBody = await retry.clone().text().catch(() => "");
-        console.error("[create_draft] ML retry-without-content also failed:", retry.status, retryBody);
-      }
+      if (retry.ok) res = retry;
     }
 
     return this.toResult(res);
