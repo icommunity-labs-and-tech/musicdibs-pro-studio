@@ -933,6 +933,31 @@ function StepReview({
         ))}
       </dl>
 
+      <dl className="divide-y divide-border rounded-xl border">
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <dt className="text-sm text-muted-foreground">Asunto del email</dt>
+          <dd
+            className={cn(
+              "text-right text-sm font-medium",
+              !state.emailSubject.trim() && "text-muted-foreground italic",
+            )}
+          >
+            {state.emailSubject.trim() || "Se usará el título de la campaña"}
+          </dd>
+        </div>
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <dt className="text-sm text-muted-foreground">Texto del email</dt>
+          <dd
+            className={cn(
+              "max-w-[60%] text-right text-sm font-medium",
+              !state.emailBody.trim() && "text-muted-foreground italic",
+            )}
+          >
+            {state.emailBody.trim() || "Texto por defecto"}
+          </dd>
+        </div>
+      </dl>
+
       {state.lyricsGoal.trim() && (
         <div className="rounded-xl border p-4">
           <p className="text-xs font-medium text-muted-foreground">Objetivo</p>
