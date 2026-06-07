@@ -169,16 +169,17 @@ function DistributionCard({
   const handleSend = () => {
     actions.sendNow.mutate(undefined, {
       onSuccess: () => {
+        setSendStep(0);
         toast.success(
           "¡Campaña enviada! Se está distribuyendo a través de MailerLite.",
         );
-        setConfirmOpen(false);
-        setAcknowledged(false);
       },
-      onError: (e: unknown) =>
+      onError: (e: unknown) => {
+        setSendStep(0);
         toast.error("No se pudo enviar la campaña", {
           description: e instanceof Error ? e.message : undefined,
-        }),
+        });
+      },
     });
   };
 
