@@ -199,6 +199,7 @@ export function CampaignBuilder({
         icon: UserCheck,
       });
     }
+    base.push({ key: "email", title: "Email", icon: Mail });
     base.push({ key: "review", title: "Revisión", icon: Sparkles });
     return base;
   }, [state.generationMode]);
