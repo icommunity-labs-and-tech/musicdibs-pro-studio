@@ -3,9 +3,9 @@ import {
   Code2,
   LayoutDashboard,
   Megaphone,
+  Radio,
   ScrollText,
   Settings,
-  Users,
   Users2,
   type LucideIcon,
 } from "lucide-react";
@@ -15,7 +15,7 @@ export interface NavItem {
   to:
     | "/dashboard"
     | "/campaigns"
-    | "/contacts"
+    | "/audiences"
     | "/analytics"
     | "/team"
     | "/developers"
@@ -27,7 +27,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
   { label: "Campañas", to: "/campaigns", icon: Megaphone },
-  { label: "Contactos", to: "/contacts", icon: Users },
+  { label: "Audiencias", to: "/audiences", icon: Radio },
   { label: "Analytics", to: "/analytics", icon: BarChart3 },
   { label: "Equipo", to: "/team", icon: Users2 },
   { label: "Desarrolladores", to: "/developers", icon: Code2 },
