@@ -345,6 +345,7 @@ export function CampaignBuilder({
           {currentKey === "personalization" && (
             <StepPersonalization state={state} update={update} />
           )}
+          {currentKey === "email" && <StepEmail state={state} update={update} />}
           {currentKey === "review" && (
             <StepReview
               state={state}
