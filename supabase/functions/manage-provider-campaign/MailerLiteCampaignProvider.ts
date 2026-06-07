@@ -4,15 +4,12 @@
 // Runs ONLY inside the edge function (service-role context). The frontend never
 // talks to MailerLite directly and never sees the API key.
 //
-// SCOPE (TASK 006-B): create / update / read-status of DRAFT campaigns only.
-// MusicDibs NEVER schedules or sends. The customer reviews & sends from
-// MailerLite. We reuse MailerLite's own editor — we do NOT build an email
-// builder; we only inject a minimal HTML body that can be edited later.
+// SCOPE: create / update / read-status / schedule / reports of campaigns.
 // ============================================================================
 
 const MAILERLITE_API = "https://connect.mailerlite.com/api";
 
-/** Local provider-campaign status vocabulary (Phase 2). */
+/** Local provider-campaign status vocabulary. */
 export type CampaignStatus = "draft" | "scheduled" | "sent" | "archived";
 
 /** Audience target for a draft campaign. */
@@ -42,6 +39,18 @@ export interface CampaignProviderResult {
   /** Mapped local status when ok. */
   campaignStatus?: CampaignStatus;
   /** Human-friendly error (already translated upstream when surfaced). */
+  error?: string;
+}
+
+export interface CampaignReportsResult {
+  ok: boolean;
+  status: number;
+  stats?: {
+    sent: number;
+    opens: number;
+    clicks: number;
+    unsubscribes: number;
+  };
   error?: string;
 }
 
@@ -161,8 +170,7 @@ export class MailerLiteCampaignProvider {
   }
 
   /**
-   * Read the current status of a campaign. (Phase 2: status only — no metrics.)
-   * Renamed from getCampaignStats per review: we are NOT syncing statistics yet.
+   * Read the current status of a campaign.
    */
   async getCampaignStatus(campaignId: string): Promise<CampaignProviderResult> {
     const res = await fetch(`${MAILERLITE_API}/campaigns/${campaignId}`, {
@@ -170,6 +178,47 @@ export class MailerLiteCampaignProvider {
       headers: this.headers(),
     });
     return this.toResult(res);
+  }
+
+  /**
+   * Schedule a campaign for immediate delivery (Option A: Send Now from MEC).
+   * Calls POST /campaigns/{id}/schedule with delivery="instant".
+   */
+  async scheduleCampaign(campaignId: string): Promise<CampaignProviderResult> {
+    const res = await fetch(`${MAILERLITE_API}/campaigns/${campaignId}/schedule`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ delivery: "instant" }),
+    });
+    return this.toResult(res);
+  }
+
+  /**
+   * Fetch campaign delivery reports (opens, clicks, unsubscribes).
+   * Only meaningful once the campaign has been sent.
+   * Returns a typed stats object rather than the raw CampaignProviderResult
+   * because the /reports endpoint does not return a campaign object.
+   */
+  async getCampaignReports(campaignId: string): Promise<CampaignReportsResult> {
+    const res = await fetch(`${MAILERLITE_API}/campaigns/${campaignId}/reports`, {
+      method: "GET",
+      headers: this.headers(),
+    });
+    if (!res.ok) {
+      return { ok: false, status: res.status, error: `MailerLite reports error ${res.status}` };
+    }
+    const data = await res.json().catch(() => null);
+    const s = (data?.data?.stats ?? {}) as Record<string, number | undefined>;
+    return {
+      ok: true,
+      status: res.status,
+      stats: {
+        sent:          s.sent                                     ?? 0,
+        opens:         s.unique_opens_count  ?? s.opens_count     ?? 0,
+        clicks:        s.unique_clicks_count ?? s.clicks_count    ?? 0,
+        unsubscribes:  s.unsubscribes_count                       ?? 0,
+      },
+    };
   }
 
   private async toResult(res: Response): Promise<CampaignProviderResult> {
