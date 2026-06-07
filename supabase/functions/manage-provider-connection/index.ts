@@ -15,8 +15,8 @@ const json = (data: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   })
 
-type ProviderType = "mailerlite" | "brevo"
-const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo"]
+type ProviderType = "mailerlite" | "brevo" | "resend"
+const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo", "resend"]
 
 /**
  * Validate credentials against the (still mocked) provider rules.
