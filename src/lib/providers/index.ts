@@ -58,6 +58,8 @@ export function createConnector(type: ProviderType): ProviderConnector {
       return new MailerLiteConnector();
     case "brevo":
       return new BrevoConnector();
+    case "resend":
+      return new ResendConnector();
     default:
       throw new Error(`Proveedor no soportado: ${type satisfies never}`);
   }
