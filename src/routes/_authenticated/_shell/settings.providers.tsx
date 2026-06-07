@@ -62,11 +62,14 @@ function ProvidersPage() {
         <h2 className="font-display text-xl font-bold">Proveedores</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Conecta tu plataforma de marketing para sincronizar audiencias y
-          campañas.
+          campañas. Solo puede haber{" "}
+          <strong className="text-foreground">un conector activo a la vez</strong>
+          : al conectar uno, los demás se desconectan automáticamente. Las listas
+          se traen del proveedor que tengas conectado.
         </p>
       </div>
 
-      <MailerLitePlanNotice />
+
 
 
       <div className="grid gap-4 sm:grid-cols-2">
