@@ -40,7 +40,6 @@ import { Route as AuthenticatedShellSettingsProvidersRouteImport } from './route
 import { Route as AuthenticatedShellSettingsBillingRouteImport } from './routes/_authenticated/_shell/settings.billing'
 import { Route as AuthenticatedShellCampaignsNewRouteImport } from './routes/_authenticated/_shell/campaigns.new'
 import { Route as AuthenticatedShellCampaignsIdIndexRouteImport } from './routes/_authenticated/_shell/campaigns.$id.index'
-import { Route as AuthenticatedShellCampaignsIdQueueRouteImport } from './routes/_authenticated/_shell/campaigns.$id.queue'
 import { Route as AuthenticatedShellCampaignsIdEditRouteImport } from './routes/_authenticated/_shell/campaigns.$id.edit'
 import { Route as AuthenticatedShellAdminTenantsIdRouteImport } from './routes/_authenticated/_shell/admin/tenants.$id'
 
@@ -212,12 +211,6 @@ const AuthenticatedShellCampaignsIdIndexRoute =
     path: '/campaigns/$id/',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
-const AuthenticatedShellCampaignsIdQueueRoute =
-  AuthenticatedShellCampaignsIdQueueRouteImport.update({
-    id: '/campaigns/$id/queue',
-    path: '/campaigns/$id/queue',
-    getParentRoute: () => AuthenticatedShellRoute,
-  } as any)
 const AuthenticatedShellCampaignsIdEditRoute =
   AuthenticatedShellCampaignsIdEditRouteImport.update({
     id: '/campaigns/$id/edit',
@@ -262,7 +255,6 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedShellSettingsIndexRoute
   '/admin/tenants/$id': typeof AuthenticatedShellAdminTenantsIdRoute
   '/campaigns/$id/edit': typeof AuthenticatedShellCampaignsIdEditRoute
-  '/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/campaigns/$id/': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -294,7 +286,6 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedShellSettingsIndexRoute
   '/admin/tenants/$id': typeof AuthenticatedShellAdminTenantsIdRoute
   '/campaigns/$id/edit': typeof AuthenticatedShellCampaignsIdEditRoute
-  '/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/campaigns/$id': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 export interface FileRoutesById {
@@ -331,7 +322,6 @@ export interface FileRoutesById {
   '/_authenticated/_shell/settings/': typeof AuthenticatedShellSettingsIndexRoute
   '/_authenticated/_shell/admin/tenants/$id': typeof AuthenticatedShellAdminTenantsIdRoute
   '/_authenticated/_shell/campaigns/$id/edit': typeof AuthenticatedShellCampaignsIdEditRoute
-  '/_authenticated/_shell/campaigns/$id/queue': typeof AuthenticatedShellCampaignsIdQueueRoute
   '/_authenticated/_shell/campaigns/$id/': typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -367,7 +357,6 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/admin/tenants/$id'
     | '/campaigns/$id/edit'
-    | '/campaigns/$id/queue'
     | '/campaigns/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -399,7 +388,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/admin/tenants/$id'
     | '/campaigns/$id/edit'
-    | '/campaigns/$id/queue'
     | '/campaigns/$id'
   id:
     | '__root__'
@@ -435,7 +423,6 @@ export interface FileRouteTypes {
     | '/_authenticated/_shell/settings/'
     | '/_authenticated/_shell/admin/tenants/$id'
     | '/_authenticated/_shell/campaigns/$id/edit'
-    | '/_authenticated/_shell/campaigns/$id/queue'
     | '/_authenticated/_shell/campaigns/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -673,13 +660,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellCampaignsIdIndexRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
-    '/_authenticated/_shell/campaigns/$id/queue': {
-      id: '/_authenticated/_shell/campaigns/$id/queue'
-      path: '/campaigns/$id/queue'
-      fullPath: '/campaigns/$id/queue'
-      preLoaderRoute: typeof AuthenticatedShellCampaignsIdQueueRouteImport
-      parentRoute: typeof AuthenticatedShellRoute
-    }
     '/_authenticated/_shell/campaigns/$id/edit': {
       id: '/_authenticated/_shell/campaigns/$id/edit'
       path: '/campaigns/$id/edit'
@@ -750,7 +730,6 @@ interface AuthenticatedShellRouteChildren {
   AuthenticatedShellCampaignsNewRoute: typeof AuthenticatedShellCampaignsNewRoute
   AuthenticatedShellCampaignsIndexRoute: typeof AuthenticatedShellCampaignsIndexRoute
   AuthenticatedShellCampaignsIdEditRoute: typeof AuthenticatedShellCampaignsIdEditRoute
-  AuthenticatedShellCampaignsIdQueueRoute: typeof AuthenticatedShellCampaignsIdQueueRoute
   AuthenticatedShellCampaignsIdIndexRoute: typeof AuthenticatedShellCampaignsIdIndexRoute
 }
 
@@ -768,8 +747,6 @@ const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
   AuthenticatedShellCampaignsIndexRoute: AuthenticatedShellCampaignsIndexRoute,
   AuthenticatedShellCampaignsIdEditRoute:
     AuthenticatedShellCampaignsIdEditRoute,
-  AuthenticatedShellCampaignsIdQueueRoute:
-    AuthenticatedShellCampaignsIdQueueRoute,
   AuthenticatedShellCampaignsIdIndexRoute:
     AuthenticatedShellCampaignsIdIndexRoute,
 }
@@ -808,3 +785,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
