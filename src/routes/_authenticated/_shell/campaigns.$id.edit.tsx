@@ -55,6 +55,8 @@ function CampaignEditPage() {
         "es") as GenerationLanguage,
       mood: config?.mood ?? campaign.tone ?? "",
       includeFirstName: config?.include_first_name ?? false,
+      emailSubject: config?.email_subject ?? "",
+      emailBody: config?.email_body ?? "",
     };
   }, [detail, config]);
 

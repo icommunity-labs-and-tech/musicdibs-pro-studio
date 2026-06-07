@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Coins,
   Loader2,
+  Mail,
   Music2,
   PenLine,
   RefreshCw,
@@ -73,6 +74,8 @@ export interface BuilderState {
   language: GenerationLanguage;
   mood: string;
   includeFirstName: boolean;
+  emailSubject: string;
+  emailBody: string;
 }
 
 export const EMPTY_BUILDER_STATE: BuilderState = {
@@ -86,6 +89,8 @@ export const EMPTY_BUILDER_STATE: BuilderState = {
   language: "es",
   mood: "",
   includeFirstName: false,
+  emailSubject: "",
+  emailBody: "",
 };
 
 type StepKey =
@@ -94,6 +99,7 @@ type StepKey =
   | "lyrics"
   | "music"
   | "personalization"
+  | "email"
   | "review";
 
 export interface CampaignBuilderProps {
@@ -193,6 +199,7 @@ export function CampaignBuilder({
         icon: UserCheck,
       });
     }
+    base.push({ key: "email", title: "Email", icon: Mail });
     base.push({ key: "review", title: "Revisión", icon: Sparkles });
     return base;
   }, [state.generationMode]);
@@ -247,6 +254,8 @@ export function CampaignBuilder({
         state.generationMode === "personalized_song"
           ? state.includeFirstName
           : false,
+      emailSubject: state.emailSubject.trim() || null,
+      emailBody: state.emailBody.trim() || null,
       estimatedCredits,
     };
 
@@ -336,6 +345,7 @@ export function CampaignBuilder({
           {currentKey === "personalization" && (
             <StepPersonalization state={state} update={update} />
           )}
+          {currentKey === "email" && <StepEmail state={state} update={update} />}
           {currentKey === "review" && (
             <StepReview
               state={state}
@@ -836,6 +846,44 @@ function StepPersonalization({ state, update }: StepProps) {
   );
 }
 
+// ── STEP · Email ─────────────────────────────────────────────────────────────
+function StepEmail({ state, update }: StepProps) {
+  return (
+    <div className="space-y-5">
+      <p className="text-sm font-medium">Configura el email de la campaña</p>
+
+      <Field label="Asunto del email" htmlFor="email-subject">
+        <Input
+          id="email-subject"
+          value={state.emailSubject}
+          onChange={(e) => update("emailSubject", e.target.value)}
+          placeholder="Ej: Tu canción personalizada está lista 🎵"
+          maxLength={200}
+        />
+        <p className="text-xs text-muted-foreground">
+          Si lo dejas vacío se usará el título de la campaña.
+        </p>
+      </Field>
+
+      <Field label="Texto del email" htmlFor="email-body">
+        <Textarea
+          id="email-body"
+          value={state.emailBody}
+          onChange={(e) => update("emailBody", e.target.value)}
+          placeholder="Escribe aquí el mensaje principal del email que recibirán tus contactos. Será personalizado con el nombre del destinatario al abrirlo."
+          rows={4}
+          maxLength={2000}
+        />
+        <p className="text-xs text-muted-foreground">
+          El email incluye automáticamente el enlace a la Experiencia Musical.
+        </p>
+      </Field>
+    </div>
+  );
+}
+
+
+
 // ── STEP 6 · Review ──────────────────────────────────────────────────────────
 function StepReview({
   state,
@@ -883,6 +931,31 @@ function StepReview({
             <dd className="text-right text-sm font-medium">{r.value}</dd>
           </div>
         ))}
+      </dl>
+
+      <dl className="divide-y divide-border rounded-xl border">
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <dt className="text-sm text-muted-foreground">Asunto del email</dt>
+          <dd
+            className={cn(
+              "text-right text-sm font-medium",
+              !state.emailSubject.trim() && "text-muted-foreground italic",
+            )}
+          >
+            {state.emailSubject.trim() || "Se usará el título de la campaña"}
+          </dd>
+        </div>
+        <div className="flex items-center justify-between gap-4 px-4 py-3">
+          <dt className="text-sm text-muted-foreground">Texto del email</dt>
+          <dd
+            className={cn(
+              "max-w-[60%] text-right text-sm font-medium",
+              !state.emailBody.trim() && "text-muted-foreground italic",
+            )}
+          >
+            {state.emailBody.trim() || "Texto por defecto"}
+          </dd>
+        </div>
       </dl>
 
       {state.lyricsGoal.trim() && (

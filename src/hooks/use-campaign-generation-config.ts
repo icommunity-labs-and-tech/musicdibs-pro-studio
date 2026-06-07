@@ -31,6 +31,8 @@ export interface CreateGenerationCampaignInput {
   language: GenerationLanguage;
   mood: string | null;
   includeFirstName: boolean;
+  emailSubject: string | null;
+  emailBody: string | null;
   estimatedCredits: number;
 }
 
@@ -57,6 +59,8 @@ function buildConfigPayload(
     language: input.language,
     mood: input.mood,
     include_first_name: input.includeFirstName,
+    email_subject: input.emailSubject,
+    email_body: input.emailBody,
     estimated_credits: input.estimatedCredits,
   };
 }
