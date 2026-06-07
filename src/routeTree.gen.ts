@@ -16,6 +16,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SegurosRouteImport } from './routes/seguros'
 import { Route as RetailRouteImport } from './routes/retail'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as BancaRouteImport } from './routes/banca'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -76,6 +77,11 @@ const RetailRoute = RetailRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeliveryRoute = DeliveryRouteImport.update({
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/banca': typeof BancaRoute
   '/delivery': typeof DeliveryRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/retail': typeof RetailRoute
   '/seguros': typeof SegurosRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/banca': typeof BancaRoute
   '/delivery': typeof DeliveryRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/retail': typeof RetailRoute
   '/seguros': typeof SegurosRoute
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/banca': typeof BancaRoute
   '/delivery': typeof DeliveryRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/retail': typeof RetailRoute
   '/seguros': typeof SegurosRoute
@@ -330,6 +339,7 @@ export interface FileRouteTypes {
     | '/'
     | '/banca'
     | '/delivery'
+    | '/forgot-password'
     | '/login'
     | '/retail'
     | '/seguros'
@@ -363,6 +373,7 @@ export interface FileRouteTypes {
     | '/'
     | '/banca'
     | '/delivery'
+    | '/forgot-password'
     | '/login'
     | '/retail'
     | '/seguros'
@@ -395,6 +406,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/banca'
     | '/delivery'
+    | '/forgot-password'
     | '/login'
     | '/retail'
     | '/seguros'
@@ -431,6 +443,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   BancaRoute: typeof BancaRoute
   DeliveryRoute: typeof DeliveryRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   RetailRoute: typeof RetailRoute
   SegurosRoute: typeof SegurosRoute
@@ -490,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/delivery': {
@@ -773,6 +793,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   BancaRoute: BancaRoute,
   DeliveryRoute: DeliveryRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   RetailRoute: RetailRoute,
   SegurosRoute: SegurosRoute,
