@@ -846,6 +846,44 @@ function StepPersonalization({ state, update }: StepProps) {
   );
 }
 
+// ── STEP · Email ─────────────────────────────────────────────────────────────
+function StepEmail({ state, update }: StepProps) {
+  return (
+    <div className="space-y-5">
+      <p className="text-sm font-medium">Configura el email de la campaña</p>
+
+      <Field label="Asunto del email" htmlFor="email-subject">
+        <Input
+          id="email-subject"
+          value={state.emailSubject}
+          onChange={(e) => update("emailSubject", e.target.value)}
+          placeholder="Ej: Tu canción personalizada está lista 🎵"
+          maxLength={200}
+        />
+        <p className="text-xs text-muted-foreground">
+          Si lo dejas vacío se usará el título de la campaña.
+        </p>
+      </Field>
+
+      <Field label="Texto del email" htmlFor="email-body">
+        <Textarea
+          id="email-body"
+          value={state.emailBody}
+          onChange={(e) => update("emailBody", e.target.value)}
+          placeholder="Escribe aquí el mensaje principal del email que recibirán tus contactos. Será personalizado con el nombre del destinatario al abrirlo."
+          rows={4}
+          maxLength={2000}
+        />
+        <p className="text-xs text-muted-foreground">
+          El email incluye automáticamente el enlace a la Experiencia Musical.
+        </p>
+      </Field>
+    </div>
+  );
+}
+
+
+
 // ── STEP 6 · Review ──────────────────────────────────────────────────────────
 function StepReview({
   state,
