@@ -267,9 +267,8 @@ function ConnectDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {provider.type === "mailerlite" ? (
-          <MailerLitePlanNotice variant="compact" />
-        ) : null}
+        <ProviderPlanNotice provider={provider.type} variant="compact" />
+
 
 
 
