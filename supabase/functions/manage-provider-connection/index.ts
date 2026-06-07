@@ -152,12 +152,14 @@ Deno.serve(async (req: Request) => {
       const apiKey = typeof creds?.apiKey === "string" ? creds.apiKey : ""
       if (!apiKey) return json({ error: "Credenciales no disponibles" }, 400)
 
-      // Only MailerLite has a real integration in TASK 002.
-      if (providerType !== "mailerlite") {
+      // Real metadata-sync integrations: MailerLite and Resend.
+      if (providerType !== "mailerlite" && providerType !== "resend") {
         return json({ error: "Sincronización no disponible para este proveedor todavía" }, 400)
       }
 
-      const connector = new MailerLiteConnector(apiKey)
+      const connector = providerType === "resend"
+        ? new ResendConnector(apiKey)
+        : new MailerLiteConnector(apiKey)
 
       const validation = await connector.validateCredentials()
       if (!validation.valid) {
@@ -167,6 +169,7 @@ Deno.serve(async (req: Request) => {
           .eq("id", conn.id)
         return json({ error: validation.message ?? "Credenciales inválidas" }, 400)
       }
+
 
       const audiences = await connector.syncAudiences()
       const now = new Date().toISOString()
