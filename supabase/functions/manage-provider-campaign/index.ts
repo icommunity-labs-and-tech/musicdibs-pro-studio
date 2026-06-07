@@ -342,6 +342,16 @@ Deno.serve(async (req: Request) => {
         return json({ error: result.error ?? `No se pudo crear el borrador en ${PROVIDER_LABEL[providerType]}.` }, 502)
       }
 
+      // Remove any previous provider_campaigns rows for this experience. When a
+      // tenant switches sending provider, the old draft lives in the previous
+      // provider's account and is no longer reachable — replace it with the new
+      // one so the UI never points at a disconnected provider.
+      await supabase
+        .from("provider_campaigns")
+        .delete()
+        .eq("experience_page_id", experiencePageId)
+        .eq("tenant_id", tenantId)
+
       const { data: row, error: insErr } = await supabase
         .from("provider_campaigns")
         .insert({
