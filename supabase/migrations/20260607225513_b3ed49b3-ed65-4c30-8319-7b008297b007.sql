@@ -1,0 +1,2 @@
+ALTER TABLE public.provider_connections DROP CONSTRAINT IF EXISTS provider_connections_provider_type_check;
+ALTER TABLE public.provider_connections ADD CONSTRAINT provider_connections_provider_type_check CHECK (provider_type = ANY (ARRAY['mailerlite'::text, 'brevo'::text, 'resend'::text]));
