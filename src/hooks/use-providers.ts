@@ -77,14 +77,16 @@ export function useConnectProvider(tenantId: string | undefined) {
       apiKey,
     }: {
       providerType: ProviderType;
-      apiKey: string;
+      /** Omit / empty to reconnect with the previously stored key. */
+      apiKey?: string;
     }) => {
       if (!tenantId) throw new Error("Tenant no disponible");
       // The API key leaves the browser exactly once, to the edge function.
+      // When empty, the server reuses the credentials it already has on file.
       await callProviderFn({
         action: "connect",
         provider_type: providerType,
-        api_key: apiKey,
+        ...(apiKey && apiKey.trim() ? { api_key: apiKey.trim() } : {}),
       });
     },
     onSuccess: () => {
