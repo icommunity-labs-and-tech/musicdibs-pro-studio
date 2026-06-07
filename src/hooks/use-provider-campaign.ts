@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { ProviderCampaign } from "@/lib/providers";
-import { toProviderCampaignError } from "@/lib/provider-campaign-error";
 
 export type ProviderCampaignAction = "update_draft" | "send_now" | "sync";
 
