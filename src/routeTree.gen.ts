@@ -29,6 +29,7 @@ import { Route as AuthenticatedShellDevelopersRouteImport } from './routes/_auth
 import { Route as AuthenticatedShellDashboardRouteImport } from './routes/_authenticated/_shell/dashboard'
 import { Route as AuthenticatedShellContactsRouteImport } from './routes/_authenticated/_shell/contacts'
 import { Route as AuthenticatedShellAuditLogRouteImport } from './routes/_authenticated/_shell/audit-log'
+import { Route as AuthenticatedShellAudiencesRouteImport } from './routes/_authenticated/_shell/audiences'
 import { Route as AuthenticatedShellAnalyticsRouteImport } from './routes/_authenticated/_shell/analytics'
 import { Route as AuthenticatedShellAdminRouteImport } from './routes/_authenticated/_shell/admin'
 import { Route as AuthenticatedShellSettingsIndexRouteImport } from './routes/_authenticated/_shell/settings.index'
@@ -146,6 +147,12 @@ const AuthenticatedShellAuditLogRoute =
     path: '/audit-log',
     getParentRoute: () => AuthenticatedShellRoute,
   } as any)
+const AuthenticatedShellAudiencesRoute =
+  AuthenticatedShellAudiencesRouteImport.update({
+    id: '/audiences',
+    path: '/audiences',
+    getParentRoute: () => AuthenticatedShellRoute,
+  } as any)
 const AuthenticatedShellAnalyticsRoute =
   AuthenticatedShellAnalyticsRouteImport.update({
     id: '/analytics',
@@ -239,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/play/$token': typeof PlayTokenRoute
   '/admin': typeof AuthenticatedShellAdminRouteWithChildren
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
+  '/audiences': typeof AuthenticatedShellAudiencesRoute
   '/audit-log': typeof AuthenticatedShellAuditLogRoute
   '/contacts': typeof AuthenticatedShellContactsRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -271,6 +279,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/play/$token': typeof PlayTokenRoute
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
+  '/audiences': typeof AuthenticatedShellAudiencesRoute
   '/audit-log': typeof AuthenticatedShellAuditLogRoute
   '/contacts': typeof AuthenticatedShellContactsRoute
   '/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -306,6 +315,7 @@ export interface FileRoutesById {
   '/play/$token': typeof PlayTokenRoute
   '/_authenticated/_shell/admin': typeof AuthenticatedShellAdminRouteWithChildren
   '/_authenticated/_shell/analytics': typeof AuthenticatedShellAnalyticsRoute
+  '/_authenticated/_shell/audiences': typeof AuthenticatedShellAudiencesRoute
   '/_authenticated/_shell/audit-log': typeof AuthenticatedShellAuditLogRoute
   '/_authenticated/_shell/contacts': typeof AuthenticatedShellContactsRoute
   '/_authenticated/_shell/dashboard': typeof AuthenticatedShellDashboardRoute
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/play/$token'
     | '/admin'
     | '/analytics'
+    | '/audiences'
     | '/audit-log'
     | '/contacts'
     | '/dashboard'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/play/$token'
     | '/analytics'
+    | '/audiences'
     | '/audit-log'
     | '/contacts'
     | '/dashboard'
@@ -407,6 +419,7 @@ export interface FileRouteTypes {
     | '/play/$token'
     | '/_authenticated/_shell/admin'
     | '/_authenticated/_shell/analytics'
+    | '/_authenticated/_shell/audiences'
     | '/_authenticated/_shell/audit-log'
     | '/_authenticated/_shell/contacts'
     | '/_authenticated/_shell/dashboard'
@@ -583,6 +596,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellAuditLogRouteImport
       parentRoute: typeof AuthenticatedShellRoute
     }
+    '/_authenticated/_shell/audiences': {
+      id: '/_authenticated/_shell/audiences'
+      path: '/audiences'
+      fullPath: '/audiences'
+      preLoaderRoute: typeof AuthenticatedShellAudiencesRouteImport
+      parentRoute: typeof AuthenticatedShellRoute
+    }
     '/_authenticated/_shell/analytics': {
       id: '/_authenticated/_shell/analytics'
       path: '/analytics'
@@ -720,6 +740,7 @@ const AuthenticatedShellSettingsRouteWithChildren =
 interface AuthenticatedShellRouteChildren {
   AuthenticatedShellAdminRoute: typeof AuthenticatedShellAdminRouteWithChildren
   AuthenticatedShellAnalyticsRoute: typeof AuthenticatedShellAnalyticsRoute
+  AuthenticatedShellAudiencesRoute: typeof AuthenticatedShellAudiencesRoute
   AuthenticatedShellAuditLogRoute: typeof AuthenticatedShellAuditLogRoute
   AuthenticatedShellContactsRoute: typeof AuthenticatedShellContactsRoute
   AuthenticatedShellDashboardRoute: typeof AuthenticatedShellDashboardRoute
@@ -736,6 +757,7 @@ interface AuthenticatedShellRouteChildren {
 const AuthenticatedShellRouteChildren: AuthenticatedShellRouteChildren = {
   AuthenticatedShellAdminRoute: AuthenticatedShellAdminRouteWithChildren,
   AuthenticatedShellAnalyticsRoute: AuthenticatedShellAnalyticsRoute,
+  AuthenticatedShellAudiencesRoute: AuthenticatedShellAudiencesRoute,
   AuthenticatedShellAuditLogRoute: AuthenticatedShellAuditLogRoute,
   AuthenticatedShellContactsRoute: AuthenticatedShellContactsRoute,
   AuthenticatedShellDashboardRoute: AuthenticatedShellDashboardRoute,
@@ -786,13 +808,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
