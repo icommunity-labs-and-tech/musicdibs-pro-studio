@@ -143,8 +143,8 @@ function DistributionCard({
   const isSent = status === "sent";
   const stats = useCampaignStats(experience.campaign_id, tenantId, isSent);
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [acknowledged, setAcknowledged] = useState(false);
+  // Two-step send confirmation: step 1 (warning) → step 2 (final confirm).
+  const [sendStep, setSendStep] = useState<0 | 1 | 2>(0);
 
   const handleUpdate = () => {
     actions.updateDraft.mutate(undefined, {
