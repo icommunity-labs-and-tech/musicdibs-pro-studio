@@ -488,14 +488,16 @@ Deno.serve(async (req: Request) => {
           .eq("id", exp.campaign_id)
           .eq("tenant_id", tenantId)
 
-        // Notification.
-        await supabase.from("notifications").insert({
-          tenant_id: tenantId,
-          type: "campaign_sent",
-          title: "Campaña enviada",
-          body: `"${exp.title}" se está enviando a través de ${PROVIDER_LABEL[providerType]}.`,
-          link: `/campaigns/${exp.campaign_id}`,
-        }).throwOnError().catch(() => { /* non-critical */ })
+        // Notification (non-critical — ignore failures).
+        try {
+          await supabase.from("notifications").insert({
+            tenant_id: tenantId,
+            type: "campaign_sent",
+            title: "Campaña enviada",
+            body: `"${exp.title}" se está enviando a través de ${PROVIDER_LABEL[providerType]}.`,
+            link: `/campaigns/${exp.campaign_id}`,
+          })
+        } catch (_e) { /* non-critical */ }
 
         // Webhook (fire-and-forget).
         const supabaseUrl = Deno.env.get("SUPABASE_URL")!
