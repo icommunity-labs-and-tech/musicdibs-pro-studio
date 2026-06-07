@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Coins,
   Loader2,
+  Mail,
   Music2,
   PenLine,
   RefreshCw,
@@ -73,6 +74,8 @@ export interface BuilderState {
   language: GenerationLanguage;
   mood: string;
   includeFirstName: boolean;
+  emailSubject: string;
+  emailBody: string;
 }
 
 export const EMPTY_BUILDER_STATE: BuilderState = {
@@ -86,6 +89,8 @@ export const EMPTY_BUILDER_STATE: BuilderState = {
   language: "es",
   mood: "",
   includeFirstName: false,
+  emailSubject: "",
+  emailBody: "",
 };
 
 type StepKey =
@@ -94,6 +99,7 @@ type StepKey =
   | "lyrics"
   | "music"
   | "personalization"
+  | "email"
   | "review";
 
 export interface CampaignBuilderProps {
