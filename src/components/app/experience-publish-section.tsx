@@ -270,7 +270,7 @@ function DistributionCard({
           <Button
             size="sm"
             className="bg-gold text-night-900 hover:bg-gold-dark"
-            onClick={() => setConfirmOpen(true)}
+            onClick={() => setSendStep(1)}
             disabled={actions.isLoading || !senderConfigured}
           >
             <Send className="mr-1.5 h-4 w-4" />
@@ -286,49 +286,66 @@ function DistributionCard({
         </div>
       )}
 
-      {/* Send Now — double visual confirmation */}
+      {/* Send Now — step 1: warning before an irreversible bulk send */}
       <Dialog
-        open={confirmOpen}
+        open={sendStep === 1}
         onOpenChange={(o) => {
-          setConfirmOpen(o);
-          if (!o) setAcknowledged(false);
+          if (!o) setSendStep(0);
         }}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>¿Enviar la campaña ahora?</DialogTitle>
+            <DialogTitle>Enviar campaña</DialogTitle>
             <DialogDescription>
-              Se enviará inmediatamente a todos los contactos de la audiencia
-              seleccionada. Esta acción no se puede deshacer.
+              Esta campaña se enviará inmediatamente desde la cuenta MailerLite
+              conectada. Los contactos de la audiencia seleccionada recibirán el
+              email en los próximos minutos. Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
 
-          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-warning/40 bg-warning/5 p-4">
-            <Checkbox
-              checked={acknowledged}
-              onCheckedChange={(c) => setAcknowledged(c === true)}
-              className="mt-0.5"
-            />
-            <span className="text-sm">
-              Esta campaña se enviará inmediatamente desde tu cuenta MailerLite
-              conectada. Esta acción no se puede deshacer.
-            </span>
-          </label>
-
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setConfirmOpen(false);
-                setAcknowledged(false);
-              }}
-            >
+            <Button variant="outline" onClick={() => setSendStep(0)}>
               Cancelar
             </Button>
             <Button
               className="bg-gold text-night-900 hover:bg-gold-dark"
+              onClick={() => setSendStep(2)}
+            >
+              Continuar →
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Now — step 2: final confirmation */}
+      <Dialog
+        open={sendStep === 2}
+        onOpenChange={(o) => {
+          // Block dismissal while the send is in flight.
+          if (!o && !actions.sendNow.isPending) setSendStep(0);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Confirmas el envío?</DialogTitle>
+            <DialogDescription>
+              Una vez enviada, la campaña no podrá cancelarse ni modificarse
+              desde MusicDibs ni desde MailerLite.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSendStep(0)}
+              disabled={actions.sendNow.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
               onClick={handleSend}
-              disabled={!acknowledged || actions.sendNow.isPending}
+              disabled={actions.sendNow.isPending}
             >
               {actions.sendNow.isPending ? (
                 <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
