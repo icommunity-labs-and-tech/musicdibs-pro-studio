@@ -162,6 +162,9 @@ function ProviderCard({
         <CardDescription>{provider.description}</CardDescription>
       </CardHeader>
       <CardContent className="mt-auto space-y-3">
+        {isConnected ? (
+          <ProviderPlanNotice provider={provider.type} variant="compact" />
+        ) : null}
         <p className="text-xs text-muted-foreground">
           {connection?.last_sync_at
             ? `Última sincronización: ${new Date(
