@@ -523,6 +523,151 @@ Deno.serve(async (req: Request) => {
       return json({ success: true, sent_at: now })
     }
 
+
+    // ── send_personalized ───────────────────────────────────────────────────────────
+    // Sends N individual transactional emails via Resend, one per ready delivery.
+    // Each email contains the unique Experience Page URL for that contact.
+    // Requires: campaign_id, audience_id
+    // Campaign must be in status 'ready_to_send'.
+    if (action === "send_personalized") {
+      const campaignId  = body.campaign_id  as string | undefined
+      const audienceId  = body.audience_id  as string | undefined
+
+      if (!campaignId)  return json({ error: "campaign_id requerido" }, 400)
+      if (!audienceId)  return json({ error: "audience_id requerido" }, 400)
+
+      const { data: campaign } = await supabase
+        .from("campaigns")
+        .select("id, name, status, branding")
+        .eq("id", campaignId)
+        .eq("tenant_id", tenantId)
+        .maybeSingle()
+      if (!campaign) return json({ error: "Campa\u00f1a no encontrada" }, 404)
+      if (campaign.status !== "ready_to_send") {
+        return json({ error: `La campa\u00f1a no est\u00e1 lista para enviar (estado actual: ${campaign.status})` }, 400)
+      }
+
+      const { data: deliveries } = await supabase
+        .from("personalized_deliveries")
+        .select("id, external_contact_id, first_name, experience_token, experience_page_id")
+        .eq("campaign_id", campaignId)
+        .eq("tenant_id", tenantId)
+        .eq("status", "ready")
+      if (!deliveries || deliveries.length === 0) {
+        return json({ error: "No hay entregas en estado 'ready'. Espera a que la generaci\u00f3n termine." }, 400)
+      }
+
+      const { data: audience } = await supabase
+        .from("provider_audiences")
+        .select("external_id, provider_connection_id")
+        .eq("id", audienceId)
+        .eq("tenant_id", tenantId)
+        .maybeSingle()
+      if (!audience) return json({ error: "Audiencia no encontrada" }, 404)
+
+      const { data: audienceConn } = await supabase
+        .from("provider_connections")
+        .select("provider_type, encrypted_credentials, status")
+        .eq("id", audience.provider_connection_id)
+        .eq("tenant_id", tenantId)
+        .maybeSingle()
+      if (!audienceConn || audienceConn.status !== "connected") {
+        return json({ error: "Proveedor de audiencia no conectado" }, 400)
+      }
+      const audienceCreds = decryptCredentials(audienceConn.encrypted_credentials)
+      const audienceApiKey = typeof audienceCreds?.apiKey === "string" ? audienceCreds.apiKey : ""
+      if (!audienceApiKey) return json({ error: "API key de audiencia no disponible" }, 400)
+
+      const contactEmailMap = new Map<string, string>()
+      if (audienceConn.provider_type === "mailerlite") {
+        const mlUrl = `https://connect.mailerlite.com/api/groups/${encodeURIComponent(audience.external_id)}/subscribers?limit=200&filter[status]=active`
+        const mlRes = await fetch(mlUrl, { headers: { Authorization: `Bearer ${audienceApiKey}`, "Content-Type": "application/json" } })
+        if (mlRes.ok) {
+          const mlBody = await mlRes.json()
+          for (const r of (Array.isArray(mlBody?.data) ? mlBody.data : [])) {
+            if (r.id && r.email) contactEmailMap.set(String(r.id), String(r.email))
+          }
+        }
+      } else if (audienceConn.provider_type === "resend") {
+        const rsUrl = `https://api.resend.com/audiences/${encodeURIComponent(audience.external_id)}/contacts`
+        const rsRes = await fetch(rsUrl, { headers: { Authorization: `Bearer ${audienceApiKey}`, "Content-Type": "application/json" } })
+        if (rsRes.ok) {
+          const rsBody = await rsRes.json()
+          for (const r of (Array.isArray(rsBody?.data) ? rsBody.data : [])) {
+            if (r.id && r.email) contactEmailMap.set(String(r.id), String(r.email))
+          }
+        }
+      }
+
+      if (contactEmailMap.size === 0) return json({ error: "No se pudieron obtener los emails de la audiencia" }, 400)
+
+      const resendKeyRes = await getProviderKey("resend")
+      if ("error" in resendKeyRes) return json({ error: "Resend debe estar conectado para el env\u00edo personalizado. " + resendKeyRes.error }, 400)
+      const resendKey = resendKeyRes.key
+
+      const { data: settings } = await supabase
+        .from("tenant_settings")
+        .select("sender_name, sender_email, reply_to_email")
+        .eq("tenant_id", tenantId)
+        .maybeSingle()
+      const senderName  = settings?.sender_name?.trim()  ?? ""
+      const senderEmail = settings?.sender_email?.trim() ?? ""
+      if (!senderName || !senderEmail) return json({ error: "Configura el remitente antes de enviar.", code: "sender_missing" }, 400)
+
+      const { emailSubject, emailBody } = await fetchEmailConfig(campaignId)
+      const branding = (campaign.branding as ExperienceBranding | null) ?? {}
+      const campaignTitle = campaign.name || "Tu canci\u00f3n personalizada"
+      const from = senderName ? `${senderName} <${senderEmail}>` : senderEmail
+
+      let sent = 0, failed = 0
+      const now = new Date().toISOString()
+
+      for (const delivery of deliveries) {
+        const toEmail = contactEmailMap.get(delivery.external_contact_id)
+        if (!toEmail) {
+          await supabase.from("personalized_deliveries").update({ status: "failed", error_message: "Email no encontrado en la audiencia", updated_at: now }).eq("id", delivery.id)
+          failed++; continue
+        }
+
+        const firstName = delivery.first_name || "amigo"
+        const playUrl   = `${EXPERIENCE_BASE_URL}/play/${delivery.experience_token}`
+        const subject   = emailSubject?.trim() || `${campaignTitle} — Canci\u00f3n personalizada para ti`
+        const html = buildHtml({ title: campaignTitle, playUrl, coverUrl: null, branding, emailBody, emailSubject, nameTag: firstName, unsubscribeTag: "#" })
+        const sendPayload: Record<string, unknown> = { from, to: [toEmail], subject, html }
+        if (settings?.reply_to_email?.trim()) sendPayload.reply_to = settings.reply_to_email.trim()
+
+        const sendRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify(sendPayload),
+        })
+
+        if (sendRes.ok) {
+          await supabase.from("personalized_deliveries").update({ status: "sent", email_sent_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", delivery.id)
+          sent++
+        } else {
+          const errBody = await sendRes.json().catch(() => ({}))
+          const errMsg = typeof errBody?.message === "string" ? errBody.message : `Resend error ${sendRes.status}`
+          await supabase.from("personalized_deliveries").update({ status: "failed", error_message: errMsg, updated_at: new Date().toISOString() }).eq("id", delivery.id)
+          console.error(`[send_personalized] Resend ${sendRes.status}:`, errMsg)
+          failed++
+        }
+      }
+
+      await supabase.from("campaigns").update({ status: "sent", sent_at: now, updated_at: now }).eq("id", campaignId)
+
+      try {
+        await supabase.from("notifications").insert({
+          tenant_id: tenantId, type: "campaign_sent",
+          title: "Campa\u00f1a personalizada enviada",
+          body: `"${campaignTitle}" \u2014 ${sent} emails enviados${failed > 0 ? `, ${failed} fallidos` : ""}.`,
+          link: `/campaigns/${campaignId}`,
+        })
+      } catch (_e) { /* non-critical */ }
+
+      return json({ ok: true, sent, failed, total: deliveries.length, sent_at: now })
+    }
+
     // ── sync ──────────────────────────────────────────────────────────────────
     // Fetches the provider campaign status (+ stats where supported) and updates
     // the DB. Used by the "Sincronizar stats" button and status polling.
