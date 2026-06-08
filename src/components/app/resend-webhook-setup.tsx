@@ -185,13 +185,27 @@ export function ResendWebhookSetup({
             </li>
             <li>Pega la URL de arriba como endpoint URL.</li>
             <li>
-              En "Events to listen to", selecciona:{" "}
-              <code className="rounded bg-muted px-1">broadcast.sent</code> ·{" "}
+              En "Events to listen to", activa los siguientes eventos:{" "}
+              <code className="rounded bg-muted px-1">email.sent</code> ·{" "}
+              <code className="rounded bg-muted px-1">email.delivered</code> ·{" "}
               <code className="rounded bg-muted px-1">email.opened</code> ·{" "}
               <code className="rounded bg-muted px-1">email.clicked</code> ·{" "}
-              <code className="rounded bg-muted px-1">email.unsubscribed</code> ·{" "}
-              <code className="rounded bg-muted px-1">email.bounced</code>.
+              <code className="rounded bg-muted px-1">email.bounced</code> ·{" "}
+              <code className="rounded bg-muted px-1">email.suppressed</code> ·{" "}
+              <code className="rounded bg-muted px-1">email.complained</code>
             </li>
+            <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-100">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div className="space-y-1">
+                <p className="text-xs font-semibold">Tracking de aperturas y clics</p>
+                <p className="text-xs leading-relaxed">
+                  Para recibir eventos <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/30">email.opened</code> y{" "}
+                  <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/30">email.clicked</code>, debes activar el seguimiento en tu dominio.
+                  En Resend, ve a <strong>Domains</strong> → selecciona tu dominio → activa <strong>Open Tracking</strong> y{" "}
+                  <strong>Click Tracking</strong>. Sin esto, esos eventos no se generarán aunque el webhook esté configurado.
+                </p>
+              </div>
+            </div>
             <li>
               Haz clic en <strong>Add</strong> y copia el Signing Secret
               (empieza por <code className="rounded bg-muted px-1">whsec_</code>).
