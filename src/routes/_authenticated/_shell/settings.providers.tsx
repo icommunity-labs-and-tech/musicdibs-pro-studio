@@ -36,6 +36,7 @@ import {
 import { PROVIDERS, type ProviderMeta, type ProviderStatus } from "@/lib/providers";
 import { calculateEstimatedCredits } from "@/lib/campaign-generation-options";
 import { ProviderPlanNotice } from "@/components/app/provider-plan-notice";
+import { ResendWebhookSetup } from "@/components/app/resend-webhook-setup";
 
 // Providers with a real metadata-sync integration available today.
 const SYNC_ENABLED: Record<string, boolean> = {
