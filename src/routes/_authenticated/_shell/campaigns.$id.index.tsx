@@ -179,6 +179,14 @@ function CampaignDetailPage() {
   // review/approve them so their generated versions can be published.
   const inReviewPhase = isReviewing || isApproved || campaign.status === "completed";
 
+  const isPersonalized =
+    configSummary?.generationMode === "personalized_song" ||
+    campaign.type === "personalized";
+
+  const isReadyToSend = isCampaignReadyToSend(campaign.status);
+  const isSent = campaign.status === "sent";
+
+
   // Confirmation modal inputs. Single song only in this sprint.
   const generationMode = (configSummary?.generationMode || null) as
     | GenerationMode
@@ -231,6 +239,42 @@ function CampaignDetailPage() {
           toast.error("No pudimos reintentar la música", {
             description: e instanceof Error ? e.message : undefined,
           }),
+      },
+    );
+  };
+
+  const handleStartPersonalized = () => {
+    startPersonalized.mutate(
+      { campaignId: id },
+      {
+        onSuccess: (res) => {
+          toast.success("Generación iniciada", {
+            description: `${res.total_jobs} canciones en cola.`,
+          });
+        },
+        onError: (e: unknown) => {
+          toast.error("No pudimos iniciar la generación", {
+            description: e instanceof Error ? e.message : undefined,
+          });
+        },
+      },
+    );
+  };
+
+  const handleSendPersonalized = () => {
+    sendPersonalized.mutate(
+      { campaignId: id },
+      {
+        onSuccess: (res) => {
+          toast.success("Canciones enviadas", {
+            description: `${res.sent} enviadas correctamente.`,
+          });
+        },
+        onError: (e: unknown) => {
+          toast.error("No pudimos enviar las canciones", {
+            description: e instanceof Error ? e.message : undefined,
+          });
+        },
       },
     );
   };
