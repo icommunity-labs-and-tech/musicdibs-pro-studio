@@ -6,19 +6,18 @@ import { createClient } from "jsr:@supabase/supabase-js@2"
 //
 // URL: /functions/v1/resend-webhook?t=<tenant_id>
 //
-// Each tenant has their own Resend account → their own webhook signing secret
-// stored in provider_connections.encrypted_credentials.webhookSecret.
+// Resend event types (from https://resend.com/docs/webhooks/event-types):
+//   email.sent        → fires ONCE PER RECIPIENT when broadcast is queued for delivery.
+//                       Payload includes broadcast_id. Used to increment emails_sent (+1 each).
+//   email.delivered   → per-recipient delivery confirmation (logged, not counted separately).
+//   email.opened      → requires Open Tracking enabled on domain in Resend → Domains.
+//   email.clicked     → requires Click Tracking enabled on domain in Resend → Domains.
+//   email.bounced     → permanent rejection (logged only, no counter yet).
+//   email.suppressed  → Resend suppressed the address (unsubscribe equivalent).
+//   email.complained  → spam complaint (logged only).
 //
-// The ?t=<tenant_id> param is used ONLY for routing to the correct secret.
-// Authentication is the HMAC-SHA256 Svix signature — knowing the URL is not
-// enough without the signing secret from the tenant's Resend webhook.
-//
-// Events handled:
-//   broadcast.sent     → mark campaign sent + set emails_sent from sent_count
-//   email.opened       → unique open increment (deduped per email)
-//   email.clicked      → unique click increment (deduped per email)
-//   email.unsubscribed → unsubscribe increment
-//   email.bounced      → logged only (no counter yet)
+// NOTE: There is NO broadcast.sent event in Resend. Campaign status is set by
+// the send_now action in manage-provider-campaign when the API call succeeds.
 // ============================================================================
 
 const CORS = {
@@ -68,8 +67,8 @@ function isTimestampFresh(svixTimestamp: string): boolean {
 
 function decryptCredentials(envelope: unknown): Record<string, unknown> | null {
   try {
-    if (!envelope || typeof (envelope as Record<string,unknown>).data !== "string") return null
-    const json = decodeURIComponent(escape(atob((envelope as {data:string}).data)))
+    if (!envelope || typeof (envelope as Record<string, unknown>).data !== "string") return null
+    const json = decodeURIComponent(escape(atob((envelope as { data: string }).data)))
     return JSON.parse(json)
   } catch { return null }
 }
@@ -79,7 +78,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS })
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405)
 
-  // Read raw body before anything else (needed for sig verification).
+  // Read raw body before anything else (required for sig verification).
   const rawBody = await req.text()
 
   // Extract tenant_id from ?t= query param.
@@ -115,7 +114,6 @@ Deno.serve(async (req: Request) => {
     .maybeSingle()
 
   if (!conn) {
-    // Don't reveal whether tenant exists — return 401 like a bad signature.
     console.warn(`[resend-webhook] tenant ${tenantId}: no Resend connection found`)
     return json({ error: "Invalid signature" }, 401)
   }
@@ -124,7 +122,6 @@ Deno.serve(async (req: Request) => {
   const webhookSecret = typeof creds?.webhookSecret === "string" ? creds.webhookSecret : ""
 
   if (!webhookSecret) {
-    // Tenant connected Resend but hasn't configured webhook secret yet.
     console.warn(`[resend-webhook] tenant ${tenantId}: webhookSecret not configured`)
     return json({ error: "Webhook secret not configured for this account" }, 401)
   }
@@ -142,24 +139,34 @@ Deno.serve(async (req: Request) => {
 
   const eventType   = event.type ?? ""
   const data        = event.data ?? {}
-  const broadcastId = (data.broadcast_id ?? data.id) as string | undefined
+  // broadcast_id is present for emails sent as part of a broadcast campaign.
+  // If absent, this is a transactional email — skip.
+  const broadcastId = data.broadcast_id as string | undefined
   const emailId     = data.email_id as string | undefined
 
   console.log(`[resend-webhook] tenant=${tenantId} ${eventType} broadcast=${broadcastId ?? "none"} email=${emailId ?? "none"}`)
 
+  // Events we actively process (all others are silently accepted but skipped).
   const HANDLED_EVENTS = [
-    "broadcast.sent", "email.sent",
-    "email.opened", "email.clicked", "email.unsubscribed", "email.bounced",
+    "email.sent",       // per-recipient, includes broadcast_id — used to count emails_sent
+    "email.opened",     // requires Open Tracking enabled on domain
+    "email.clicked",    // requires Click Tracking enabled on domain
+    "email.suppressed", // Resend suppressed the address (unsubscribe equivalent)
+    "email.bounced",    // permanent rejection — logged only
+    "email.complained", // spam complaint — logged only
+    "email.delivered",  // delivery confirmation — logged only
   ] as const
 
   if (!HANDLED_EVENTS.includes(eventType as typeof HANDLED_EVENTS[number])) {
     return json({ ok: true, skipped: true, reason: `event '${eventType}' not handled` })
   }
+
+  // Broadcast-scoped events: if no broadcast_id, this is a transactional email → skip.
   if (!broadcastId) {
-    return json({ ok: true, skipped: true, reason: "no broadcast_id (transactional email)" })
+    return json({ ok: true, skipped: true, reason: "no broadcast_id — transactional email, not a broadcast" })
   }
 
-  // Resolve provider_campaign + campaign from broadcastId, scoped to tenant.
+  // Resolve provider_campaign → campaign, scoped to this tenant.
   const { data: pc } = await supabase
     .from("provider_campaigns")
     .select("id, experience_page_id, provider_campaign_status")
@@ -178,7 +185,12 @@ Deno.serve(async (req: Request) => {
   const campaignId = exp?.campaign_id as string | undefined
   if (!campaignId) return json({ ok: true, skipped: true, reason: "campaign_id not found" })
 
-  // Dedup insert (two-layer: svix_id + email_id/event_type).
+  // ── Dedup insert ────────────────────────────────────────────────────────────
+  // Two-layer dedup:
+  //   Layer 1 — svix_id UNIQUE: prevents double-processing of Resend's delivery retries.
+  //   Layer 2 — (email_id, event_type) UNIQUE WHERE engagement events:
+  //             prevents counting the same recipient opening twice on different devices.
+  //             email.sent is NOT in this set — each recipient fires their own sent event.
   const { error: dedupErr } = await supabase.from("resend_webhook_events").insert({
     svix_id: svixId, event_type: eventType,
     broadcast_id: broadcastId, email_id: emailId ?? null, tenant_id: tenantId,
@@ -193,34 +205,47 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Database error" }, 500)
   }
 
-  // broadcast.sent → mark sent + set emails_sent.
-  if (eventType === "broadcast.sent" || eventType === "email.sent") {
-    const sentCount = (data.sent_count as number | undefined) ?? 0
-    const now = new Date().toISOString()
-
-    await supabase.from("provider_campaigns")
-      .update({ provider_campaign_status: "sent", updated_at: now }).eq("id", pc.id)
-    await supabase.from("campaigns")
-      .update({ status: "sent", sent_at: now }).eq("id", campaignId).eq("tenant_id", tenantId)
-
-    if (sentCount > 0) {
-      await supabase.from("campaign_stats").upsert(
-        { campaign_id: campaignId, tenant_id: tenantId, emails_sent: sentCount, cost_actual: sentCount * 0.19, updated_at: now },
-        { onConflict: "campaign_id", ignoreDuplicates: false },
-      )
-    }
-    return json({ ok: true, event: eventType, emails_sent: sentCount })
+  // ── Log-only events (no stat update) ───────────────────────────────────────
+  const LOG_ONLY = ["email.bounced", "email.complained", "email.delivered"]
+  if (LOG_ONLY.includes(eventType)) {
+    return json({ ok: true, event: eventType, note: "logged only" })
   }
 
-  // Per-email engagement → atomic increment via RPC.
+  // ── email.sent — increment emails_sent atomically (+1 per recipient) ────────
+  // Resend fires one email.sent event per broadcast recipient, each with a unique
+  // email_id. There is NO broadcast.sent aggregate event in Resend's event model.
+  // Campaign status is already set by the send_now action in manage-provider-campaign.
+  if (eventType === "email.sent") {
+    await supabase.from("campaign_stats").upsert(
+      { campaign_id: campaignId, tenant_id: tenantId, updated_at: new Date().toISOString() },
+      { onConflict: "campaign_id", ignoreDuplicates: true },
+    )
+    const { error: rpcErr } = await supabase.rpc("increment_campaign_stat", {
+      p_campaign_id: campaignId, p_column: "emails_sent",
+    })
+    if (rpcErr) {
+      console.warn("[resend-webhook] rpc fallback for emails_sent:", rpcErr.message)
+      const { data: existing } = await supabase
+        .from("campaign_stats").select("emails_sent").eq("campaign_id", campaignId).single()
+      const current = (existing as { emails_sent?: number } | null)?.emails_sent ?? 0
+      await supabase.from("campaign_stats")
+        .update({ emails_sent: current + 1, updated_at: new Date().toISOString() })
+        .eq("campaign_id", campaignId)
+    }
+    return json({ ok: true, event: eventType, incremented: "emails_sent" })
+  }
+
+  // ── Engagement events — atomic increment via RPC ────────────────────────────
+  // email.suppressed is the Resend equivalent of an unsubscribe/suppress action.
+  // email.opened and email.clicked require tracking enabled on the domain (Resend → Domains).
   const incrementMap: Record<string, string> = {
-    "email.opened":       "emails_opened",
-    "email.clicked":      "emails_clicked",
-    "email.unsubscribed": "unsubscribes",
+    "email.opened":     "emails_opened",
+    "email.clicked":    "emails_clicked",
+    "email.suppressed": "unsubscribes",
   }
 
   const column = incrementMap[eventType]
-  if (!column) return json({ ok: true, event: eventType, note: "logged only" })
+  if (!column) return json({ ok: true, event: eventType, note: "unhandled engagement event" })
 
   await supabase.from("campaign_stats").upsert(
     { campaign_id: campaignId, tenant_id: tenantId, updated_at: new Date().toISOString() },
