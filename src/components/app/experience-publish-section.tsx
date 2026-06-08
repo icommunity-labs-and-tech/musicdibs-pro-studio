@@ -256,21 +256,43 @@ function DistributionCard({
         </div>
       </div>
 
-      {/* Sent → show stats */}
+      {/* Sent → show full stats (email + playback) */}
       {isSent ? (
-        <div className="space-y-3">
-          {stats.data ? (
-            <div className="flex flex-wrap gap-2">
-              <MetricChip label="Enviados" value={stats.data.emails_sent} />
-              <MetricChip label="Aperturas" value={stats.data.emails_opened} />
-              <MetricChip label="Clics" value={stats.data.emails_clicked} />
-              <MetricChip label="Bajas" value={stats.data.unsubscribes} />
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              Aún no hay estadísticas disponibles para {providerLabel}.
+        <div className="space-y-5">
+          <div>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Email
             </p>
-          )}
+            {s ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Metric
+                  label="Emails enviados"
+                  value={s.emails_sent.toLocaleString("es-ES")}
+                />
+                <Metric
+                  label="Tasa de apertura"
+                  value={openRate !== null ? `${openRate.toFixed(1)}%` : "—"}
+                  hint={`${s.emails_opened.toLocaleString("es-ES")} aperturas`}
+                />
+                <Metric
+                  label="Tasa de clics"
+                  value={clickRate !== null ? `${clickRate.toFixed(1)}%` : "—"}
+                  hint={`${s.emails_clicked.toLocaleString("es-ES")} clics`}
+                />
+                <Metric
+                  label="Bajas"
+                  value={s.unsubscribes.toLocaleString("es-ES")}
+                />
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Aún no hay estadísticas disponibles para {providerLabel}.
+              </p>
+            )}
+          </div>
+
+          <PlaybackAnalytics experience={experience} />
+
           <Button
             size="sm"
             variant="outline"
