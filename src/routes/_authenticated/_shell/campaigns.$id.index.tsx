@@ -368,26 +368,7 @@ function BackLink() {
   );
 }
 
-function Metric({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-  icon?: LucideIcon;
-}) {
-  return (
-    <div className="rounded-xl border bg-muted/30 p-4">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 font-display text-2xl font-bold">{value}</p>
-      {hint ? (
-        <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
-      ) : null}
-    </div>
-  );
-}
+
 
 
 function DetailSkeleton() {
