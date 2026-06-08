@@ -177,6 +177,12 @@ function DistributionCard({
   const stats = useCampaignStats(experience.campaign_id, tenantId, isSent);
   const dashboardUrl = PROVIDER_DASHBOARD[providerType];
 
+  const s = stats.data;
+  const openRate =
+    s && s.emails_sent > 0 ? (s.emails_opened / s.emails_sent) * 100 : null;
+  const clickRate =
+    s && s.emails_sent > 0 ? (s.emails_clicked / s.emails_sent) * 100 : null;
+
   // Two-step send confirmation: step 1 (warning) → step 2 (final confirm).
   const [sendStep, setSendStep] = useState<0 | 1 | 2>(0);
 
@@ -250,21 +256,43 @@ function DistributionCard({
         </div>
       </div>
 
-      {/* Sent → show stats */}
+      {/* Sent → show full stats (email + playback) */}
       {isSent ? (
-        <div className="space-y-3">
-          {stats.data ? (
-            <div className="flex flex-wrap gap-2">
-              <MetricChip label="Enviados" value={stats.data.emails_sent} />
-              <MetricChip label="Aperturas" value={stats.data.emails_opened} />
-              <MetricChip label="Clics" value={stats.data.emails_clicked} />
-              <MetricChip label="Bajas" value={stats.data.unsubscribes} />
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              Aún no hay estadísticas disponibles para {providerLabel}.
+        <div className="space-y-5">
+          <div>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Email
             </p>
-          )}
+            {s ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Metric
+                  label="Emails enviados"
+                  value={s.emails_sent.toLocaleString("es-ES")}
+                />
+                <Metric
+                  label="Tasa de apertura"
+                  value={openRate !== null ? `${openRate.toFixed(1)}%` : "—"}
+                  hint={`${s.emails_opened.toLocaleString("es-ES")} aperturas`}
+                />
+                <Metric
+                  label="Tasa de clics"
+                  value={clickRate !== null ? `${clickRate.toFixed(1)}%` : "—"}
+                  hint={`${s.emails_clicked.toLocaleString("es-ES")} clics`}
+                />
+                <Metric
+                  label="Bajas"
+                  value={s.unsubscribes.toLocaleString("es-ES")}
+                />
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Aún no hay estadísticas disponibles para {providerLabel}.
+              </p>
+            )}
+          </div>
+
+          <PlaybackAnalytics experience={experience} />
+
           <Button
             size="sm"
             variant="outline"
@@ -394,13 +422,54 @@ function DistributionCard({
   );
 }
 
-function MetricChip({ label, value }: { label: string; value: number }) {
+function Metric({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+}) {
   return (
-    <div className="rounded-lg border bg-muted/40 px-3 py-1.5 text-center">
-      <p className="text-sm font-semibold">
-        {value.toLocaleString("es-ES")}
+    <div className="rounded-xl border bg-muted/30 p-4">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-2xl font-bold">{value}</p>
+      {hint ? (
+        <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function PlaybackAnalytics({ experience }: { experience: ExperiencePage }) {
+  const completionRate =
+    experience.play_count > 0
+      ? Math.round(
+          (experience.completion_count / experience.play_count) * 100,
+        )
+      : null;
+
+  return (
+    <div>
+      <p className="mb-2 text-xs font-medium text-muted-foreground">
+        Analítica de reproducción
       </p>
-      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Metric
+          label="Reproducciones"
+          value={experience.play_count.toLocaleString("es-ES")}
+        />
+        <Metric
+          label="Oyentes únicos"
+          value={experience.unique_visitors.toLocaleString("es-ES")}
+        />
+        <Metric
+          label="Completadas"
+          value={experience.completion_count.toLocaleString("es-ES")}
+          hint={completionRate !== null ? `${completionRate}% tasa` : undefined}
+        />
+      </div>
     </div>
   );
 }

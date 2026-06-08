@@ -1,15 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  Loader2,
-  Pencil,
-  RefreshCw,
-  Sparkles,
-  Wand2,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowLeft, Pencil, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
@@ -21,7 +12,6 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/integrations/supabase/client";
 import {
   isCampaignApproved,
   isCampaignEditable,
@@ -32,7 +22,6 @@ import {
   type CampaignConfigSummary,
 } from "@/lib/campaign-generation-summary";
 import {
-  AI_MUSIC_STUDIO,
   calculateEstimatedCredits,
   type GenerationMode,
 } from "@/lib/campaign-generation-options";
@@ -53,7 +42,6 @@ import {
   useRetryMusic,
 } from "@/hooks/use-generation";
 import { GenerateCampaignDialog } from "@/components/app/generate-campaign-dialog";
-import { useCampaignExperience } from "@/hooks/use-experience";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/$id/")({
   head: () => ({ meta: [{ title: "Campaña · Musicdibs Enterprise" }] }),
@@ -72,7 +60,6 @@ function formatDateTime(iso: string): string {
 
 function CampaignDetailPage() {
   const { id } = Route.useParams();
-  const queryClient = useQueryClient();
   const { tenant } = useAuth();
   const { data, isLoading, isError, refetch } = useCampaignDetail(id);
   const { data: config } = useCampaignGenerationConfig(id);
@@ -82,7 +69,6 @@ function CampaignDetailPage() {
   const { data: batch } = useCampaignBatch(id);
   const { data: job } = useCampaignJob(id);
   const { data: assets } = useCampaignAssets(id);
-  const { data: experience } = useCampaignExperience(id);
   const generateCampaign = useGenerateCampaign();
   const retryLyrics = useRetryLyrics();
   const retryMusic = useRetryMusic();
@@ -90,23 +76,6 @@ function CampaignDetailPage() {
 
   useCampaignGenerationRealtime(id);
 
-  const syncStats = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.functions.invoke("sync-campaign-stats", {
-        body: { campaign_id: id },
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["campaign", id] });
-      toast.success("Estadísticas actualizadas");
-    },
-    onError: (e: unknown) => {
-      toast.error("No pudimos sincronizar", {
-        description: e instanceof Error ? e.message : undefined,
-      });
-    },
-  });
 
   // Single source of truth: same mapping the Builder Review uses.
   const configSummary = useMemo<CampaignConfigSummary | null>(() => {
@@ -175,7 +144,7 @@ function CampaignDetailPage() {
     );
   }
 
-  const { campaign, stats } = data;
+  const { campaign } = data;
   const canEdit = isCampaignEditable(campaign.status);
   const hasGeneration = Boolean(job || (batch && batch.status !== "draft"));
 
@@ -249,67 +218,6 @@ function CampaignDetailPage() {
       },
     );
   };
-
-  const openRate =
-    stats && stats.emails_sent > 0
-      ? (stats.emails_opened / stats.emails_sent) * 100
-      : null;
-  const clickRate =
-    stats && stats.emails_sent > 0
-      ? (stats.emails_clicked / stats.emails_sent) * 100
-      : null;
-
-  const metricCards: { label: string; value: string; hint?: string }[] = [
-    {
-      label: "Emails enviados",
-      value: (stats?.emails_sent ?? 0).toLocaleString("es-ES"),
-    },
-    {
-      label: "Tasa de apertura",
-      value: openRate !== null ? `${openRate.toFixed(1)}%` : "—",
-      hint: stats ? `${stats.emails_opened.toLocaleString("es-ES")} aperturas` : undefined,
-    },
-    {
-      label: "Tasa de clics",
-      value: clickRate !== null ? `${clickRate.toFixed(1)}%` : "—",
-      hint: stats ? `${stats.emails_clicked.toLocaleString("es-ES")} clics` : undefined,
-    },
-    {
-      label: "Bajas",
-      value: (stats?.unsubscribes ?? 0).toLocaleString("es-ES"),
-    },
-  ];
-
-  const playCompletionRate =
-    experience && experience.play_count > 0
-      ? Math.round((experience.completion_count / experience.play_count) * 100)
-      : null;
-
-  const playbackMetricCards: { label: string; value: string; hint?: string }[] =
-    experience
-      ? [
-          {
-            label: "Reproducciones",
-            value: experience.play_count.toLocaleString("es-ES"),
-          },
-          {
-            label: "Oyentes únicos",
-            value: experience.unique_visitors.toLocaleString("es-ES"),
-          },
-          {
-            label: "Completadas",
-            value: experience.completion_count.toLocaleString("es-ES"),
-            hint:
-              playCompletionRate !== null
-                ? `${playCompletionRate}% tasa`
-                : undefined,
-          },
-          {
-            label: "Descargas",
-            value: experience.download_count.toLocaleString("es-ES"),
-          },
-        ]
-      : [];
 
   const configRows = configSummary
     ? buildCampaignConfigRows(configSummary)
@@ -392,12 +300,12 @@ function CampaignDetailPage() {
         />
       ) : null}
 
-      {/* Configuración de AI Music Studio */}
+      {/* Configuración de la campaña */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-display text-lg">
             <Sparkles className="h-4 w-4 text-primary" />
-            Configuración de {AI_MUSIC_STUDIO}
+            Configuración de la campaña
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -433,50 +341,6 @@ function CampaignDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Estadísticas */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="font-display text-lg">Estadísticas</CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => syncStats.mutate()}
-            disabled={syncStats.isPending}
-          >
-            {syncStats.isPending ? (
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-1.5 h-4 w-4" />
-            )}
-            Sincronizar
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <p className="mb-2 text-sm font-medium text-muted-foreground">
-              Email
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {metricCards.map((m) => (
-                <Metric key={m.label} {...m} />
-              ))}
-            </div>
-          </div>
-
-          {playbackMetricCards.length > 0 ? (
-            <div>
-              <p className="mb-2 text-sm font-medium text-muted-foreground">
-                Analítica de reproducción
-              </p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {playbackMetricCards.map((m) => (
-                  <Metric key={m.label} {...m} />
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
 
       <GenerateCampaignDialog
         open={generateOpen}
@@ -504,26 +368,7 @@ function BackLink() {
   );
 }
 
-function Metric({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-  icon?: LucideIcon;
-}) {
-  return (
-    <div className="rounded-xl border bg-muted/30 p-4">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 font-display text-2xl font-bold">{value}</p>
-      {hint ? (
-        <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
-      ) : null}
-    </div>
-  );
-}
+
 
 
 function DetailSkeleton() {
