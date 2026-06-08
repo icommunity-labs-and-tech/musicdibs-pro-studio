@@ -1,12 +1,21 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Pencil, Sparkles, Wand2 } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Loader2,
+  Pencil,
+  Send,
+  Sparkles,
+  Wand2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
 import { CampaignGenerationPanel } from "@/components/app/campaign-generation-panel";
 import { CampaignReviewPanel } from "@/components/app/campaign-review-panel";
 import { ExperiencePanel } from "@/components/app/experience-panel";
+import { PersonalizedProgressPanel } from "@/components/app/personalized-progress-panel";
 import { useAuth } from "@/components/auth/auth-provider";
 
 import { Button } from "@/components/ui/button";
@@ -15,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   isCampaignApproved,
   isCampaignEditable,
+  isCampaignReadyToSend,
   isCampaignReviewing,
 } from "@/lib/campaign-status";
 import {
@@ -40,6 +50,9 @@ import {
   useGenerateCampaign,
   useRetryLyrics,
   useRetryMusic,
+  useStartPersonalizedCampaign,
+  useSendPersonalizedCampaign,
+  usePersonalizedDeliveries,
 } from "@/hooks/use-generation";
 import { GenerateCampaignDialog } from "@/components/app/generate-campaign-dialog";
 
@@ -72,9 +85,12 @@ function CampaignDetailPage() {
   const generateCampaign = useGenerateCampaign();
   const retryLyrics = useRetryLyrics();
   const retryMusic = useRetryMusic();
+  const startPersonalized = useStartPersonalizedCampaign();
+  const sendPersonalized = useSendPersonalizedCampaign();
   const [generateOpen, setGenerateOpen] = useState(false);
 
   useCampaignGenerationRealtime(id);
+  usePersonalizedDeliveries(id);
 
 
   // Single source of truth: same mapping the Builder Review uses.
@@ -163,6 +179,14 @@ function CampaignDetailPage() {
   // review/approve them so their generated versions can be published.
   const inReviewPhase = isReviewing || isApproved || campaign.status === "completed";
 
+  const isPersonalized =
+    configSummary?.generationMode === "personalized_song" ||
+    campaign.type === "personalized";
+
+  const isReadyToSend = isCampaignReadyToSend(campaign.status);
+  const isSent = campaign.status === "sent";
+
+
   // Confirmation modal inputs. Single song only in this sprint.
   const generationMode = (configSummary?.generationMode || null) as
     | GenerationMode
@@ -219,6 +243,42 @@ function CampaignDetailPage() {
     );
   };
 
+  const handleStartPersonalized = () => {
+    startPersonalized.mutate(
+      { campaignId: id },
+      {
+        onSuccess: (res) => {
+          toast.success("Generación iniciada", {
+            description: `${res.total_jobs} canciones en cola.`,
+          });
+        },
+        onError: (e: unknown) => {
+          toast.error("No pudimos iniciar la generación", {
+            description: e instanceof Error ? e.message : undefined,
+          });
+        },
+      },
+    );
+  };
+
+  const handleSendPersonalized = () => {
+    sendPersonalized.mutate(
+      { campaignId: id },
+      {
+        onSuccess: (res) => {
+          toast.success("Canciones enviadas", {
+            description: `${res.sent} enviadas correctamente.`,
+          });
+        },
+        onError: (e: unknown) => {
+          toast.error("No pudimos enviar las canciones", {
+            description: e instanceof Error ? e.message : undefined,
+          });
+        },
+      },
+    );
+  };
+
   const configRows = configSummary
     ? buildCampaignConfigRows(configSummary)
     : [];
@@ -243,28 +303,86 @@ function CampaignDetailPage() {
         </div>
       </div>
 
-      {/* Acciones (solo en borrador) */}
+      {/* Acciones — borrador */}
       {canEdit ? (
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button asChild className="sm:w-auto">
+          <Button asChild variant="outline" className="sm:w-auto">
             <Link to="/campaigns/$id/edit" params={{ id }}>
               <Pencil className="mr-1.5 h-4 w-4" />
               Editar campaña
             </Link>
           </Button>
+          {isPersonalized ? (
+            <Button
+              className="sm:w-auto"
+              onClick={handleStartPersonalized}
+              disabled={startPersonalized.isPending}
+            >
+              {startPersonalized.isPending ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <Wand2 className="mr-1.5 h-4 w-4" />
+              )}
+              Generar canciones personalizadas
+            </Button>
+          ) : (
+            <Button
+              className="sm:w-auto"
+              onClick={() => setGenerateOpen(true)}
+              disabled={!generationMode}
+            >
+              <Wand2 className="mr-1.5 h-4 w-4" />
+              Generar campaña
+            </Button>
+          )}
+        </div>
+      ) : null}
+
+      {/* Acción — lista para enviar (solo personalizadas) */}
+      {isReadyToSend && isPersonalized ? (
+        <div className="flex">
           <Button
             className="sm:w-auto"
-            onClick={() => setGenerateOpen(true)}
-            disabled={!generationMode}
+            onClick={handleSendPersonalized}
+            disabled={sendPersonalized.isPending}
           >
-            <Wand2 className="mr-1.5 h-4 w-4" />
-            Generar campaña
+            {sendPersonalized.isPending ? (
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="mr-1.5 h-4 w-4" />
+            )}
+            Enviar canciones personalizadas
           </Button>
         </div>
       ) : null}
 
-      {/* Progreso de generación */}
-      {hasGeneration ? (
+      {/* Confirmación de envío (solo personalizadas) */}
+      {isSent && isPersonalized ? (
+        <Card>
+          <CardContent className="flex items-start gap-3 py-6">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
+            <div>
+              <p className="font-medium">Campaña enviada correctamente</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Cada destinatario ha recibido su canción única por email.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {/* Progreso — batch personalizado */}
+      {isPersonalized &&
+      (campaign.status === "generating" ||
+        campaign.status === "ready_to_send") ? (
+        <PersonalizedProgressPanel
+          batch={batch ?? null}
+          status={campaign.status}
+        />
+      ) : null}
+
+      {/* Progreso — single song (sin cambios) */}
+      {!isPersonalized && hasGeneration ? (
         <CampaignGenerationPanel
           job={job ?? null}
           batch={batch ?? null}
@@ -275,8 +393,8 @@ function CampaignDetailPage() {
         />
       ) : null}
 
-      {/* Revisión y aprobación de versiones (Single Song) */}
-      {inReviewPhase ? (
+      {/* Revisión y aprobación de versiones (Single Song only) */}
+      {!isPersonalized && inReviewPhase ? (
         <CampaignReviewPanel
           campaignId={id}
           status={campaign.status}
@@ -287,8 +405,8 @@ function CampaignDetailPage() {
         />
       ) : null}
 
-      {/* Página de experiencia (gated: solo desde campaña aprobada) */}
-      {inReviewPhase ? (
+      {/* Página de experiencia (Single Song only) */}
+      {!isPersonalized && inReviewPhase ? (
         <ExperiencePanel
           campaignId={id}
           tenantId={tenant?.id}
