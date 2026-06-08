@@ -58,6 +58,7 @@ function ForgotPasswordPage() {
       footer={
         <Link
           to="/login"
+          search={{ token: undefined }}
           className="inline-flex items-center gap-1 font-medium text-gold-dark dark:text-gold-light hover:underline"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Volver a iniciar sesión

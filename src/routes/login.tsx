@@ -80,7 +80,7 @@ function LoginPage() {
           ¿No tienes cuenta?{" "}
           <Link
             to="/signup"
-            search={token ? { token } : {}}
+            search={{ token }}
             className="font-medium text-gold-dark dark:text-gold-light hover:underline"
           >
             Crear una

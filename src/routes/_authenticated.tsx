@@ -11,7 +11,7 @@ function AuthenticatedGuard() {
   const { loading, session } = useAuth();
 
   if (loading) return <FullScreenLoader />;
-  if (!session) return <Navigate to="/login" />;
+  if (!session) return <Navigate to="/login" search={{ token: undefined }} />;
 
   return <Outlet />;
 }

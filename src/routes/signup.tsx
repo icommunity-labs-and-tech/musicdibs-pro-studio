@@ -93,7 +93,7 @@ function SignupPage() {
       toast.success("Revisa tu email", {
         description: "Te enviamos un enlace para confirmar tu cuenta.",
       });
-      void navigate({ to: "/login", search: token ? { token } : {} });
+      void navigate({ to: "/login", search: { token } });
     }
   }
 
@@ -106,7 +106,7 @@ function SignupPage() {
           ¿Ya tienes cuenta?{" "}
           <Link
             to="/login"
-            search={token ? { token } : {}}
+            search={{ token }}
             className="font-medium text-gold-dark dark:text-gold-light hover:underline"
           >
             Entrar
@@ -123,7 +123,7 @@ function SignupPage() {
           </p>
           <Link
             to="/login"
-            search={token ? { token } : {}}
+            search={{ token }}
             className="mt-2 inline-block font-medium text-gold-dark dark:text-gold-light hover:underline"
           >
             Ir a iniciar sesión →
