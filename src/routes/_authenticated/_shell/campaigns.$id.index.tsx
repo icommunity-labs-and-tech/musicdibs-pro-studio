@@ -85,9 +85,12 @@ function CampaignDetailPage() {
   const generateCampaign = useGenerateCampaign();
   const retryLyrics = useRetryLyrics();
   const retryMusic = useRetryMusic();
+  const startPersonalized = useStartPersonalizedCampaign();
+  const sendPersonalized = useSendPersonalizedCampaign();
   const [generateOpen, setGenerateOpen] = useState(false);
 
   useCampaignGenerationRealtime(id);
+  usePersonalizedDeliveries(id);
 
 
   // Single source of truth: same mapping the Builder Review uses.
