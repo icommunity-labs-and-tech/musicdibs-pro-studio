@@ -18,11 +18,6 @@ const json = (data: unknown, status = 200) =>
 type ProviderType = "mailerlite" | "brevo" | "resend"
 const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo", "resend"]
 
-/**
- * Validate credentials against the (still mocked) provider rules.
- * No real outbound API calls yet — accept any non-empty key.
- * NEVER log the key itself.
- */
 function validateApiKey(apiKey: unknown): { valid: boolean; message?: string } {
   if (typeof apiKey !== "string" || apiKey.trim().length === 0) {
     return { valid: false, message: "API key requerida" }
@@ -69,8 +64,11 @@ Deno.serve(async (req: Request) => {
     if (action === "connect") {
       const apiKey = typeof body.api_key === "string" ? body.api_key.trim() : ""
 
-      // Existing stored credentials for this provider (may be a previously
-      // connected-then-disconnected provider whose key we kept on file).
+      // Load any previously stored credentials for this provider.
+      // We use a MERGE pattern: decrypt existing → spread → add new apiKey →
+      // re-encrypt. This preserves other fields (e.g. webhookSecret) that may
+      // have been stored in a separate step, even if the user is just
+      // re-entering or rotating their API key.
       const { data: existing } = await supabase
         .from("provider_connections")
         .select("encrypted_credentials")
@@ -78,16 +76,20 @@ Deno.serve(async (req: Request) => {
         .eq("provider_type", providerType)
         .maybeSingle()
 
-      // Resolve which credentials to persist:
-      //  - A new key was provided → validate + encrypt it.
-      //  - No key, but we already have one stored → reconnect with it (the user
-      //    doesn't need to paste the API key again).
       let encrypted: string
       if (apiKey) {
         const check = validateApiKey(apiKey)
         if (!check.valid) return json({ error: check.message }, 400)
-        encrypted = encryptCredentials({ apiKey })
+
+        // MERGE: keep any other stored credentials (e.g. webhookSecret) intact.
+        const existingCreds: Record<string, unknown> =
+          existing?.encrypted_credentials
+            ? (decryptCredentials(existing.encrypted_credentials) ?? {})
+            : {}
+        encrypted = encryptCredentials({ ...existingCreds, apiKey })
       } else if (existing?.encrypted_credentials) {
+        // No new key provided → reconnect with the stored key (user doesn't
+        // need to paste it again).
         encrypted = existing.encrypted_credentials
       } else {
         return json({ error: "API key requerida" }, 400)
@@ -105,10 +107,9 @@ Deno.serve(async (req: Request) => {
       )
       if (error) throw error
 
-      // Single active connector per tenant: connecting one disconnects the
-      // rest. We KEEP their stored credentials so the user can reconnect later
-      // without re-entering the API key. The active connector remains the single
-      // source of truth for the audiences/lists shown in the app.
+      // Single active connector: connecting one disconnects the others.
+      // We KEEP their encrypted_credentials so they can reconnect without
+      // re-entering the API key.
       const { data: otherConns, error: otherErr } = await supabase
         .from("provider_connections")
         .select("id")
@@ -118,15 +119,12 @@ Deno.serve(async (req: Request) => {
 
       if (otherConns && otherConns.length > 0) {
         const otherIds = otherConns.map((c) => c.id)
-        // Drop audiences synced from the now-inactive providers so the app only
-        // ever shows lists from the connected provider.
         const { error: audDelErr } = await supabase
           .from("provider_audiences")
           .delete()
           .in("provider_connection_id", otherIds)
         if (audDelErr) throw audDelErr
 
-        // Deactivate but PRESERVE encrypted_credentials.
         const { error: deactErr } = await supabase
           .from("provider_connections")
           .update({ status: "disconnected" })
@@ -134,16 +132,12 @@ Deno.serve(async (req: Request) => {
         if (deactErr) throw deactErr
       }
 
-
-      // Response NEVER includes credentials.
       return json({ success: true, provider_type: providerType, status: "connected" })
     }
 
-
     // ── disconnect ───────────────────────────────────────────────────────────
     if (action === "disconnect") {
-      // Keep the encrypted credentials on file so the tenant can reconnect this
-      // provider later without re-entering the API key. Only flip the status.
+      // Keep credentials on file → user can reconnect later without re-entering key.
       const { error } = await supabase
         .from("provider_connections")
         .update({ status: "disconnected" })
@@ -152,6 +146,61 @@ Deno.serve(async (req: Request) => {
       if (error) throw error
 
       return json({ success: true, provider_type: providerType, status: "disconnected" })
+    }
+
+    // ── update_webhook_secret ─────────────────────────────────────────────
+    // Stores a Resend webhook signing secret (whsec_...) in the provider's
+    // encrypted_credentials alongside the existing apiKey. This is required for
+    // the per-tenant resend-webhook Edge Function to verify incoming events.
+    //
+    // Clients must:
+    //  1. Connect Resend first (to have a row in provider_connections).
+    //  2. Register the webhook in Resend dashboard (URL: resend-webhook?t=<tenant_id>).
+    //  3. Copy the signing secret and call this action to persist it.
+    if (action === "update_webhook_secret") {
+      const webhookSecret =
+        typeof body.webhook_secret === "string" ? body.webhook_secret.trim() : ""
+
+      if (!webhookSecret) {
+        return json({ error: "webhook_secret requerido" }, 400)
+      }
+      if (!webhookSecret.startsWith("whsec_")) {
+        return json(
+          { error: "Formato inválido. El signing secret debe comenzar con whsec_" },
+          400,
+        )
+      }
+
+      const { data: conn, error: connErr } = await supabase
+        .from("provider_connections")
+        .select("encrypted_credentials")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("provider_type", providerType)
+        .maybeSingle()
+      if (connErr) throw connErr
+      if (!conn) {
+        return json(
+          { error: `Conecta ${providerType} primero antes de configurar el webhook` },
+          400,
+        )
+      }
+
+      // MERGE: preserve apiKey (and any other fields) already stored.
+      const existingCreds: Record<string, unknown> =
+        conn.encrypted_credentials
+          ? (decryptCredentials(conn.encrypted_credentials) ?? {})
+          : {}
+
+      const updated = encryptCredentials({ ...existingCreds, webhookSecret })
+
+      const { error: updateErr } = await supabase
+        .from("provider_connections")
+        .update({ encrypted_credentials: updated })
+        .eq("tenant_id", profile.tenant_id)
+        .eq("provider_type", providerType)
+      if (updateErr) throw updateErr
+
+      return json({ success: true, provider_type: providerType, webhook_configured: true })
     }
 
     // ── test_connection ──────────────────────────────────────────────────────
@@ -165,7 +214,6 @@ Deno.serve(async (req: Request) => {
       if (error) throw error
       if (!conn) return json({ error: "Provider no conectado" }, 404)
 
-      // Decrypt server-side only; used for the (mocked) test. Never returned.
       const creds = decryptCredentials(conn.encrypted_credentials)
       const check = validateApiKey(creds?.apiKey)
 
@@ -173,12 +221,35 @@ Deno.serve(async (req: Request) => {
         success: check.valid,
         provider_type: providerType,
         message: check.valid ? "Conexión válida" : "Credenciales inválidas",
+        webhook_configured: typeof creds?.webhookSecret === "string" && (creds.webhookSecret as string).length > 0,
+      })
+    }
+
+    // ── get_connection_status ─────────────────────────────────────────────
+    // Returns lightweight metadata (no credentials) for the provider card UI.
+    // Includes whether webhookSecret is configured (needed for Resend stats badge).
+    if (action === "get_connection_status") {
+      const { data: conn, error } = await supabase
+        .from("provider_connections")
+        .select("status, last_sync_at, encrypted_credentials")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("provider_type", providerType)
+        .maybeSingle()
+      if (error) throw error
+      if (!conn) return json({ connected: false })
+
+      const creds = decryptCredentials(conn.encrypted_credentials)
+
+      return json({
+        connected: conn.status === "connected",
+        status: conn.status,
+        last_sync_at: conn.last_sync_at,
+        has_api_key: typeof creds?.apiKey === "string" && (creds.apiKey as string).length > 0,
+        webhook_configured: typeof creds?.webhookSecret === "string" && (creds.webhookSecret as string).length > 0,
       })
     }
 
     // ── sync_audiences ─────────────────────────────────────────────────────────
-    // Pulls AUDIENCE METADATA ONLY (id, name, count, type) from the provider and
-    // upserts it into provider_audiences. NEVER fetches/stores subscriber PII.
     if (action === "sync_audiences") {
       const { data: conn, error: connErr } = await supabase
         .from("provider_connections")
@@ -193,7 +264,6 @@ Deno.serve(async (req: Request) => {
       const apiKey = typeof creds?.apiKey === "string" ? creds.apiKey : ""
       if (!apiKey) return json({ error: "Credenciales no disponibles" }, 400)
 
-      // Real metadata-sync integrations: MailerLite and Resend.
       if (providerType !== "mailerlite" && providerType !== "resend") {
         return json({ error: "Sincronización no disponible para este proveedor todavía" }, 400)
       }
@@ -211,11 +281,9 @@ Deno.serve(async (req: Request) => {
         return json({ error: validation.message ?? "Credenciales inválidas" }, 400)
       }
 
-
       const audiences = await connector.syncAudiences()
       const now = new Date().toISOString()
 
-      // Upsert metadata-only rows (no PII fields are ever written).
       if (audiences.length > 0) {
         const rows = audiences.map((a) => ({
           tenant_id: profile.tenant_id,
@@ -232,7 +300,6 @@ Deno.serve(async (req: Request) => {
         if (upsertErr) throw upsertErr
       }
 
-      // Remove audiences that no longer exist upstream (metadata hygiene).
       const keepIds = audiences.map((a) => a.external_id)
       let staleQuery = supabase
         .from("provider_audiences")
@@ -248,7 +315,6 @@ Deno.serve(async (req: Request) => {
       const { error: delErr } = await staleQuery
       if (delErr) throw delErr
 
-      // Mark connection as freshly synced & healthy.
       await supabase
         .from("provider_connections")
         .update({ status: "connected", last_sync_at: now })
@@ -264,7 +330,6 @@ Deno.serve(async (req: Request) => {
 
     return json({ error: "Invalid action" }, 400)
   } catch (err) {
-    // Never log credentials; only a generic message.
     console.error("manage-provider-connection error:", err instanceof Error ? err.message : "unknown")
     return json({ error: err instanceof Error ? err.message : String(err) }, 500)
   }

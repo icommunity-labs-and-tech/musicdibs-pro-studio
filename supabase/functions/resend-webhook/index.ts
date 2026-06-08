@@ -2,21 +2,23 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "jsr:@supabase/supabase-js@2"
 
 // ============================================================================
-// resend-webhook — Resend broadcast event receiver
+// resend-webhook — Per-tenant Resend broadcast event receiver
 //
-// Captures broadcast metrics that Resend does NOT expose via polling API:
-//   broadcast.sent     → marks campaign sent, sets emails_sent count
-//   email.opened       → increments unique opens (deduped per email)
-//   email.clicked      → increments unique clicks (deduped per email)
-//   email.unsubscribed → increments unsubscribes
-//   email.bounced      → logged only (dedup table, no counter yet)
+// URL: /functions/v1/resend-webhook?t=<tenant_id>
 //
-// Deduplication (two layers):
-//   1. svix_id UNIQUE  — handles Resend delivery retries (exact-once)
-//   2. (email_id, event_type) UNIQUE INDEX — handles repeat opens/clicks
-//      from the same recipient (only first open/click counts)
+// Each tenant has their own Resend account → their own webhook signing secret
+// stored in provider_connections.encrypted_credentials.webhookSecret.
 //
-// Signature: Svix HMAC-SHA256, secret = RESEND_WEBHOOK_SECRET env var
+// The ?t=<tenant_id> param is used ONLY for routing to the correct secret.
+// Authentication is the HMAC-SHA256 Svix signature — knowing the URL is not
+// enough without the signing secret from the tenant's Resend webhook.
+//
+// Events handled:
+//   broadcast.sent     → mark campaign sent + set emails_sent from sent_count
+//   email.opened       → unique open increment (deduped per email)
+//   email.clicked      → unique click increment (deduped per email)
+//   email.unsubscribed → unsubscribe increment
+//   email.bounced      → logged only (no counter yet)
 // ============================================================================
 
 const CORS = {
@@ -31,6 +33,7 @@ function json(body: unknown, status = 200) {
   })
 }
 
+// ── Svix HMAC-SHA256 signature verification ──────────────────────────────────
 async function verifySignature(
   rawBody: string,
   svixId: string,
@@ -47,7 +50,9 @@ async function verifySignature(
     const signedContent = `${svixId}.${svixTimestamp}.${rawBody}`
     const sigBytes = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signedContent))
     const computed = btoa(String.fromCharCode(...new Uint8Array(sigBytes)))
-    const expectedSigs = svixSignature.split(" ").filter((s) => s.startsWith("v1,")).map((s) => s.slice(3))
+    const expectedSigs = svixSignature.split(" ")
+      .filter((s) => s.startsWith("v1,"))
+      .map((s) => s.slice(3))
     return expectedSigs.some((sig) => sig === computed)
   } catch (e) {
     console.error("[resend-webhook] signature error:", e)
@@ -58,35 +63,81 @@ async function verifySignature(
 function isTimestampFresh(svixTimestamp: string): boolean {
   const ts = parseInt(svixTimestamp, 10)
   if (isNaN(ts)) return false
-  return Math.abs(Date.now() / 1000 - ts) < 300
+  return Math.abs(Date.now() / 1000 - ts) < 300 // 5 min
 }
 
+function decryptCredentials(envelope: unknown): Record<string, unknown> | null {
+  try {
+    if (!envelope || typeof (envelope as Record<string,unknown>).data !== "string") return null
+    const json = decodeURIComponent(escape(atob((envelope as {data:string}).data)))
+    return JSON.parse(json)
+  } catch { return null }
+}
+
+// ── Handler ──────────────────────────────────────────────────────────────────
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS })
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405)
 
+  // Read raw body before anything else (needed for sig verification).
   const rawBody = await req.text()
 
-  const webhookSecret = Deno.env.get("RESEND_WEBHOOK_SECRET") ?? ""
-  if (!webhookSecret) {
-    console.error("[resend-webhook] RESEND_WEBHOOK_SECRET not set")
-    return json({ error: "Webhook secret not configured" }, 500)
+  // Extract tenant_id from ?t= query param.
+  const url = new URL(req.url)
+  const tenantId = url.searchParams.get("t")
+  if (!tenantId) {
+    return json({ error: "Missing tenant parameter. Use ?t=<tenant_id>" }, 400)
   }
 
+  // Svix headers.
   const svixId        = req.headers.get("svix-id") ?? ""
   const svixTimestamp = req.headers.get("svix-timestamp") ?? ""
   const svixSignature = req.headers.get("svix-signature") ?? ""
 
-  if (!svixId || !svixTimestamp || !svixSignature) return json({ error: "Missing Svix headers" }, 400)
-  if (!isTimestampFresh(svixTimestamp)) return json({ error: "Webhook timestamp too old" }, 400)
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    return json({ error: "Missing Svix headers" }, 400)
+  }
+  if (!isTimestampFresh(svixTimestamp)) {
+    return json({ error: "Webhook timestamp too old or invalid" }, 400)
+  }
 
-  const valid = await verifySignature(rawBody, svixId, svixTimestamp, svixSignature, webhookSecret)
-  if (!valid) {
-    console.warn("[resend-webhook] invalid signature", svixId)
+  // Look up the tenant's Resend webhook secret from DB.
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  )
+
+  const { data: conn } = await supabase
+    .from("provider_connections")
+    .select("encrypted_credentials, status")
+    .eq("tenant_id", tenantId)
+    .eq("provider_type", "resend")
+    .maybeSingle()
+
+  if (!conn) {
+    // Don't reveal whether tenant exists — return 401 like a bad signature.
+    console.warn(`[resend-webhook] tenant ${tenantId}: no Resend connection found`)
     return json({ error: "Invalid signature" }, 401)
   }
 
-  let event: { type?: string; created_at?: string; data?: Record<string, unknown> }
+  const creds = decryptCredentials(conn.encrypted_credentials)
+  const webhookSecret = typeof creds?.webhookSecret === "string" ? creds.webhookSecret : ""
+
+  if (!webhookSecret) {
+    // Tenant connected Resend but hasn't configured webhook secret yet.
+    console.warn(`[resend-webhook] tenant ${tenantId}: webhookSecret not configured`)
+    return json({ error: "Webhook secret not configured for this account" }, 401)
+  }
+
+  // Verify HMAC signature with tenant's own secret.
+  const valid = await verifySignature(rawBody, svixId, svixTimestamp, svixSignature, webhookSecret)
+  if (!valid) {
+    console.warn(`[resend-webhook] tenant ${tenantId}: invalid signature`, svixId)
+    return json({ error: "Invalid signature" }, 401)
+  }
+
+  // Parse event.
+  let event: { type?: string; data?: Record<string, unknown> }
   try { event = JSON.parse(rawBody) } catch { return json({ error: "Invalid JSON" }, 400) }
 
   const eventType   = event.type ?? ""
@@ -94,7 +145,7 @@ Deno.serve(async (req: Request) => {
   const broadcastId = (data.broadcast_id ?? data.id) as string | undefined
   const emailId     = data.email_id as string | undefined
 
-  console.log(`[resend-webhook] ${eventType} broadcast=${broadcastId ?? "none"} email=${emailId ?? "none"}`)
+  console.log(`[resend-webhook] tenant=${tenantId} ${eventType} broadcast=${broadcastId ?? "none"} email=${emailId ?? "none"}`)
 
   const HANDLED_EVENTS = [
     "broadcast.sent", "email.sent",
@@ -108,19 +159,18 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true, skipped: true, reason: "no broadcast_id (transactional email)" })
   }
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  )
-
+  // Resolve provider_campaign + campaign from broadcastId, scoped to tenant.
   const { data: pc } = await supabase
     .from("provider_campaigns")
-    .select("id, tenant_id, experience_page_id, provider_campaign_status")
+    .select("id, experience_page_id, provider_campaign_status")
     .eq("provider_campaign_id", broadcastId)
     .eq("provider_type", "resend")
+    .eq("tenant_id", tenantId)
     .maybeSingle()
 
-  if (!pc) return json({ ok: true, skipped: true, reason: "broadcast not in provider_campaigns" })
+  if (!pc) {
+    return json({ ok: true, skipped: true, reason: "broadcast not in provider_campaigns for this tenant" })
+  }
 
   const { data: exp } = await supabase
     .from("experience_pages").select("campaign_id").eq("id", pc.experience_page_id).single()
@@ -128,9 +178,7 @@ Deno.serve(async (req: Request) => {
   const campaignId = exp?.campaign_id as string | undefined
   if (!campaignId) return json({ ok: true, skipped: true, reason: "campaign_id not found" })
 
-  const tenantId = pc.tenant_id as string
-
-  // Dedup insert — handles both svix_id retries and repeat opens
+  // Dedup insert (two-layer: svix_id + email_id/event_type).
   const { error: dedupErr } = await supabase.from("resend_webhook_events").insert({
     svix_id: svixId, event_type: eventType,
     broadcast_id: broadcastId, email_id: emailId ?? null, tenant_id: tenantId,
@@ -141,11 +189,11 @@ Deno.serve(async (req: Request) => {
       console.log(`[resend-webhook] duplicate skipped: ${svixId}`)
       return json({ ok: true, skipped: true, reason: "duplicate" })
     }
-    console.error("[resend-webhook] dedup insert error:", dedupErr.message)
+    console.error("[resend-webhook] dedup error:", dedupErr.message)
     return json({ error: "Database error" }, 500)
   }
 
-  // broadcast.sent / email.sent → mark campaign sent + set emails_sent
+  // broadcast.sent → mark sent + set emails_sent.
   if (eventType === "broadcast.sent" || eventType === "email.sent") {
     const sentCount = (data.sent_count as number | undefined) ?? 0
     const now = new Date().toISOString()
@@ -164,7 +212,7 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true, event: eventType, emails_sent: sentCount })
   }
 
-  // Per-email engagement → atomic increment
+  // Per-email engagement → atomic increment via RPC.
   const incrementMap: Record<string, string> = {
     "email.opened":       "emails_opened",
     "email.clicked":      "emails_clicked",
@@ -174,7 +222,6 @@ Deno.serve(async (req: Request) => {
   const column = incrementMap[eventType]
   if (!column) return json({ ok: true, event: eventType, note: "logged only" })
 
-  // Ensure row exists
   await supabase.from("campaign_stats").upsert(
     { campaign_id: campaignId, tenant_id: tenantId, updated_at: new Date().toISOString() },
     { onConflict: "campaign_id", ignoreDuplicates: true },
@@ -186,7 +233,8 @@ Deno.serve(async (req: Request) => {
 
   if (rpcErr) {
     console.warn("[resend-webhook] rpc fallback:", rpcErr.message)
-    const { data: existing } = await supabase.from("campaign_stats").select(column).eq("campaign_id", campaignId).single()
+    const { data: existing } = await supabase
+      .from("campaign_stats").select(column).eq("campaign_id", campaignId).single()
     const current = (existing as Record<string, number> | null)?.[column] ?? 0
     await supabase.from("campaign_stats")
       .update({ [column]: current + 1, updated_at: new Date().toISOString() })
