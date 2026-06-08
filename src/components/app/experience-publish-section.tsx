@@ -177,6 +177,12 @@ function DistributionCard({
   const stats = useCampaignStats(experience.campaign_id, tenantId, isSent);
   const dashboardUrl = PROVIDER_DASHBOARD[providerType];
 
+  const s = stats.data;
+  const openRate =
+    s && s.emails_sent > 0 ? (s.emails_opened / s.emails_sent) * 100 : null;
+  const clickRate =
+    s && s.emails_sent > 0 ? (s.emails_clicked / s.emails_sent) * 100 : null;
+
   // Two-step send confirmation: step 1 (warning) → step 2 (final confirm).
   const [sendStep, setSendStep] = useState<0 | 1 | 2>(0);
 
