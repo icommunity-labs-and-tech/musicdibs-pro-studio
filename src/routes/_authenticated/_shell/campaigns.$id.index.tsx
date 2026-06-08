@@ -1,12 +1,21 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Pencil, Sparkles, Wand2 } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Loader2,
+  Pencil,
+  Send,
+  Sparkles,
+  Wand2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
 import { CampaignGenerationPanel } from "@/components/app/campaign-generation-panel";
 import { CampaignReviewPanel } from "@/components/app/campaign-review-panel";
 import { ExperiencePanel } from "@/components/app/experience-panel";
+import { PersonalizedProgressPanel } from "@/components/app/personalized-progress-panel";
 import { useAuth } from "@/components/auth/auth-provider";
 
 import { Button } from "@/components/ui/button";
