@@ -111,6 +111,9 @@ function ProviderCard({
   connection: ProviderConnection | undefined;
 }) {
   const [open, setOpen] = useState(false);
+  const [webhookConfigured, setWebhookConfigured] = useState<boolean | null>(
+    null,
+  );
   const disconnect = useDisconnectProvider(tenantId);
   const sync = useSyncAudiences(tenantId);
 
@@ -118,6 +121,8 @@ function ProviderCard({
   const isConnected = status === "connected";
   const statusMeta = STATUS_META[status];
   const canSync = isConnected && SYNC_ENABLED[provider.type];
+  const isResend = provider.type === "resend";
+  const showWebhookSetup = isResend && isConnected;
 
   async function handleDisconnect() {
     try {
