@@ -183,6 +183,12 @@ function ProviderCard({
         {isConnected ? (
           <ProviderPlanNotice provider={provider.type} variant="compact" />
         ) : null}
+        {showWebhookSetup ? (
+          <ResendWebhookSetup
+            tenantId={tenantId}
+            onConfiguredChange={setWebhookConfigured}
+          />
+        ) : null}
         <p className="text-xs text-muted-foreground">
           {connection?.last_sync_at
             ? `Última sincronización: ${new Date(
