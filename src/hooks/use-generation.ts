@@ -199,9 +199,99 @@ export function useCampaignGenerationRealtime(campaignId: string) {
           queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "generation_batches",
+          filter: `campaign_id=eq.${campaignId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["generation-batch", campaignId] });
+          queryClient.invalidateQueries({ queryKey: ["personalized-deliveries", campaignId] });
+          queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+        },
+      )
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);
     };
   }, [campaignId, queryClient]);
+}
+
+// ── Personalized Campaign — start generation ─────────────────────────────────
+export function useStartPersonalizedCampaign() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { campaignId: string }) => {
+      const { data, error } = await supabase.functions.invoke(
+        "start-personalized-campaign",
+        { body: { campaign_id: vars.campaignId } },
+      );
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error as string);
+      return data as { ok: boolean; batch_id: string; total_jobs: number; dispatched: number; failed: number };
+    },
+    onSuccess: (_res, vars) => {
+      void queryClient.invalidateQueries({ queryKey: ["campaign", vars.campaignId] });
+      void queryClient.invalidateQueries({ queryKey: ["generation-batch", vars.campaignId] });
+    },
+  });
+}
+
+// ── Personalized Campaign — send emails ──────────────────────────────────────
+export function useSendPersonalizedCampaign() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { campaignId: string }) => {
+      const { data, error } = await supabase.functions.invoke(
+        "manage-provider-campaign",
+        { body: { action: "send_personalized", campaign_id: vars.campaignId } },
+      );
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error as string);
+      return data as { ok: boolean; sent: number; failed: number; total: number; sent_at: string };
+    },
+    onSuccess: (_res, vars) => {
+      void queryClient.invalidateQueries({ queryKey: ["campaign", vars.campaignId] });
+    },
+  });
+}
+
+// ── Personalized batch progress ───────────────────────────────────────────────
+export interface PersonalizedDelivery {
+  id: string;
+  first_name: string | null;
+  external_contact_id: string;
+  status: string;
+  experience_token: string | null;
+  email_sent: boolean;
+}
+
+export function usePersonalizedDeliveries(campaignId: string) {
+  return useQuery({
+    queryKey: ["personalized-deliveries", campaignId],
+    queryFn: async (): Promise<PersonalizedDelivery[]> => {
+      // Get the latest batch for this campaign
+      const { data: batch, error: batchErr } = await supabase
+        .from("generation_batches")
+        .select("id")
+        .eq("campaign_id", campaignId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (batchErr) throw batchErr;
+      if (!batch) return [];
+      const { data, error } = await supabase
+        .from("personalized_deliveries")
+        .select("id, first_name, external_contact_id, status, experience_token, email_sent")
+        .eq("generation_batch_id", batch.id)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as PersonalizedDelivery[];
+    },
+    staleTime: 10_000,
+    enabled: Boolean(campaignId),
+  });
 }
