@@ -8,6 +8,7 @@ export type CampaignStatus =
   | "draft"
   | "ready_to_generate"
   | "generating"
+  | "ready_to_send"
   | "reviewing"
   | "approved"
   | "completed"
@@ -47,6 +48,11 @@ export function isCampaignReviewing(status: string): boolean {
   return status === "reviewing";
 }
 
+/** True when a personalized campaign has finished generating and can be sent. */
+export function isCampaignReadyToSend(status: string): boolean {
+  return status === "ready_to_send";
+}
+
 type CampaignRow = Database["public"]["Tables"]["campaigns"]["Row"];
 
 /** Spanish label + badge classes for each step of the campaign status machine. */
@@ -67,6 +73,11 @@ export const CAMPAIGN_STATUS_META: Record<
   generating: {
     label: "Generando",
     badgeClass: "bg-teal text-night-900 hover:bg-teal border-transparent",
+  },
+  ready_to_send: {
+    label: "Lista para enviar",
+    badgeClass:
+      "bg-primary text-primary-foreground hover:bg-primary border-transparent",
   },
   reviewing: {
     label: "En revisión",
