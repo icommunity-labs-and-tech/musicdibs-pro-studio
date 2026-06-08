@@ -144,7 +144,7 @@ function CampaignDetailPage() {
     );
   }
 
-  const { campaign, stats } = data;
+  const { campaign } = data;
   const canEdit = isCampaignEditable(campaign.status);
   const hasGeneration = Boolean(job || (batch && batch.status !== "draft"));
 
@@ -218,67 +218,6 @@ function CampaignDetailPage() {
       },
     );
   };
-
-  const openRate =
-    stats && stats.emails_sent > 0
-      ? (stats.emails_opened / stats.emails_sent) * 100
-      : null;
-  const clickRate =
-    stats && stats.emails_sent > 0
-      ? (stats.emails_clicked / stats.emails_sent) * 100
-      : null;
-
-  const metricCards: { label: string; value: string; hint?: string }[] = [
-    {
-      label: "Emails enviados",
-      value: (stats?.emails_sent ?? 0).toLocaleString("es-ES"),
-    },
-    {
-      label: "Tasa de apertura",
-      value: openRate !== null ? `${openRate.toFixed(1)}%` : "—",
-      hint: stats ? `${stats.emails_opened.toLocaleString("es-ES")} aperturas` : undefined,
-    },
-    {
-      label: "Tasa de clics",
-      value: clickRate !== null ? `${clickRate.toFixed(1)}%` : "—",
-      hint: stats ? `${stats.emails_clicked.toLocaleString("es-ES")} clics` : undefined,
-    },
-    {
-      label: "Bajas",
-      value: (stats?.unsubscribes ?? 0).toLocaleString("es-ES"),
-    },
-  ];
-
-  const playCompletionRate =
-    experience && experience.play_count > 0
-      ? Math.round((experience.completion_count / experience.play_count) * 100)
-      : null;
-
-  const playbackMetricCards: { label: string; value: string; hint?: string }[] =
-    experience
-      ? [
-          {
-            label: "Reproducciones",
-            value: experience.play_count.toLocaleString("es-ES"),
-          },
-          {
-            label: "Oyentes únicos",
-            value: experience.unique_visitors.toLocaleString("es-ES"),
-          },
-          {
-            label: "Completadas",
-            value: experience.completion_count.toLocaleString("es-ES"),
-            hint:
-              playCompletionRate !== null
-                ? `${playCompletionRate}% tasa`
-                : undefined,
-          },
-          {
-            label: "Descargas",
-            value: experience.download_count.toLocaleString("es-ES"),
-          },
-        ]
-      : [];
 
   const configRows = configSummary
     ? buildCampaignConfigRows(configSummary)
