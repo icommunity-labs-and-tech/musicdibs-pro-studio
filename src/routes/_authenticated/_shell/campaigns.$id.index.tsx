@@ -303,28 +303,86 @@ function CampaignDetailPage() {
         </div>
       </div>
 
-      {/* Acciones (solo en borrador) */}
+      {/* Acciones — borrador */}
       {canEdit ? (
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button asChild className="sm:w-auto">
+          <Button asChild variant="outline" className="sm:w-auto">
             <Link to="/campaigns/$id/edit" params={{ id }}>
               <Pencil className="mr-1.5 h-4 w-4" />
               Editar campaña
             </Link>
           </Button>
+          {isPersonalized ? (
+            <Button
+              className="sm:w-auto"
+              onClick={handleStartPersonalized}
+              disabled={startPersonalized.isPending}
+            >
+              {startPersonalized.isPending ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <Wand2 className="mr-1.5 h-4 w-4" />
+              )}
+              Generar canciones personalizadas
+            </Button>
+          ) : (
+            <Button
+              className="sm:w-auto"
+              onClick={() => setGenerateOpen(true)}
+              disabled={!generationMode}
+            >
+              <Wand2 className="mr-1.5 h-4 w-4" />
+              Generar campaña
+            </Button>
+          )}
+        </div>
+      ) : null}
+
+      {/* Acción — lista para enviar (solo personalizadas) */}
+      {isReadyToSend && isPersonalized ? (
+        <div className="flex">
           <Button
             className="sm:w-auto"
-            onClick={() => setGenerateOpen(true)}
-            disabled={!generationMode}
+            onClick={handleSendPersonalized}
+            disabled={sendPersonalized.isPending}
           >
-            <Wand2 className="mr-1.5 h-4 w-4" />
-            Generar campaña
+            {sendPersonalized.isPending ? (
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="mr-1.5 h-4 w-4" />
+            )}
+            Enviar canciones personalizadas
           </Button>
         </div>
       ) : null}
 
-      {/* Progreso de generación */}
-      {hasGeneration ? (
+      {/* Confirmación de envío (solo personalizadas) */}
+      {isSent && isPersonalized ? (
+        <Card>
+          <CardContent className="flex items-start gap-3 py-6">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" />
+            <div>
+              <p className="font-medium">Campaña enviada correctamente</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Cada destinatario ha recibido su canción única por email.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {/* Progreso — batch personalizado */}
+      {isPersonalized &&
+      (campaign.status === "generating" ||
+        campaign.status === "ready_to_send") ? (
+        <PersonalizedProgressPanel
+          batch={batch ?? null}
+          status={campaign.status}
+        />
+      ) : null}
+
+      {/* Progreso — single song (sin cambios) */}
+      {!isPersonalized && hasGeneration ? (
         <CampaignGenerationPanel
           job={job ?? null}
           batch={batch ?? null}
@@ -335,8 +393,8 @@ function CampaignDetailPage() {
         />
       ) : null}
 
-      {/* Revisión y aprobación de versiones (Single Song) */}
-      {inReviewPhase ? (
+      {/* Revisión y aprobación de versiones (Single Song only) */}
+      {!isPersonalized && inReviewPhase ? (
         <CampaignReviewPanel
           campaignId={id}
           status={campaign.status}
@@ -347,8 +405,8 @@ function CampaignDetailPage() {
         />
       ) : null}
 
-      {/* Página de experiencia (gated: solo desde campaña aprobada) */}
-      {inReviewPhase ? (
+      {/* Página de experiencia (Single Song only) */}
+      {!isPersonalized && inReviewPhase ? (
         <ExperiencePanel
           campaignId={id}
           tenantId={tenant?.id}
