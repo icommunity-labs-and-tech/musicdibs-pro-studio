@@ -241,6 +241,7 @@ export type Database = {
           ai_provider: string
           approved_asset_id: string | null
           audio_url: string | null
+          campaign_type: string
           click_rate: number | null
           completion_rate: number | null
           contact_list_id: string | null
@@ -277,6 +278,7 @@ export type Database = {
           ai_provider?: string
           approved_asset_id?: string | null
           audio_url?: string | null
+          campaign_type?: string
           click_rate?: number | null
           completion_rate?: number | null
           contact_list_id?: string | null
@@ -313,6 +315,7 @@ export type Database = {
           ai_provider?: string
           approved_asset_id?: string | null
           audio_url?: string | null
+          campaign_type?: string
           click_rate?: number | null
           completion_rate?: number | null
           contact_list_id?: string | null
@@ -949,6 +952,107 @@ export type Database = {
           },
           {
             foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      personalized_deliveries: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          email_sent_at: string | null
+          error_message: string | null
+          experience_page_id: string | null
+          experience_token: string | null
+          external_contact_id: string
+          first_name: string | null
+          generation_batch_id: string | null
+          generation_job_id: string | null
+          id: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          email_sent_at?: string | null
+          error_message?: string | null
+          experience_page_id?: string | null
+          experience_token?: string | null
+          external_contact_id: string
+          first_name?: string | null
+          generation_batch_id?: string | null
+          generation_job_id?: string | null
+          id?: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          email_sent_at?: string | null
+          error_message?: string | null
+          experience_page_id?: string | null
+          experience_token?: string | null
+          external_contact_id?: string
+          first_name?: string | null
+          generation_batch_id?: string | null
+          generation_job_id?: string | null
+          id?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personalized_deliveries_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personalized_deliveries_experience_page_id_fkey"
+            columns: ["experience_page_id"]
+            isOneToOne: false
+            referencedRelation: "experience_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personalized_deliveries_generation_batch_id_fkey"
+            columns: ["generation_batch_id"]
+            isOneToOne: false
+            referencedRelation: "generation_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personalized_deliveries_generation_job_id_fkey"
+            columns: ["generation_job_id"]
+            isOneToOne: false
+            referencedRelation: "generation_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personalized_deliveries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_churn_signals"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "personalized_deliveries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "personalized_deliveries_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1753,6 +1857,13 @@ export type Database = {
         Returns: Json
       }
       get_experience: { Args: { p_token: string }; Returns: Json }
+      increment_batch_completed_jobs: {
+        Args: { p_batch_id: string }
+        Returns: {
+          completed_jobs: number
+          total_jobs: number
+        }[]
+      }
       increment_campaign_stat:
         | {
             Args: { p_campaign_id: string; p_column: string }
