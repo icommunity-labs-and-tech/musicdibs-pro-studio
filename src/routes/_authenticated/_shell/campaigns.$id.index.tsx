@@ -1,15 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  Loader2,
-  Pencil,
-  RefreshCw,
-  Sparkles,
-  Wand2,
-  type LucideIcon,
-} from "lucide-react";
+import { ArrowLeft, Pencil, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
