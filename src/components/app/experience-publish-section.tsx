@@ -422,13 +422,54 @@ function DistributionCard({
   );
 }
 
-function MetricChip({ label, value }: { label: string; value: number }) {
+function Metric({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+}) {
   return (
-    <div className="rounded-lg border bg-muted/40 px-3 py-1.5 text-center">
-      <p className="text-sm font-semibold">
-        {value.toLocaleString("es-ES")}
+    <div className="rounded-xl border bg-muted/30 p-4">
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-2xl font-bold">{value}</p>
+      {hint ? (
+        <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>
+      ) : null}
+    </div>
+  );
+}
+
+function PlaybackAnalytics({ experience }: { experience: ExperiencePage }) {
+  const completionRate =
+    experience.play_count > 0
+      ? Math.round(
+          (experience.completion_count / experience.play_count) * 100,
+        )
+      : null;
+
+  return (
+    <div>
+      <p className="mb-2 text-xs font-medium text-muted-foreground">
+        Analítica de reproducción
       </p>
-      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Metric
+          label="Reproducciones"
+          value={experience.play_count.toLocaleString("es-ES")}
+        />
+        <Metric
+          label="Oyentes únicos"
+          value={experience.unique_visitors.toLocaleString("es-ES")}
+        />
+        <Metric
+          label="Completadas"
+          value={experience.completion_count.toLocaleString("es-ES")}
+          hint={completionRate !== null ? `${completionRate}% tasa` : undefined}
+        />
+      </div>
     </div>
   );
 }
