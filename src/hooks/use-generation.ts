@@ -285,11 +285,25 @@ export function usePersonalizedDeliveries(campaignId: string) {
       if (!batch) return [];
       const { data, error } = await supabase
         .from("personalized_deliveries")
-        .select("id, first_name, external_contact_id, status, experience_token, email_sent")
+        .select("id, first_name, external_contact_id, status, experience_token, email_sent_at")
         .eq("generation_batch_id", batch.id)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as PersonalizedDelivery[];
+      return ((data ?? []) as Array<{
+        id: string;
+        first_name: string | null;
+        external_contact_id: string;
+        status: string;
+        experience_token: string | null;
+        email_sent_at: string | null;
+      }>).map((d) => ({
+        id: d.id,
+        first_name: d.first_name,
+        external_contact_id: d.external_contact_id,
+        status: d.status,
+        experience_token: d.experience_token,
+        email_sent: Boolean(d.email_sent_at),
+      }));
     },
     staleTime: 10_000,
     enabled: Boolean(campaignId),
