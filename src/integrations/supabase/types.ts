@@ -1174,6 +1174,58 @@ export type Database = {
         }
         Relationships: []
       }
+      resend_webhook_events: {
+        Row: {
+          broadcast_id: string | null
+          email_id: string | null
+          event_type: string
+          id: string
+          processed_at: string | null
+          svix_id: string
+          tenant_id: string | null
+        }
+        Insert: {
+          broadcast_id?: string | null
+          email_id?: string | null
+          event_type: string
+          id?: string
+          processed_at?: string | null
+          svix_id: string
+          tenant_id?: string | null
+        }
+        Update: {
+          broadcast_id?: string | null
+          email_id?: string | null
+          event_type?: string
+          id?: string
+          processed_at?: string | null
+          svix_id?: string
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resend_webhook_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_churn_signals"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "resend_webhook_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "resend_webhook_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_api_keys: {
         Row: {
           created_at: string
@@ -1701,10 +1753,19 @@ export type Database = {
         Returns: Json
       }
       get_experience: { Args: { p_token: string }; Returns: Json }
-      increment_campaign_stat: {
-        Args: { p_campaign_id: string; p_field: string; p_tenant_id: string }
-        Returns: undefined
-      }
+      increment_campaign_stat:
+        | {
+            Args: { p_campaign_id: string; p_column: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_campaign_id: string
+              p_field: string
+              p_tenant_id: string
+            }
+            Returns: undefined
+          }
       increment_experience_stat: {
         Args: { p_field: string; p_token: string }
         Returns: undefined

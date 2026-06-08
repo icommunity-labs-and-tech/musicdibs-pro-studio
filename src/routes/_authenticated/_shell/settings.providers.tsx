@@ -36,6 +36,7 @@ import {
 import { PROVIDERS, type ProviderMeta, type ProviderStatus } from "@/lib/providers";
 import { calculateEstimatedCredits } from "@/lib/campaign-generation-options";
 import { ProviderPlanNotice } from "@/components/app/provider-plan-notice";
+import { ResendWebhookSetup } from "@/components/app/resend-webhook-setup";
 
 // Providers with a real metadata-sync integration available today.
 const SYNC_ENABLED: Record<string, boolean> = {
@@ -111,6 +112,9 @@ function ProviderCard({
   connection: ProviderConnection | undefined;
 }) {
   const [open, setOpen] = useState(false);
+  const [webhookConfigured, setWebhookConfigured] = useState<boolean | null>(
+    null,
+  );
   const disconnect = useDisconnectProvider(tenantId);
   const sync = useSyncAudiences(tenantId);
 
@@ -118,6 +122,8 @@ function ProviderCard({
   const isConnected = status === "connected";
   const statusMeta = STATUS_META[status];
   const canSync = isConnected && SYNC_ENABLED[provider.type];
+  const isResend = provider.type === "resend";
+  const showWebhookSetup = isResend && isConnected;
 
   async function handleDisconnect() {
     try {
@@ -159,11 +165,30 @@ function ProviderCard({
           </div>
           <Badge variant={statusMeta.variant}>{statusMeta.label}</Badge>
         </div>
+        {showWebhookSetup && webhookConfigured !== null ? (
+          <p
+            className={
+              webhookConfigured
+                ? "text-xs font-medium text-emerald-600"
+                : "text-xs font-medium text-amber-600"
+            }
+          >
+            {webhookConfigured
+              ? "Conectado · Stats activos"
+              : "Conectado · Sin estadísticas"}
+          </p>
+        ) : null}
         <CardDescription>{provider.description}</CardDescription>
       </CardHeader>
       <CardContent className="mt-auto space-y-3">
         {isConnected ? (
           <ProviderPlanNotice provider={provider.type} variant="compact" />
+        ) : null}
+        {showWebhookSetup ? (
+          <ResendWebhookSetup
+            tenantId={tenantId}
+            onConfiguredChange={setWebhookConfigured}
+          />
         ) : null}
         <p className="text-xs text-muted-foreground">
           {connection?.last_sync_at
