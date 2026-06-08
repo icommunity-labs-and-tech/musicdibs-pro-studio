@@ -164,6 +164,19 @@ function ProviderCard({
           </div>
           <Badge variant={statusMeta.variant}>{statusMeta.label}</Badge>
         </div>
+        {showWebhookSetup && webhookConfigured !== null ? (
+          <p
+            className={
+              webhookConfigured
+                ? "text-xs font-medium text-emerald-600"
+                : "text-xs font-medium text-amber-600"
+            }
+          >
+            {webhookConfigured
+              ? "Conectado · Stats activos"
+              : "Conectado · Sin estadísticas"}
+          </p>
+        ) : null}
         <CardDescription>{provider.description}</CardDescription>
       </CardHeader>
       <CardContent className="mt-auto space-y-3">
