@@ -12,7 +12,6 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/integrations/supabase/client";
 import {
   isCampaignApproved,
   isCampaignEditable,
@@ -23,7 +22,6 @@ import {
   type CampaignConfigSummary,
 } from "@/lib/campaign-generation-summary";
 import {
-  AI_MUSIC_STUDIO,
   calculateEstimatedCredits,
   type GenerationMode,
 } from "@/lib/campaign-generation-options";
@@ -44,7 +42,6 @@ import {
   useRetryMusic,
 } from "@/hooks/use-generation";
 import { GenerateCampaignDialog } from "@/components/app/generate-campaign-dialog";
-import { useCampaignExperience } from "@/hooks/use-experience";
 
 export const Route = createFileRoute("/_authenticated/_shell/campaigns/$id/")({
   head: () => ({ meta: [{ title: "Campaña · Musicdibs Enterprise" }] }),
@@ -63,7 +60,6 @@ function formatDateTime(iso: string): string {
 
 function CampaignDetailPage() {
   const { id } = Route.useParams();
-  const queryClient = useQueryClient();
   const { tenant } = useAuth();
   const { data, isLoading, isError, refetch } = useCampaignDetail(id);
   const { data: config } = useCampaignGenerationConfig(id);
@@ -73,7 +69,6 @@ function CampaignDetailPage() {
   const { data: batch } = useCampaignBatch(id);
   const { data: job } = useCampaignJob(id);
   const { data: assets } = useCampaignAssets(id);
-  const { data: experience } = useCampaignExperience(id);
   const generateCampaign = useGenerateCampaign();
   const retryLyrics = useRetryLyrics();
   const retryMusic = useRetryMusic();
@@ -81,23 +76,6 @@ function CampaignDetailPage() {
 
   useCampaignGenerationRealtime(id);
 
-  const syncStats = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.functions.invoke("sync-campaign-stats", {
-        body: { campaign_id: id },
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["campaign", id] });
-      toast.success("Estadísticas actualizadas");
-    },
-    onError: (e: unknown) => {
-      toast.error("No pudimos sincronizar", {
-        description: e instanceof Error ? e.message : undefined,
-      });
-    },
-  });
 
   // Single source of truth: same mapping the Builder Review uses.
   const configSummary = useMemo<CampaignConfigSummary | null>(() => {
