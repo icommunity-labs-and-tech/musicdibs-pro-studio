@@ -300,12 +300,12 @@ function CampaignDetailPage() {
         />
       ) : null}
 
-      {/* Configuración de AI Music Studio */}
+      {/* Configuración de la campaña */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-display text-lg">
             <Sparkles className="h-4 w-4 text-primary" />
-            Configuración de {AI_MUSIC_STUDIO}
+            Configuración de la campaña
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -341,50 +341,6 @@ function CampaignDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Estadísticas */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="font-display text-lg">Estadísticas</CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => syncStats.mutate()}
-            disabled={syncStats.isPending}
-          >
-            {syncStats.isPending ? (
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-1.5 h-4 w-4" />
-            )}
-            Sincronizar
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <p className="mb-2 text-sm font-medium text-muted-foreground">
-              Email
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {metricCards.map((m) => (
-                <Metric key={m.label} {...m} />
-              ))}
-            </div>
-          </div>
-
-          {playbackMetricCards.length > 0 ? (
-            <div>
-              <p className="mb-2 text-sm font-medium text-muted-foreground">
-                Analítica de reproducción
-              </p>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {playbackMetricCards.map((m) => (
-                  <Metric key={m.label} {...m} />
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
 
       <GenerateCampaignDialog
         open={generateOpen}
