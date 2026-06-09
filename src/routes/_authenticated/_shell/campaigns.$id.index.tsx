@@ -17,6 +17,11 @@ import { CampaignReviewPanel } from "@/components/app/campaign-review-panel";
 import { ExperiencePanel } from "@/components/app/experience-panel";
 import { PersonalizedDeliveriesPanel } from "@/components/app/personalized-deliveries-panel";
 import { PersonalizedProgressPanel } from "@/components/app/personalized-progress-panel";
+import {
+  PersonalizedExperienceContentCard,
+  PersonalizedDistributionCard,
+  PersonalizedPlaybackCard,
+} from "@/components/app/personalized-campaign-sections";
 import { useAuth } from "@/components/auth/auth-provider";
 
 import { Button } from "@/components/ui/button";
