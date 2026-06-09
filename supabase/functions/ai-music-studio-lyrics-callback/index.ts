@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
 
     // ── Failure path ─────────────────────────────────────────────────────────
     if (!parsed.ok) {
-      await markFailed(supabase, job, parsed.errorMessage ?? "Lyrics failed", "lyrics");
+      await markFailed(supabase, job, parsed.errorMessage ?? "Lyrics failed");
       return json({ ok: true, status: "failed" });
     }
 
@@ -115,7 +115,6 @@ Deno.serve(async (req: Request) => {
         supabase,
         job,
         musicErr instanceof Error ? musicErr.message : "Music start failed",
-        "music",
       );
       return json({ ok: true, status: "music_start_failed" });
     }
@@ -128,23 +127,91 @@ Deno.serve(async (req: Request) => {
 });
 
 // deno-lint-ignore no-explicit-any
-async function markFailed(supabase: any, job: any, message: string, stage: "lyrics" | "music") {
-  const patch: Record<string, unknown> = {
-    status: "failed",
-    error_message: message,
-    updated_at: new Date().toISOString(),
-  };
-  patch[stage === "lyrics" ? "lyrics_status" : "music_status"] = "failed";
-  await supabase.from("generation_jobs").update(patch).eq("id", job.id);
-
-  if (job.generation_batch_id) {
-    await supabase
-      .from("generation_batches")
-      .update({ status: "failed", failed_jobs: 1, updated_at: new Date().toISOString() })
-      .eq("id", job.generation_batch_id);
-  }
+async function markFailed(supabase: any, job: any, message: string) {
+  // Mark the job itself as failed
   await supabase
-    .from("campaigns")
-    .update({ status: "failed", updated_at: new Date().toISOString() })
-    .eq("id", job.campaign_id);
+    .from("generation_jobs")
+    .update({
+      lyrics_status: "failed",
+      status: "failed",
+      error_message: message,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", job.id);
+
+  // Check if this job belongs to a personalized delivery
+  const { data: delivery } = await supabase
+    .from("personalized_deliveries")
+    .select("id")
+    .eq("generation_job_id", job.id)
+    .maybeSingle();
+
+  if (delivery) {
+    // ── Personalized: partial failure is OK ──────────────────────────────
+    // Mark this delivery as failed
+    await supabase
+      .from("personalized_deliveries")
+      .update({
+        status: "failed",
+        error_message: message,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", delivery.id);
+
+    // Increment the batch counter — the batch can still complete with
+    // the other jobs, even if this one failed.
+    if (job.generation_batch_id) {
+      const { data: batchResult } = await supabase.rpc(
+        "increment_batch_completed_jobs",
+        { p_batch_id: job.generation_batch_id },
+      );
+      const completed = batchResult?.[0]?.completed_jobs ?? 0;
+      const total     = batchResult?.[0]?.total_jobs ?? 0;
+
+      log("lyrics_cb", "personalized_job_failed", {
+        jobId: job.id,
+        deliveryId: delivery.id,
+        completed,
+        total,
+      });
+
+      // If all jobs in the batch have now finished (some may have succeeded),
+      // transition the campaign to ready_to_send so the operator can send
+      // the songs that did generate successfully.
+      if (completed >= total && total > 0) {
+        await supabase
+          .from("campaigns")
+          .update({ status: "ready_to_send", updated_at: new Date().toISOString() })
+          .eq("id", job.campaign_id);
+
+        await supabase
+          .from("generation_batches")
+          .update({
+            status: "completed",
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", job.generation_batch_id);
+
+        log("lyrics_cb", "personalized_batch_complete_with_failures", {
+          batchId: job.generation_batch_id,
+          campaignId: job.campaign_id,
+          completed,
+          total,
+        });
+      }
+    }
+  } else {
+    // ── Single-song: one failure = campaign failure ───────────────────────
+    if (job.generation_batch_id) {
+      await supabase
+        .from("generation_batches")
+        .update({ status: "failed", failed_jobs: 1, updated_at: new Date().toISOString() })
+        .eq("id", job.generation_batch_id);
+    }
+    await supabase
+      .from("campaigns")
+      .update({ status: "failed", updated_at: new Date().toISOString() })
+      .eq("id", job.campaign_id);
+  }
 }
