@@ -548,7 +548,7 @@ Deno.serve(async (req: Request) => {
 
       const { data: campaign } = await supabase
         .from("campaigns")
-        .select("id, name, status, branding")
+        .select("id, name, status")
         .eq("id", campaignId)
         .eq("tenant_id", tenantId)
         .maybeSingle()
@@ -625,7 +625,7 @@ Deno.serve(async (req: Request) => {
       if (!senderName || !senderEmail) return json({ error: "Configura el remitente antes de enviar.", code: "sender_missing" }, 400)
 
       const { emailSubject, emailBody } = await fetchEmailConfig(campaignId)
-      const branding = (campaign.branding as ExperienceBranding | null) ?? {}
+      const branding = {} as ExperienceBranding
       const campaignTitle = campaign.name || "Tu canci\u00f3n personalizada"
       const from = senderName ? `${senderName} <${senderEmail}>` : senderEmail
 
