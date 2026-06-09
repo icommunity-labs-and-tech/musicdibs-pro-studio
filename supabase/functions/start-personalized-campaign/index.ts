@@ -296,7 +296,15 @@ Deno.serve(async (req: Request) => {
       log("personalized", "kie_error", { code: err.code, rawMessage: err.rawMessage });
       return json({ error: err.message }, 500);
     }
-    log("personalized", "error", { message: err instanceof Error ? err.message : "unknown" });
-    return json({ error: err instanceof Error ? err.message : String(err) }, 500);
+    const message =
+      err instanceof Error
+        ? err.message
+        : (err && typeof err === "object"
+            ? ((err as Record<string, unknown>).message as string) ??
+              ((err as Record<string, unknown>).details as string) ??
+              JSON.stringify(err)
+            : String(err));
+    log("personalized", "error", { message, raw: err });
+    return json({ error: message }, 500);
   }
 });
