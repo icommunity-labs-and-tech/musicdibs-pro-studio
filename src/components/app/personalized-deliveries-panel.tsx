@@ -138,6 +138,21 @@ export function PersonalizedDeliveriesPanel({
                   >
                     {meta.label}
                   </Badge>
+                  {d.status === "failed" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      onClick={() => retry(d.id, d.first_name ?? "")}
+                      disabled={retrying === d.id}
+                      title="Reintentar generación"
+                    >
+                      <RotateCcw
+                        className={`h-3 w-3 mr-1 ${retrying === d.id ? "animate-spin" : ""}`}
+                      />
+                      {retrying === d.id ? "Reintentando..." : "Reintentar"}
+                    </Button>
+                  )}
                 </div>
               </div>
             );
