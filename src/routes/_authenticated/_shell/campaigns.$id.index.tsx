@@ -29,7 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   isCampaignApproved,
   isCampaignEditable,
-  isCampaignReadyToSend,
+  
   isCampaignReviewing,
 } from "@/lib/campaign-status";
 import {
