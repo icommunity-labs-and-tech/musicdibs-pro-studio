@@ -282,6 +282,26 @@
     var(--night-900);
 }
 
+/* ── Experience play page: warm animated gradient ────────────────── */
+
+@keyframes exp-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.exp-gradient {
+  background: linear-gradient(
+    120deg,
+    var(--gold) 0%,
+    var(--gold-light) 35%,
+    var(--teal-light) 65%,
+    var(--gold) 100%
+  );
+  background-size: 280% 280%;
+  animation: exp-gradient 12s ease infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ld-bar,
   .ld-float,
@@ -289,4 +309,5 @@
   .ld-marquee,
   .animate-waveform-bar { animation: none !important; }
   .ld-fade-up { opacity: 1; animation: none !important; }
+  .exp-gradient { animation: none !important; }
 }
