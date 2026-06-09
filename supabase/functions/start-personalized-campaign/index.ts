@@ -124,10 +124,21 @@ Deno.serve(async (req: Request) => {
     // Body
     const body = await req.json().catch(() => ({}));
     const campaignId   = body.campaign_id as string | undefined;
-    const audienceId   = body.audience_id as string | undefined;
+    let   audienceId   = body.audience_id as string | undefined;
     const contactLimit = Math.min(Number(body.contact_limit ?? DEFAULT_LIMIT), MAX_LIMIT);
 
     if (!campaignId) return json({ error: "campaign_id requerido" }, 400);
+
+    // Fall back to the audience saved on the campaign's generation config when
+    // the caller doesn't pass one explicitly.
+    if (!audienceId) {
+      const { data: cfg } = await supabase
+        .from("campaign_generation_configs")
+        .select("provider_audience_id")
+        .eq("campaign_id", campaignId)
+        .maybeSingle();
+      audienceId = cfg?.provider_audience_id as string | undefined;
+    }
     if (!audienceId) return json({ error: "audience_id requerido" }, 400);
 
     // Load campaign (tenant-scoped)
