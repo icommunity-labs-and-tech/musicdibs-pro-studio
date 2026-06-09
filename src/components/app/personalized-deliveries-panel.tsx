@@ -29,11 +29,13 @@ const STATUS_META: Record<
 interface Props {
   deliveries: PersonalizedDelivery[];
   isLoading: boolean;
+  campaignId: string;
 }
 
 export function PersonalizedDeliveriesPanel({
   deliveries,
   isLoading,
+  campaignId,
 }: Props) {
   if (isLoading) return null;
   if (deliveries.length === 0) return null;
