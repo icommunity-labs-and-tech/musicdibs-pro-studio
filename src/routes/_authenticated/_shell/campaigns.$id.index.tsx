@@ -92,13 +92,6 @@ function CampaignDetailPage() {
 
   useCampaignGenerationRealtime(id);
 
-  const deliveriesEnabled =
-    isPersonalized &&
-    ["generating", "ready_to_send", "sent"].includes(campaign?.status ?? "");
-
-  const { data: deliveries = [], isLoading: deliveriesLoading } =
-    usePersonalizedDeliveriesByCampaign(id, deliveriesEnabled);
-
 
   // Single source of truth: same mapping the Builder Review uses.
   const configSummary = useMemo<CampaignConfigSummary | null>(() => {
