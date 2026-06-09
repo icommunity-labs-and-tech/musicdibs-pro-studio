@@ -76,6 +76,13 @@ export type Database = {
             foreignKeyName: "audit_logs_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -224,6 +231,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "campaign_stats_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
             referencedColumns: ["tenant_id"]
           },
           {
@@ -387,6 +401,13 @@ export type Database = {
             foreignKeyName: "campaigns_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "campaigns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -442,6 +463,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "contact_lists_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
             referencedColumns: ["tenant_id"]
           },
           {
@@ -522,6 +550,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "contacts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
             referencedColumns: ["tenant_id"]
           },
           {
@@ -899,6 +934,13 @@ export type Database = {
             foreignKeyName: "generation_jobs_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "generation_jobs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -948,6 +990,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
             referencedColumns: ["tenant_id"]
           },
           {
@@ -1055,6 +1104,13 @@ export type Database = {
             foreignKeyName: "personalized_deliveries_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "personalized_deliveries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -1125,6 +1181,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
             referencedColumns: ["tenant_id"]
           },
           {
@@ -1240,6 +1303,13 @@ export type Database = {
             foreignKeyName: "provider_campaigns_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "provider_campaigns_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -1325,6 +1395,13 @@ export type Database = {
             foreignKeyName: "resend_webhook_events_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "resend_webhook_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -1377,6 +1454,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "tenant_api_keys_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
             referencedColumns: ["tenant_id"]
           },
           {
@@ -1451,6 +1535,13 @@ export type Database = {
             foreignKeyName: "tenant_invitations_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "tenant_invitations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -1500,6 +1591,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "tenant_notes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
             referencedColumns: ["tenant_id"]
           },
           {
@@ -1573,6 +1671,13 @@ export type Database = {
             foreignKeyName: "tenant_settings_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: true
+            referencedRelation: "tenant_suno_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "tenant_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -1628,6 +1733,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenant_monthly_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "tenant_webhooks_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
             referencedColumns: ["tenant_id"]
           },
           {
@@ -1801,6 +1913,13 @@ export type Database = {
             foreignKeyName: "audit_logs_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenant_suno_usage"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "audit_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -1846,6 +1965,18 @@ export type Database = {
           tenant_id: string | null
           tenant_name: string | null
           user_count: number | null
+        }
+        Relationships: []
+      }
+      tenant_suno_usage: {
+        Row: {
+          lyrics_ops_month: number | null
+          lyrics_ops_total: number | null
+          music_ops_month: number | null
+          music_ops_total: number | null
+          plan: string | null
+          tenant_id: string | null
+          tenant_name: string | null
         }
         Relationships: []
       }
