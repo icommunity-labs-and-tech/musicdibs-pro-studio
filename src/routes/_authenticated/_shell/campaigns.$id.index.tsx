@@ -386,6 +386,31 @@ function CampaignDetailPage() {
         />
       ) : null}
 
+      {/* CARD 1 — Contenido de la página de experiencia (personalizadas) */}
+      {isPersonalized &&
+      (campaign.status === "generating" ||
+        campaign.status === "ready_to_send" ||
+        campaign.status === "sent") ? (
+        <PersonalizedExperienceContentCard campaignId={id} />
+      ) : null}
+
+      {/* CARD 2 — Distribución (Resend) */}
+      {isPersonalized ? (
+        <PersonalizedDistributionCard
+          status={campaign.status}
+          deliveries={deliveries}
+          onSend={handleSendPersonalized}
+          isSending={sendPersonalized.isPending}
+        />
+      ) : null}
+
+      {/* CARD 3 — Analítica de reproducción */}
+      {isPersonalized && campaign.status === "sent" ? (
+        <PersonalizedPlaybackCard campaignId={id} />
+      ) : null}
+
+
+
       {/* Progreso — single song (sin cambios) */}
       {!isPersonalized && hasGeneration ? (
         <CampaignGenerationPanel
