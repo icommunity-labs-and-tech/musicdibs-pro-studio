@@ -186,6 +186,13 @@ function CampaignDetailPage() {
   const isReadyToSend = isCampaignReadyToSend(campaign.status);
   const isSent = campaign.status === "sent";
 
+  const deliveriesEnabled =
+    isPersonalized &&
+    ["generating", "ready_to_send", "sent"].includes(campaign.status);
+
+  const { data: deliveries = [], isLoading: deliveriesLoading } =
+    usePersonalizedDeliveriesByCampaign(id, deliveriesEnabled);
+
 
   // Confirmation modal inputs. Single song only in this sprint.
   const generationMode = (configSummary?.generationMode || null) as
