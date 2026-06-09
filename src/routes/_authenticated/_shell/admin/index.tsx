@@ -169,7 +169,138 @@ function ChurnSummary() {
   );
 }
 
+
+// ── Suno API costs ──────────────────────────────────────────────────────────────
+
+function CostsTab() {
+  const { data: usage = [], isLoading } = useSunoUsage();
+  const { data: settings = [] } = usePlatformSettings();
+  const cfg = parseCostConfig(settings);
+
+  const rows = usage
+    .map((u) => {
+      const month = computeCost(cfg, u.music_ops_month, u.lyrics_ops_month);
+      const total = computeCost(cfg, u.music_ops_total, u.lyrics_ops_total);
+      const revenue = planRevenueEur(cfg, u.plan);
+      const marginEur = revenue == null ? null : revenue - month.costEur;
+      const marginPct = revenue && revenue > 0 ? ((revenue - month.costEur) / revenue) * 100 : null;
+      return { ...u, month, total, revenue, marginEur, marginPct };
+    })
+    .sort((a, b) => b.total.costUsd - a.total.costUsd);
+
+  const totalCostMonthUsd = rows.reduce((s, r) => s + r.month.costUsd, 0);
+  const totalCostMonthEur = rows.reduce((s, r) => s + r.month.costEur, 0);
+  const totalRevenue = rows.reduce((s, r) => s + (r.revenue ?? 0), 0);
+  const totalOpsMonth = rows.reduce((s, r) => s + r.music_ops_month + r.lyrics_ops_month, 0);
+  const marginEur = totalRevenue - totalCostMonthEur;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[
+          { label: "Operaciones Suno (mes)", value: totalOpsMonth.toLocaleString("es-ES") },
+          { label: "Coste API (mes)", value: fmtUsd(totalCostMonthUsd), sub: fmtEur(totalCostMonthEur) },
+          { label: "Ingresos planes (mes)", value: fmtEur(totalRevenue) },
+          {
+            label: "Margen bruto (mes)",
+            value: fmtEur(marginEur),
+            sub: totalRevenue > 0 ? `${((marginEur / totalRevenue) * 100).toFixed(1)}% margen` : undefined,
+          },
+        ].map((kpi) => (
+          <Card key={kpi.label}>
+            <CardContent className="pt-4 pb-3">
+              <p className="text-xs text-muted-foreground">{kpi.label}</p>
+              <p className="font-display text-2xl font-bold mt-1">{kpi.value}</p>
+              {kpi.sub && <p className="text-xs text-muted-foreground mt-0.5">{kpi.sub}</p>}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <p className="text-xs text-muted-foreground">
+        Costes según{" "}
+        <a href="https://kie.ai/es/pricing" target="_blank" rel="noopener noreferrer" className="underline">
+          kie.ai/pricing
+        </a>{" "}
+        — música {fmtUsd(cfg.musicCostUsd)}, letras {fmtUsd(cfg.lyricsCostUsd)} por operación (USD→EUR ×{cfg.usdEurRate}).
+        Editable en la pestaña <span className="font-medium">Configuración</span>.
+      </p>
+
+      <Card>
+        <CardContent className="p-0 overflow-x-auto">
+          {isLoading ? (
+            <div className="space-y-0 divide-y">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="px-5 py-3.5">
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              ))}
+            </div>
+          ) : rows.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
+              <Coins className="h-8 w-8 opacity-40" />
+              <p className="text-sm">Sin operaciones de Suno todavía</p>
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-xs text-muted-foreground">
+                  <th className="px-5 py-2.5 font-medium">Cliente</th>
+                  <th className="px-3 py-2.5 font-medium text-right">Ops. mes</th>
+                  <th className="px-3 py-2.5 font-medium text-right">Coste mes</th>
+                  <th className="px-3 py-2.5 font-medium text-right">Plan / mes</th>
+                  <th className="px-5 py-2.5 font-medium text-right">Margen mes</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {rows.map((r) => (
+                  <tr key={r.tenant_id} className="hover:bg-muted/50 transition-colors">
+                    <td className="px-5 py-3">
+                      <Link to="/admin/tenants/$id" params={{ id: r.tenant_id }} className="font-medium hover:underline">
+                        {r.tenant_name}
+                      </Link>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        <PlanBadge plan={r.plan} /> · {r.total.costUsd > 0 ? `${fmtUsd(r.total.costUsd)} histórico` : "sin coste histórico"}
+                      </p>
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <span className="font-medium">{r.music_ops_month + r.lyrics_ops_month}</span>
+                      <p className="text-xs text-muted-foreground">{r.music_ops_month} 🎵 · {r.lyrics_ops_month} 📝</p>
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <span className="font-medium">{fmtEur(r.month.costEur)}</span>
+                      <p className="text-xs text-muted-foreground">{fmtUsd(r.month.costUsd)}</p>
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      {r.revenue == null ? <span className="text-muted-foreground">A medida</span> : fmtEur(r.revenue)}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      {r.marginEur == null ? (
+                        <span className="text-muted-foreground">—</span>
+                      ) : (
+                        <>
+                          <span className={`font-medium ${r.marginEur >= 0 ? "text-green-600" : "text-destructive"}`}>
+                            {fmtEur(r.marginEur)}
+                          </span>
+                          {r.marginPct != null && (
+                            <p className="text-xs text-muted-foreground">{r.marginPct.toFixed(1)}%</p>
+                          )}
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // ── Platform config ───────────────────────────────────────────────────────────
+
 
 function ConfigTab() {
   const { data: settings = [], isLoading } = usePlatformSettings();
