@@ -244,10 +244,16 @@ export function useStartPersonalizedCampaign() {
 export function useSendPersonalizedCampaign() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (vars: { campaignId: string }) => {
+    mutationFn: async (vars: { campaignId: string; audienceId: string }) => {
       const { data, error } = await supabase.functions.invoke(
         "manage-provider-campaign",
-        { body: { action: "send_personalized", campaign_id: vars.campaignId } },
+        {
+          body: {
+            action: "send_personalized",
+            campaign_id: vars.campaignId,
+            audience_id: vars.audienceId,
+          },
+        },
       );
       if (error) throw error;
       if (data?.error) throw new Error(data.error as string);

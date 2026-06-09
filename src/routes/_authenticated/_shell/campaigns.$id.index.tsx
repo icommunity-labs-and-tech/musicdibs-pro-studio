@@ -277,7 +277,7 @@ function CampaignDetailPage() {
 
   const handleSendPersonalized = () => {
     sendPersonalized.mutate(
-      { campaignId: id },
+      { campaignId: id, audienceId: config?.provider_audience_id ?? "" },
       {
         onSuccess: (res) => {
           toast.success("Canciones enviadas", {
