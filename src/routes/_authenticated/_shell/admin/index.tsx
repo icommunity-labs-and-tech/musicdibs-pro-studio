@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangle, Building2, ChevronRight, Settings2, TrendingDown } from "lucide-react";
+import { AlertTriangle, Building2, ChevronRight, Coins, Settings2, TrendingDown } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,12 @@ import {
   useAdminChurnSignals,
   usePlatformSettings,
   useUpdatePlatformSetting,
+  useSunoUsage,
   type AdminTenant,
   type ChurnSignal,
 } from "@/hooks/use-admin";
+import { computeCost, fmtEur, fmtUsd, parseCostConfig, planRevenueEur } from "@/lib/suno-costs";
+
 
 export const Route = createFileRoute("/_authenticated/_shell/admin/")({
   head: () => ({ meta: [{ title: "Admin · Musicdibs Enterprise" }] }),
