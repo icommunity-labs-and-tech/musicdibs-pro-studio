@@ -1,8 +1,10 @@
-import { ExternalLink, Mail, MailCheck, Music2, XCircle } from "lucide-react";
+import { ExternalLink, Mail, MailCheck, Music2, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { buildExperienceUrl } from "@/lib/experience";
+import { useRetryDelivery } from "@/hooks/useRetryDelivery";
 import type { PersonalizedDelivery } from "@/hooks/use-generation";
 
 const STATUS_META: Record<
@@ -27,12 +29,16 @@ const STATUS_META: Record<
 interface Props {
   deliveries: PersonalizedDelivery[];
   isLoading: boolean;
+  campaignId: string;
 }
 
 export function PersonalizedDeliveriesPanel({
   deliveries,
   isLoading,
+  campaignId,
 }: Props) {
+  const { retry, retrying } = useRetryDelivery(campaignId);
+
   if (isLoading) return null;
   if (deliveries.length === 0) return null;
 
@@ -132,6 +138,21 @@ export function PersonalizedDeliveriesPanel({
                   >
                     {meta.label}
                   </Badge>
+                  {d.status === "failed" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      onClick={() => retry(d.id, d.first_name ?? "")}
+                      disabled={retrying === d.id}
+                      title="Reintentar generación"
+                    >
+                      <RotateCcw
+                        className={`h-3 w-3 mr-1 ${retrying === d.id ? "animate-spin" : ""}`}
+                      />
+                      {retrying === d.id ? "Reintentando..." : "Reintentar"}
+                    </Button>
+                  )}
                 </div>
               </div>
             );

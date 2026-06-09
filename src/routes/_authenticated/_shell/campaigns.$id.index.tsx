@@ -400,6 +400,7 @@ function CampaignDetailPage() {
         <PersonalizedDeliveriesPanel
           deliveries={deliveries}
           isLoading={deliveriesLoading}
+          campaignId={id}
         />
       ) : null}
 
