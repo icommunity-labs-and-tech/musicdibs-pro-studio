@@ -1021,6 +1021,8 @@ export type Database = {
           generation_batch_id: string | null
           generation_job_id: string | null
           id: string
+          is_fallback_generation: boolean
+          retry_count: number
           status: string
           tenant_id: string
           updated_at: string
@@ -1037,6 +1039,8 @@ export type Database = {
           generation_batch_id?: string | null
           generation_job_id?: string | null
           id?: string
+          is_fallback_generation?: boolean
+          retry_count?: number
           status?: string
           tenant_id: string
           updated_at?: string
@@ -1053,6 +1057,8 @@ export type Database = {
           generation_batch_id?: string | null
           generation_job_id?: string | null
           id?: string
+          is_fallback_generation?: boolean
+          retry_count?: number
           status?: string
           tenant_id?: string
           updated_at?: string
