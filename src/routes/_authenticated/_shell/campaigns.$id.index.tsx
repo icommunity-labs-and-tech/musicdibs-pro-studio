@@ -199,7 +199,6 @@ function CampaignDetailPage() {
     configSummary?.generationMode === "personalized_song" ||
     campaign.type === "personalized";
 
-  const isReadyToSend = isCampaignReadyToSend(campaign.status);
   const isSent = campaign.status === "sent";
 
 
