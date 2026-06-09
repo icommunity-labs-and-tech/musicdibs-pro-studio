@@ -270,10 +270,12 @@ export interface PersonalizedDelivery {
   id: string;
   first_name: string | null;
   external_contact_id: string;
-  status: string; // "pending" | "ready" | "sent" | "failed"
+  status: string; // "pending" | "generating" | "ready" | "sent" | "failed"
   experience_token: string | null;
   email_sent_at: string | null;
   error_message: string | null;
+  retry_count: number;
+  is_fallback_generation: boolean;
 }
 
 export function usePersonalizedDeliveries(campaignId: string) {
@@ -293,7 +295,7 @@ export function usePersonalizedDeliveries(campaignId: string) {
       const { data, error } = await supabase
         .from("personalized_deliveries")
         .select(
-          "id, first_name, external_contact_id, status, experience_token, email_sent_at, error_message",
+          "id, first_name, external_contact_id, status, experience_token, email_sent_at, error_message, retry_count, is_fallback_generation",
         )
         .eq("generation_batch_id", batch.id)
         .order("created_at", { ascending: true });
@@ -315,7 +317,7 @@ export function usePersonalizedDeliveriesByCampaign(
       const { data, error } = await supabase
         .from("personalized_deliveries")
         .select(
-          "id, first_name, external_contact_id, status, experience_token, email_sent_at, error_message",
+          "id, first_name, external_contact_id, status, experience_token, email_sent_at, error_message, retry_count, is_fallback_generation",
         )
         .eq("campaign_id", campaignId)
         .order("created_at", { ascending: true });
