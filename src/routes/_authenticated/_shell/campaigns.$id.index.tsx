@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Loader2,
   Pencil,
-  Send,
   Sparkles,
   Wand2,
 } from "lucide-react";
@@ -17,6 +16,11 @@ import { CampaignReviewPanel } from "@/components/app/campaign-review-panel";
 import { ExperiencePanel } from "@/components/app/experience-panel";
 import { PersonalizedDeliveriesPanel } from "@/components/app/personalized-deliveries-panel";
 import { PersonalizedProgressPanel } from "@/components/app/personalized-progress-panel";
+import {
+  PersonalizedExperienceContentCard,
+  PersonalizedDistributionCard,
+  PersonalizedPlaybackCard,
+} from "@/components/app/personalized-campaign-sections";
 import { useAuth } from "@/components/auth/auth-provider";
 
 import { Button } from "@/components/ui/button";
@@ -25,7 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   isCampaignApproved,
   isCampaignEditable,
-  isCampaignReadyToSend,
+  
   isCampaignReviewing,
 } from "@/lib/campaign-status";
 import {
@@ -195,7 +199,6 @@ function CampaignDetailPage() {
     configSummary?.generationMode === "personalized_song" ||
     campaign.type === "personalized";
 
-  const isReadyToSend = isCampaignReadyToSend(campaign.status);
   const isSent = campaign.status === "sent";
 
 
@@ -352,24 +355,6 @@ function CampaignDetailPage() {
         </div>
       ) : null}
 
-      {/* Acción — lista para enviar (solo personalizadas) */}
-      {isReadyToSend && isPersonalized ? (
-        <div className="flex">
-          <Button
-            className="sm:w-auto"
-            onClick={handleSendPersonalized}
-            disabled={sendPersonalized.isPending}
-          >
-            {sendPersonalized.isPending ? (
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="mr-1.5 h-4 w-4" />
-            )}
-            Enviar canciones personalizadas
-          </Button>
-        </div>
-      ) : null}
-
       {/* Confirmación de envío (solo personalizadas) */}
       {isSent && isPersonalized ? (
         <Card>
@@ -403,6 +388,31 @@ function CampaignDetailPage() {
           campaignId={id}
         />
       ) : null}
+
+      {/* CARD 1 — Contenido de la página de experiencia (personalizadas) */}
+      {isPersonalized &&
+      (campaign.status === "generating" ||
+        campaign.status === "ready_to_send" ||
+        campaign.status === "sent") ? (
+        <PersonalizedExperienceContentCard campaignId={id} />
+      ) : null}
+
+      {/* CARD 2 — Distribución (Resend) */}
+      {isPersonalized ? (
+        <PersonalizedDistributionCard
+          status={campaign.status}
+          deliveries={deliveries}
+          onSend={handleSendPersonalized}
+          isSending={sendPersonalized.isPending}
+        />
+      ) : null}
+
+      {/* CARD 3 — Analítica de reproducción */}
+      {isPersonalized && campaign.status === "sent" ? (
+        <PersonalizedPlaybackCard campaignId={id} />
+      ) : null}
+
+
 
       {/* Progreso — single song (sin cambios) */}
       {!isPersonalized && hasGeneration ? (
