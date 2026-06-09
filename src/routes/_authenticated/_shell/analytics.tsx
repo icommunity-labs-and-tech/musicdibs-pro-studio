@@ -13,8 +13,11 @@ import {
   BarChart3,
   MailOpen,
   MousePointerClick,
+  Music2,
+  Play,
   Send,
   UserMinus,
+  Users2,
   type LucideIcon,
 } from "lucide-react";
 
@@ -33,8 +36,9 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAnalytics } from "@/hooks/use-analytics";
+import { useAnalytics, useGenerationMetrics } from "@/hooks/use-analytics";
 
 export const Route = createFileRoute("/_authenticated/_shell/analytics")({
   head: () => ({ meta: [{ title: "Analytics · Musicdibs Enterprise" }] }),
@@ -53,6 +57,7 @@ const funnelConfig: ChartConfig = {
 function AnalyticsPage() {
   const { tenant } = useAuth();
   const { data, isLoading, isError, refetch } = useAnalytics(tenant?.id);
+  const { data: genMetrics, isLoading: genLoading } = useGenerationMetrics(tenant?.id);
 
   if (isError) {
     return (
@@ -134,115 +139,173 @@ function AnalyticsPage() {
       <div>
         <h1 className="font-display text-2xl font-bold sm:text-3xl">Analytics</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Coste total acumulado:{" "}
-          <span className="font-medium text-foreground">
-            {(data?.totalCost ?? 0).toLocaleString("es-ES", {
-              style: "currency",
-              currency: "EUR",
-            })}
-          </span>
+          Métricas de campañas AI Music Studio de tu cuenta
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map((k) => (
-          <Card key={k.label}>
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {k.label}
-                </p>
-                <k.icon className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <p className="mt-2 font-display text-2xl font-bold">{k.value}</p>
-              {k.hint ? (
-                <p className="mt-0.5 text-xs text-muted-foreground">{k.hint}</p>
-              ) : null}
-            </CardContent>
-          </Card>
-        ))}
+      {/* AI Music Studio metrics */}
+      <div className="space-y-4">
+        <h2 className="font-display text-lg font-semibold">AI Music Studio</h2>
+        {genLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-28 rounded-2xl" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                label: "Canciones generadas",
+                value: (genMetrics?.songsGenerated ?? 0).toLocaleString("es-ES"),
+                icon: Music2,
+              },
+              {
+                label: "Experience Pages",
+                value: (genMetrics?.experiencePagesPublished ?? 0).toLocaleString("es-ES"),
+                icon: Play,
+                hint: `${(genMetrics?.totalPlays ?? 0).toLocaleString("es-ES")} reproducciones`,
+              },
+              {
+                label: "Visitantes únicos",
+                value: (genMetrics?.uniqueVisitors ?? 0).toLocaleString("es-ES"),
+                icon: Users2,
+                hint: `${(genMetrics?.completionCount ?? 0).toLocaleString("es-ES")} escuchas completas`,
+              },
+              {
+                label: "Entregas personalizadas",
+                value: (genMetrics?.personalizedSent ?? 0).toLocaleString("es-ES"),
+                icon: Send,
+                hint: genMetrics?.downloadCount
+                  ? `${genMetrics.downloadCount.toLocaleString("es-ES")} descargas`
+                  : undefined,
+              },
+            ].map((k) => (
+              <Card key={k.label}>
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {k.label}
+                    </p>
+                    <k.icon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <p className="mt-2 font-display text-2xl font-bold">{k.value}</p>
+                  {k.hint ? (
+                    <p className="mt-0.5 text-xs text-muted-foreground">{k.hint}</p>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
-      {noData ? (
-        <EmptyState
-          icon={BarChart3}
-          title="Sin datos de envío todavía"
-          description="Cuando envíes campañas verás aquí las métricas de rendimiento."
-        />
-      ) : (
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          <Card className="min-w-0">
-            <CardHeader>
-              <CardTitle className="font-display text-lg">
-                Rendimiento por campaña
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={barConfig} className="h-80 w-full">
-                <BarChart data={topCampaigns} margin={{ left: -16 }}>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="name"
-                    tickLine={false}
-                    axisLine={false}
-                    interval={0}
-                    angle={-30}
-                    textAnchor="end"
-                    height={70}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="opened" fill="var(--color-opened)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="clicked" fill="var(--color-clicked)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+      <Separator />
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display text-lg">
-                Embudo de conversión
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={funnelConfig} className="mx-auto h-56 w-full">
-                <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent nameKey="stage" />} />
-                  <Pie
-                    data={funnelData}
-                    dataKey="value"
-                    nameKey="stage"
-                    innerRadius={50}
-                    outerRadius={80}
-                  >
-                    {funnelData.map((d) => (
-                      <Cell key={d.stage} fill={d.fill} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ChartContainer>
-              <ul className="mt-2 space-y-1.5 text-sm">
-                {funnelData.map((d) => (
-                  <li key={d.stage} className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ background: d.fill }}
-                      />
-                      {d.stage}
-                    </span>
-                    <span className="font-medium tabular-nums">
-                      {d.value.toLocaleString("es-ES")}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+      {/* Email performance section */}
+      <div className="space-y-4">
+        <h2 className="font-display text-lg font-semibold">Email</h2>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {kpis.map((k) => (
+            <Card key={k.label}>
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {k.label}
+                  </p>
+                  <k.icon className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <p className="mt-2 font-display text-2xl font-bold">{k.value}</p>
+                {k.hint ? (
+                  <p className="mt-0.5 text-xs text-muted-foreground">{k.hint}</p>
+                ) : null}
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      )}
+
+        {noData ? (
+          <EmptyState
+            icon={BarChart3}
+            title="Sin datos de envío todavía"
+            description="Cuando envíes campañas verás aquí las métricas de rendimiento."
+          />
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+            <Card className="min-w-0">
+              <CardHeader>
+                <CardTitle className="font-display text-lg">
+                  Rendimiento por campaña
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={barConfig} className="h-80 w-full">
+                  <BarChart data={topCampaigns} margin={{ left: -16 }}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="name"
+                      tickLine={false}
+                      axisLine={false}
+                      interval={0}
+                      angle={-30}
+                      textAnchor="end"
+                      height={70}
+                      tick={{ fontSize: 11 }}
+                    />
+                    <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="opened" fill="var(--color-opened)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="clicked" fill="var(--color-clicked)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-lg">
+                  Embudo de conversión
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={funnelConfig} className="mx-auto h-56 w-full">
+                  <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent nameKey="stage" />} />
+                    <Pie
+                      data={funnelData}
+                      dataKey="value"
+                      nameKey="stage"
+                      innerRadius={50}
+                      outerRadius={80}
+                    >
+                      {funnelData.map((d) => (
+                        <Cell key={d.stage} fill={d.fill} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
+                <ul className="mt-2 space-y-1.5 text-sm">
+                  {funnelData.map((d) => (
+                    <li key={d.stage} className="flex items-center justify-between">
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ background: d.fill }}
+                        />
+                        {d.stage}
+                      </span>
+                      <span className="font-medium tabular-nums">
+                        {d.value.toLocaleString("es-ES")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
