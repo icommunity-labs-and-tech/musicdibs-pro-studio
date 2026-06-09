@@ -53,7 +53,7 @@ import {
   useRetryMusic,
   useStartPersonalizedCampaign,
   useSendPersonalizedCampaign,
-  usePersonalizedDeliveries,
+  usePersonalizedDeliveriesByCampaign,
 } from "@/hooks/use-generation";
 import { GenerateCampaignDialog } from "@/components/app/generate-campaign-dialog";
 
