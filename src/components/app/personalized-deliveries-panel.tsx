@@ -1,8 +1,10 @@
-import { ExternalLink, Mail, MailCheck, Music2, XCircle } from "lucide-react";
+import { ExternalLink, Mail, MailCheck, Music2, RotateCcw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { buildExperienceUrl } from "@/lib/experience";
+import { useRetryDelivery } from "@/hooks/useRetryDelivery";
 import type { PersonalizedDelivery } from "@/hooks/use-generation";
 
 const STATUS_META: Record<
