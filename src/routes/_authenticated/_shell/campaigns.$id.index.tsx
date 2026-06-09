@@ -388,6 +388,14 @@ function CampaignDetailPage() {
         />
       ) : null}
 
+      {/* Entregas personalizadas */}
+      {isPersonalized && deliveriesEnabled ? (
+        <PersonalizedDeliveriesPanel
+          deliveries={deliveries}
+          isLoading={deliveriesLoading}
+        />
+      ) : null}
+
       {/* Progreso — single song (sin cambios) */}
       {!isPersonalized && hasGeneration ? (
         <CampaignGenerationPanel
