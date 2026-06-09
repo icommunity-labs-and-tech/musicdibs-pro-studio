@@ -11,9 +11,10 @@ import {
 } from "recharts";
 import {
   BarChart3,
+  CheckCircle2,
+  Download,
   MailOpen,
   MousePointerClick,
-  Music2,
   Play,
   Send,
   UserMinus,
@@ -134,77 +135,46 @@ function AnalyticsPage() {
     clicked: c.clicked,
   }));
 
+  const engagement: {
+    label: string;
+    value: string;
+    hint?: string;
+    icon: LucideIcon;
+  }[] = [
+    {
+      label: "Reproducciones",
+      value: (genMetrics?.totalPlays ?? 0).toLocaleString("es-ES"),
+      icon: Play,
+    },
+    {
+      label: "Oyentes únicos",
+      value: (genMetrics?.uniqueVisitors ?? 0).toLocaleString("es-ES"),
+      icon: Users2,
+    },
+    {
+      label: "Escuchas completas",
+      value: (genMetrics?.completionCount ?? 0).toLocaleString("es-ES"),
+      icon: CheckCircle2,
+    },
+    {
+      label: "Descargas",
+      value: (genMetrics?.downloadCount ?? 0).toLocaleString("es-ES"),
+      icon: Download,
+    },
+  ];
+
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
       <div>
         <h1 className="font-display text-2xl font-bold sm:text-3xl">Analytics</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Métricas de campañas AI Music Studio de tu cuenta
+          Rendimiento de tus campañas y de la audiencia
         </p>
       </div>
 
-      {/* AI Music Studio metrics */}
+      {/* Campaign performance section */}
       <div className="space-y-4">
-        <h2 className="font-display text-lg font-semibold">AI Music Studio</h2>
-        {genLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-28 rounded-2xl" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                label: "Canciones generadas",
-                value: (genMetrics?.songsGenerated ?? 0).toLocaleString("es-ES"),
-                icon: Music2,
-              },
-              {
-                label: "Experience Pages",
-                value: (genMetrics?.experiencePagesPublished ?? 0).toLocaleString("es-ES"),
-                icon: Play,
-                hint: `${(genMetrics?.totalPlays ?? 0).toLocaleString("es-ES")} reproducciones`,
-              },
-              {
-                label: "Visitantes únicos",
-                value: (genMetrics?.uniqueVisitors ?? 0).toLocaleString("es-ES"),
-                icon: Users2,
-                hint: `${(genMetrics?.completionCount ?? 0).toLocaleString("es-ES")} escuchas completas`,
-              },
-              {
-                label: "Entregas personalizadas",
-                value: (genMetrics?.personalizedSent ?? 0).toLocaleString("es-ES"),
-                icon: Send,
-                hint: genMetrics?.downloadCount
-                  ? `${genMetrics.downloadCount.toLocaleString("es-ES")} descargas`
-                  : undefined,
-              },
-            ].map((k) => (
-              <Card key={k.label}>
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      {k.label}
-                    </p>
-                    <k.icon className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                  <p className="mt-2 font-display text-2xl font-bold">{k.value}</p>
-                  {k.hint ? (
-                    <p className="mt-0.5 text-xs text-muted-foreground">{k.hint}</p>
-                  ) : null}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <Separator />
-
-      {/* Email performance section */}
-      <div className="space-y-4">
-        <h2 className="font-display text-lg font-semibold">Email</h2>
+        <h2 className="font-display text-lg font-semibold">Campañas</h2>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {kpis.map((k) => (
@@ -303,6 +273,44 @@ function AnalyticsPage() {
                 </ul>
               </CardContent>
             </Card>
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
+      {/* Audience engagement section */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="font-display text-lg font-semibold">Engagement de la audiencia</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Cómo interactúan tus contactos con la música de tus campañas
+          </p>
+        </div>
+        {genLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-28 rounded-2xl" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {engagement.map((k) => (
+              <Card key={k.label}>
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {k.label}
+                    </p>
+                    <k.icon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <p className="mt-2 font-display text-2xl font-bold">{k.value}</p>
+                  {k.hint ? (
+                    <p className="mt-0.5 text-xs text-muted-foreground">{k.hint}</p>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
       </div>
