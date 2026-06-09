@@ -352,24 +352,6 @@ function CampaignDetailPage() {
         </div>
       ) : null}
 
-      {/* Acción — lista para enviar (solo personalizadas) */}
-      {isReadyToSend && isPersonalized ? (
-        <div className="flex">
-          <Button
-            className="sm:w-auto"
-            onClick={handleSendPersonalized}
-            disabled={sendPersonalized.isPending}
-          >
-            {sendPersonalized.isPending ? (
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="mr-1.5 h-4 w-4" />
-            )}
-            Enviar canciones personalizadas
-          </Button>
-        </div>
-      ) : null}
-
       {/* Confirmación de envío (solo personalizadas) */}
       {isSent && isPersonalized ? (
         <Card>
