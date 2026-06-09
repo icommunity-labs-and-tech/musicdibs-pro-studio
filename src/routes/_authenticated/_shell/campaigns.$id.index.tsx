@@ -140,6 +140,18 @@ function CampaignDetailPage() {
     };
   }, [data, config, audiences, connections]);
 
+  // Deliveries query must run on every render (Rules of Hooks), so compute its
+  // enabled flag defensively from possibly-undefined data and keep it above the
+  // early returns below.
+  const deliveriesEnabled =
+    (configSummary?.generationMode === "personalized_song" ||
+      data?.campaign.type === "personalized") &&
+    !!data?.campaign.status &&
+    ["generating", "ready_to_send", "sent"].includes(data.campaign.status);
+
+  const { data: deliveries = [], isLoading: deliveriesLoading } =
+    usePersonalizedDeliveriesByCampaign(id, deliveriesEnabled);
+
   if (isLoading) return <DetailSkeleton />;
 
   if (isError || !data) {
