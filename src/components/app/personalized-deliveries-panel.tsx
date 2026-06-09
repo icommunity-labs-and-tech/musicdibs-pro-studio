@@ -106,17 +106,13 @@ export function PersonalizedDeliveriesPanel({
 
                 {/* Right side: status + icons */}
                 <div className="flex shrink-0 items-center gap-2">
-                  {emailSent ? (
-                    <MailCheck
-                      className="h-4 w-4 text-success"
-                      title="Email enviado"
-                    />
-                  ) : (
-                    <Mail
-                      className="h-4 w-4 text-muted-foreground"
-                      title="Email pendiente"
-                    />
-                  )}
+                  <span title={emailSent ? "Email enviado" : "Email pendiente"}>
+                    {emailSent ? (
+                      <MailCheck className="h-4 w-4 text-success" />
+                    ) : (
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </span>
                   {expUrl ? (
                     <a
                       href={expUrl}
@@ -130,7 +126,10 @@ export function PersonalizedDeliveriesPanel({
                   ) : (
                     <Music2 className="h-4 w-4 text-muted-foreground/40" />
                   )}
-                  <Badge variant="outline" className={cn("text-xs", meta.className)}>
+                  <Badge
+                    variant="outline"
+                    className={cn("text-xs", meta.className)}
+                  >
                     {meta.label}
                   </Badge>
                 </div>
