@@ -87,6 +87,33 @@ export function useAdminChurnSignals() {
   });
 }
 
+// ── Suno / KIE usage per tenant ──────────────────────────────────────────────
+
+export interface SunoUsage {
+  tenant_id: string;
+  tenant_name: string;
+  plan: string;
+  lyrics_ops_total: number;
+  music_ops_total: number;
+  lyrics_ops_month: number;
+  music_ops_month: number;
+}
+
+export function useSunoUsage() {
+  return useQuery({
+    queryKey: ["admin-suno-usage"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tenant_suno_usage")
+        .select("*")
+        .order("music_ops_total", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as SunoUsage[];
+    },
+    staleTime: 30_000,
+  });
+}
+
 // ── Single tenant detail ───────────────────────────────────────────────────────
 
 export function useAdminTenantDetail(tenantId: string) {
