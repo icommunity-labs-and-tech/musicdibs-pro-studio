@@ -135,21 +135,26 @@ export function CampaignBuilder({
     initialState ?? EMPTY_BUILDER_STATE,
   );
 
-  // On mount, refresh provider audiences (e.g. MailerLite groups) so step 2
-  // always shows the latest groups. Runs once per connected provider.
+  // On first load, sync provider audiences ONLY when none are cached yet, so
+  // step 2 has groups to show. If audiences already exist we skip the network
+  // sync (the user can refresh manually) — this avoids the spinner appearing
+  // to spin every time the step is opened.
   const syncedRef = useRef(false);
   useEffect(() => {
     if (syncedRef.current) return;
-    const active = (connections ?? []).filter(
-      (c) => c.status === "connected",
-    );
+    if (audiencesLoading) return; // wait for the cached audiences to load
+    if ((audiences?.length ?? 0) > 0) {
+      syncedRef.current = true; // already have groups — no auto-sync
+      return;
+    }
+    const active = (connections ?? []).filter((c) => c.status === "connected");
     if (active.length === 0) return;
     syncedRef.current = true;
     active.forEach((c) => {
       syncAudiences.mutate(c.provider_type);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connections]);
+  }, [connections, audiences, audiencesLoading]);
 
   const isSaving = createCampaign.isPending || updateCampaign.isPending;
 
