@@ -209,7 +209,7 @@ Deno.serve(async (req: Request) => {
         tenant_id:       tenantId,
         campaign_id:     campaignId,
         status:          "processing",
-        generation_mode: "personalized",
+        generation_mode: "personalized_song",
         generation_round: 1,
         total_jobs:      contacts.length,
         started_at:      new Date().toISOString(),
