@@ -10,6 +10,7 @@ import {
   type DraftCampaignInput,
 } from "./MailerLiteCampaignProvider.ts"
 import { ResendCampaignProvider } from "./ResendCampaignProvider.ts"
+import { loadConfig, startLyricsForJob } from "../_shared/orchestrator.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,6 +28,15 @@ const AI_STUDIO = "Powered by AI Music Studio"
 
 type AudienceType = "list" | "segment" | "automation"
 type CampaignProviderType = "mailerlite" | "resend"
+
+// ── Personalise lyricsGoal with {first_name} ────────────────────────────────
+function personalizeGoal(template: string | null, firstName: string): string {
+  const base = template ?? "Crea una canción especial";
+  if (base.includes("{first_name}")) {
+    return base.replace(/\{first_name\}/g, firstName);
+  }
+  return `${base} para ${firstName}`;
+}
 
 const PROVIDER_LABEL: Record<CampaignProviderType, string> = {
   mailerlite: "MailerLite",
@@ -774,6 +784,73 @@ Deno.serve(async (req: Request) => {
       if (updErr) throw updErr
 
       return json({ success: true, campaign: updated })
+    }
+
+    // ── retry_delivery ─────────────────────────────────────────────────────
+    if (action === "retry_delivery") {
+      const deliveryId = body.delivery_id as string | undefined;
+      const retryCampaignId = body.campaign_id as string | undefined;
+      if (!deliveryId || !retryCampaignId) {
+        return json({ error: "delivery_id y campaign_id requeridos" }, 400);
+      }
+
+      // Load delivery (tenant-scoped)
+      const { data: delivery } = await supabase
+        .from("personalized_deliveries")
+        .select("id, campaign_id, tenant_id, generation_job_id, external_contact_id, first_name, status")
+        .eq("id", deliveryId)
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+      if (!delivery) return json({ error: "Delivery no encontrado" }, 404);
+      if (delivery.status !== "failed") {
+        return json({ error: `Solo se pueden reintentar deliveries fallidos (estado actual: ${delivery.status})` }, 409);
+      }
+
+      // Load generation config for this campaign
+      const retryConfig = await loadConfig(supabase, retryCampaignId);
+
+      // Create a new generation job with generation_batch_id = null (retry job)
+      const { data: newJob, error: jobErr } = await supabase
+        .from("generation_jobs")
+        .insert({
+          tenant_id:           tenantId,
+          campaign_id:         retryCampaignId,
+          generation_batch_id: null,          // ← not part of original batch
+          status:              "processing",
+          provider:            "ai-music-studio",
+          generation_round:    1,
+          lyrics_status:       "pending",
+          music_status:        "pending",
+        })
+        .select("id, campaign_id, tenant_id, generation_batch_id, started_at")
+        .single();
+      if (jobErr) throw jobErr;
+
+      // Reset delivery to generating with new job
+      await supabase
+        .from("personalized_deliveries")
+        .update({
+          generation_job_id: newJob.id,
+          status:            "generating",
+          experience_token:  null,
+          experience_page_id: null,
+          error_message:     null,
+          email_sent_at:     null,
+          updated_at:        new Date().toISOString(),
+        })
+        .eq("id", deliveryId);
+
+      // Personalise lyrics goal for this contact
+      const personalizedConfig = {
+        ...retryConfig,
+        lyricsGoal: personalizeGoal(retryConfig.lyricsGoal, delivery.first_name ?? ""),
+      };
+
+      // Fire KIE lyrics pipeline (async — returns immediately, callback handles rest)
+      await startLyricsForJob(supabase, newJob, personalizedConfig);
+
+      console.log("[retry_delivery] Started retry job", { deliveryId, newJobId: newJob.id, firstName: delivery.first_name });
+      return json({ success: true, job_id: newJob.id });
     }
 
     return json({ error: `Unknown action: ${action}` }, 400)

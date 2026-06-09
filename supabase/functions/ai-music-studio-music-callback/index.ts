@@ -225,44 +225,53 @@ Deno.serve(async (req: Request) => {
         })
         .eq("id", delivery.id);
 
-      // Atomic batch counter (returns completed_jobs, total_jobs after increment)
-      const { data: batchResult, error: rpcErr } = await supabase.rpc(
-        "increment_batch_completed_jobs",
-        { p_batch_id: job.generation_batch_id },
-      );
-      if (rpcErr) throw rpcErr;
+      // Atomic batch counter — only for original batch jobs (retry jobs have null batch_id)
+      if (job.generation_batch_id) {
+        const { data: batchResult, error: rpcErr } = await supabase.rpc(
+          "increment_batch_completed_jobs",
+          { p_batch_id: job.generation_batch_id },
+        );
+        if (rpcErr) throw rpcErr;
 
-      const completed = batchResult?.[0]?.completed_jobs ?? 0;
-      const total     = batchResult?.[0]?.total_jobs ?? 0;
+        const completed = batchResult?.[0]?.completed_jobs ?? 0;
+        const total     = batchResult?.[0]?.total_jobs ?? 0;
 
-      log("music_cb", "personalized_job_done", {
-        jobId,
-        deliveryId: delivery.id,
-        pageId: page.id,
-        completed,
-        total,
-      });
-
-      // When every job in the batch has finished → campaign ready to send
-      if (completed >= total && total > 0) {
-        await supabase
-          .from("campaigns")
-          .update({ status: "ready_to_send", updated_at: new Date().toISOString() })
-          .eq("id", job.campaign_id);
-
-        await supabase
-          .from("generation_batches")
-          .update({
-            status: "completed",
-            completed_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", job.generation_batch_id);
-
-        log("music_cb", "personalized_batch_complete", {
-          batchId: job.generation_batch_id,
-          campaignId: job.campaign_id,
+        log("music_cb", "personalized_job_done", {
+          jobId,
+          deliveryId: delivery.id,
+          pageId: page.id,
+          completed,
           total,
+        });
+
+        // When every job in the batch has finished → campaign ready to send
+        if (completed >= total && total > 0) {
+          await supabase
+            .from("campaigns")
+            .update({ status: "ready_to_send", updated_at: new Date().toISOString() })
+            .eq("id", job.campaign_id);
+
+          await supabase
+            .from("generation_batches")
+            .update({
+              status: "completed",
+              completed_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", job.generation_batch_id);
+
+          log("music_cb", "personalized_batch_complete", {
+            batchId: job.generation_batch_id,
+            campaignId: job.campaign_id,
+            total,
+          });
+        }
+      } else {
+        // Retry job (no batch) — just log completion
+        log("music_cb", "personalized_retry_job_done", {
+          jobId,
+          deliveryId: delivery.id,
+          pageId: page.id,
         });
       }
 
