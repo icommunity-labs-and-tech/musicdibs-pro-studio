@@ -15,6 +15,7 @@ import { CampaignStatusBadge } from "@/components/app/campaign-status-badge";
 import { CampaignGenerationPanel } from "@/components/app/campaign-generation-panel";
 import { CampaignReviewPanel } from "@/components/app/campaign-review-panel";
 import { ExperiencePanel } from "@/components/app/experience-panel";
+import { PersonalizedDeliveriesPanel } from "@/components/app/personalized-deliveries-panel";
 import { PersonalizedProgressPanel } from "@/components/app/personalized-progress-panel";
 import { useAuth } from "@/components/auth/auth-provider";
 
@@ -52,7 +53,7 @@ import {
   useRetryMusic,
   useStartPersonalizedCampaign,
   useSendPersonalizedCampaign,
-  usePersonalizedDeliveries,
+  usePersonalizedDeliveriesByCampaign,
 } from "@/hooks/use-generation";
 import { GenerateCampaignDialog } from "@/components/app/generate-campaign-dialog";
 
@@ -90,7 +91,6 @@ function CampaignDetailPage() {
   const [generateOpen, setGenerateOpen] = useState(false);
 
   useCampaignGenerationRealtime(id);
-  usePersonalizedDeliveries(id);
 
 
   // Single source of truth: same mapping the Builder Review uses.
@@ -185,6 +185,13 @@ function CampaignDetailPage() {
 
   const isReadyToSend = isCampaignReadyToSend(campaign.status);
   const isSent = campaign.status === "sent";
+
+  const deliveriesEnabled =
+    isPersonalized &&
+    ["generating", "ready_to_send", "sent"].includes(campaign.status);
+
+  const { data: deliveries = [], isLoading: deliveriesLoading } =
+    usePersonalizedDeliveriesByCampaign(id, deliveriesEnabled);
 
 
   // Confirmation modal inputs. Single song only in this sprint.
@@ -378,6 +385,14 @@ function CampaignDetailPage() {
         <PersonalizedProgressPanel
           batch={batch ?? null}
           status={campaign.status}
+        />
+      ) : null}
+
+      {/* Entregas personalizadas */}
+      {isPersonalized && deliveriesEnabled ? (
+        <PersonalizedDeliveriesPanel
+          deliveries={deliveries}
+          isLoading={deliveriesLoading}
         />
       ) : null}
 

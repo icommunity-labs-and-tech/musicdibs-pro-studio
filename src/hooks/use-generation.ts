@@ -264,9 +264,10 @@ export interface PersonalizedDelivery {
   id: string;
   first_name: string | null;
   external_contact_id: string;
-  status: string;
+  status: string; // "pending" | "ready" | "sent" | "failed"
   experience_token: string | null;
-  email_sent: boolean;
+  email_sent_at: string | null;
+  error_message: string | null;
 }
 
 export function usePersonalizedDeliveries(campaignId: string) {
@@ -285,27 +286,37 @@ export function usePersonalizedDeliveries(campaignId: string) {
       if (!batch) return [];
       const { data, error } = await supabase
         .from("personalized_deliveries")
-        .select("id, first_name, external_contact_id, status, experience_token, email_sent_at")
+        .select(
+          "id, first_name, external_contact_id, status, experience_token, email_sent_at, error_message",
+        )
         .eq("generation_batch_id", batch.id)
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return ((data ?? []) as Array<{
-        id: string;
-        first_name: string | null;
-        external_contact_id: string;
-        status: string;
-        experience_token: string | null;
-        email_sent_at: string | null;
-      }>).map((d) => ({
-        id: d.id,
-        first_name: d.first_name,
-        external_contact_id: d.external_contact_id,
-        status: d.status,
-        experience_token: d.experience_token,
-        email_sent: Boolean(d.email_sent_at),
-      }));
+      return (data ?? []) as PersonalizedDelivery[];
     },
     staleTime: 10_000,
     enabled: Boolean(campaignId),
+  });
+}
+
+export function usePersonalizedDeliveriesByCampaign(
+  campaignId: string,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ["personalized-deliveries", campaignId],
+    queryFn: async (): Promise<PersonalizedDelivery[]> => {
+      const { data, error } = await supabase
+        .from("personalized_deliveries")
+        .select(
+          "id, first_name, external_contact_id, status, experience_token, email_sent_at, error_message",
+        )
+        .eq("campaign_id", campaignId)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as PersonalizedDelivery[];
+    },
+    staleTime: 10_000,
+    enabled: enabled && Boolean(campaignId),
   });
 }
