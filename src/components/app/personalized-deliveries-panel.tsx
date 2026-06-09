@@ -37,6 +37,8 @@ export function PersonalizedDeliveriesPanel({
   isLoading,
   campaignId,
 }: Props) {
+  const { retry, retrying } = useRetryDelivery(campaignId);
+
   if (isLoading) return null;
   if (deliveries.length === 0) return null;
 
