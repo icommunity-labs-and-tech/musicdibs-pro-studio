@@ -403,11 +403,14 @@ function AdminPage() {
       <Tabs defaultValue="tenants">
         <TabsList>
           <TabsTrigger value="tenants">Tenants</TabsTrigger>
+          <TabsTrigger value="costs">Costes API</TabsTrigger>
           <TabsTrigger value="config">Configuración</TabsTrigger>
         </TabsList>
         <TabsContent value="tenants" className="mt-4"><TenantsTab /></TabsContent>
+        <TabsContent value="costs" className="mt-4"><CostsTab /></TabsContent>
         <TabsContent value="config" className="mt-4"><ConfigTab /></TabsContent>
       </Tabs>
+
     </div>
   );
 }
