@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Loader2,
   Pencil,
-  Send,
   Sparkles,
   Wand2,
 } from "lucide-react";
