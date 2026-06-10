@@ -78,7 +78,14 @@ function PlayPage() {
   }, [data, token]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/40">
+    <div
+      className="min-h-screen bg-gradient-to-b from-background to-muted/40"
+      style={
+        data?.branding?.background_color
+          ? { background: data.branding.background_color }
+          : undefined
+      }
+    >
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col items-center justify-center px-4 py-5">
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Cargando experiencia…</p>
@@ -106,6 +113,7 @@ function ExperienceView({
   const [duration, setDuration] = useState(data.duration_seconds ?? 0);
 
   const primary = data.branding?.primary_color || undefined;
+  const secondary = data.branding?.secondary_color || undefined;
   const audioUrl = data.audio_url || "";
 
   useEffect(() => {
@@ -188,9 +196,16 @@ function ExperienceView({
       {data.branding?.logo_url ? (
         <img
           src={data.branding.logo_url}
-          alt="Logo"
+          alt={data.branding?.brand_name || "Logo"}
           className="h-8 w-auto object-contain"
         />
+      ) : data.branding?.brand_name ? (
+        <p
+          className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+          style={{ color: primary }}
+        >
+          {data.branding.brand_name}
+        </p>
       ) : null}
 
       {/* Cover or animated warm gradient */}
@@ -206,13 +221,19 @@ function ExperienceView({
           role="img"
           aria-label="Portada musical"
         >
-          <Music4 className="h-10 w-10 text-white/80" />
+          <Music4
+            className="h-10 w-10 text-white/80"
+            style={{ color: secondary }}
+          />
         </div>
       )}
 
       {/* Title + subtitle */}
       <div className="space-y-1 text-center">
-        <h1 className="font-display text-2xl font-bold leading-tight sm:text-3xl">
+        <h1
+          className="font-display text-2xl font-bold leading-tight sm:text-3xl"
+          style={{ color: secondary }}
+        >
           {data.title}
         </h1>
         <p className="whitespace-pre-line text-sm text-muted-foreground">
@@ -309,7 +330,7 @@ function ExperienceView({
         </Button>
       ) : null}
 
-      <Footer />
+      {!data.branding?.hide_powered_by && <Footer />}
     </div>
   );
 }
