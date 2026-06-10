@@ -229,23 +229,49 @@ export function PersonalizedDistributionCard({
 
         {/* State C — sent */}
         {isSent ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Metric
-              label="Emails enviados"
-              value={sentCount.toLocaleString("es-ES")}
-            />
-            <Metric
-              label="Fallidos"
-              value={failedCount.toLocaleString("es-ES")}
-            />
-            <Metric label="Tasa de éxito" value={`${successRate}%`} />
-            <Metric
-              label="Total contactos"
-              value={total.toLocaleString("es-ES")}
-            />
+          <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Metric
+                label="Emails enviados"
+                value={sentCount.toLocaleString("es-ES")}
+              />
+              <Metric
+                label="Fallidos"
+                value={failedCount.toLocaleString("es-ES")}
+              />
+              <Metric label="Tasa de éxito" value={`${successRate}%`} />
+              <Metric
+                label="Total contactos"
+                value={total.toLocaleString("es-ES")}
+              />
+            </div>
+
+            {/* Pending deliveries that were not part of the first batch */}
+            {pendingDeliveries.length > 0 ? (
+              <div className="space-y-3 rounded-xl border border-amber-300/60 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  Hay {pendingDeliveries.length} entrega(s) lista(s) que no se
+                  enviaron en el primer lote (p. ej. generación de fallback que
+                  terminó tarde).
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setPendingStep(1)}
+                  disabled={isSending}
+                >
+                  {isSending ? (
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-1.5 h-4 w-4" />
+                  )}
+                  Enviar pendientes ({pendingDeliveries.length})
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </CardContent>
+
 
       {/* Send — step 1: irreversible warning */}
       <Dialog
