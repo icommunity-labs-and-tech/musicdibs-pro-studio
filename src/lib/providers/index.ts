@@ -34,7 +34,8 @@ export const PROVIDERS: ProviderMeta[] = [
   {
     type: "brevo",
     label: "Brevo",
-    description: "Sincroniza listas, segmentos y automatizaciones desde Brevo.",
+    description:
+      "Sincroniza audiencias y recibe estadísticas vía webhooks. Las estadísticas en tiempo real requieren plan Enterprise.",
     logo: brevoLogo,
   },
   {
