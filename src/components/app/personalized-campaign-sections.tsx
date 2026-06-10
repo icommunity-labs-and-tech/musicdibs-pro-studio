@@ -167,6 +167,12 @@ export function PersonalizedDistributionCard({
 }) {
   const [sendStep, setSendStep] = useState<0 | 1 | 2>(0);
   const [pendingStep, setPendingStep] = useState<0 | 1 | 2>(0);
+  const [approved, setApproved] = useState(false);
+
+  // Reset approval gate whenever we (re)enter the ready_to_send state.
+  useEffect(() => {
+    if (status !== "ready_to_send") setApproved(false);
+  }, [status]);
 
   const readyCount = deliveries.filter((d) => d.status === "ready").length;
   const sentCount = deliveries.filter((d) => d.status === "sent").length;
