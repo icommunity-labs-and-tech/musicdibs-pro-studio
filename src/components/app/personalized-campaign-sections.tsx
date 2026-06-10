@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
-import { BarChart2, Loader2, Save, Send, Share2 } from "lucide-react";
+import {
+  BarChart2,
+  ExternalLink,
+  Loader2,
+  Save,
+  Send,
+  Share2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { buildExperienceUrl } from "@/lib/experience/ExperienceService";
 import {
   Dialog,
   DialogContent,
