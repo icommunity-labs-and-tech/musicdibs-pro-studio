@@ -190,11 +190,17 @@ function ProviderCard({
         {isConnected ? (
           <ProviderPlanNotice provider={provider.type} variant="compact" />
         ) : null}
+        {showIncomingPlanNotice ? (
+          <IncomingWebhookPlanNotice provider={provider.type as "brevo" | "mailerlite"} />
+        ) : null}
         {showWebhookSetup ? (
           <ResendWebhookSetup
             tenantId={tenantId}
             onConfiguredChange={setWebhookConfigured}
           />
+        ) : null}
+        {showBrevoWebhookSetup ? (
+          <BrevoWebhookSetup tenantId={tenantId} />
         ) : null}
         <p className="text-xs text-muted-foreground">
           {connection?.last_sync_at
