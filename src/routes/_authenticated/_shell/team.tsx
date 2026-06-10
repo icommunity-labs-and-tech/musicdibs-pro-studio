@@ -128,7 +128,15 @@ function TeamPage() {
           ) : (members.data?.length ?? 0) === 0 ? (
             <EmptyState icon={Users2} title="Sin miembros todavía" />
           ) : (
-            members.data!.map((m) => <MemberRow key={m.id} member={m} />)
+            members.data!.map((m) => (
+              <MemberRow
+                key={m.id}
+                member={m}
+                profile={profile}
+                isAdmin={isAdmin}
+                tenantId={tenantId}
+              />
+            ))
           )}
         </CardContent>
       </Card>
