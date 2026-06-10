@@ -13,8 +13,12 @@ export type ExperienceStatus = "draft" | "published" | "archived";
 export interface ExperienceBranding {
   logo_url?: string | null;
   primary_color?: string | null;
+  secondary_color?: string | null;
+  background_color?: string | null;
+  brand_name?: string | null;
   cta_text?: string | null;
   cta_url?: string | null;
+  hide_powered_by?: boolean | null;
 }
 
 /** A row of experience_pages (authenticated, tenant-scoped). */
