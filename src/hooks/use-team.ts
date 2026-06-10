@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 
 import { supabase } from "@/integrations/supabase/client";
+import { removeTeamMember } from "@/lib/team.functions";
 
 export interface TeamMember {
   id: string;
@@ -109,6 +111,22 @@ export function useCancelInvitation(tenantId: string | undefined) {
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ["team-invitations", tenantId],
+      });
+    },
+  });
+}
+
+export function useRemoveMember(tenantId: string | undefined) {
+  const queryClient = useQueryClient();
+  const removeFn = useServerFn(removeTeamMember);
+  return useMutation({
+    mutationFn: async (memberId: string) => {
+      const res = await removeFn({ data: { memberId } });
+      return res as { success: boolean };
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["team-members", tenantId],
       });
     },
   });
