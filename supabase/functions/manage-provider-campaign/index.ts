@@ -1236,7 +1236,10 @@ Deno.serve(async (req: Request) => {
         .eq("tenant_id", tenantId)
         .maybeSingle()
       if (!campaign) return json({ error: "Campa\u00f1a no encontrada" }, 404)
-      if (campaign.status !== "ready_to_send") {
+      // Permitimos relanzar el env\u00edo cuando la campa\u00f1a ya est\u00e1 'sent': puede
+      // haber entregas que pasaron a 'ready' despu\u00e9s del primer env\u00edo (p.ej.
+      // generaci\u00f3n de fallback que termin\u00f3 tarde) y se quedar\u00edan sin enviar.
+      if (campaign.status !== "ready_to_send" && campaign.status !== "sent") {
         return json({ error: `La campa\u00f1a no est\u00e1 lista para enviar (estado actual: ${campaign.status})` }, 400)
       }
 
@@ -1247,7 +1250,7 @@ Deno.serve(async (req: Request) => {
         .eq("tenant_id", tenantId)
         .eq("status", "ready")
       if (!deliveries || deliveries.length === 0) {
-        return json({ error: "No hay entregas en estado 'ready'. Espera a que la generaci\u00f3n termine." }, 400)
+        return json({ error: "No hay entregas pendientes de env\u00edo en estado 'ready'." }, 400)
       }
 
       const { data: audience } = await supabase
@@ -1347,12 +1350,14 @@ Deno.serve(async (req: Request) => {
         }
       }
 
-      await supabase.from("campaigns").update({ status: "sent", sent_at: now, updated_at: now }).eq("id", campaignId)
+      const campaignUpdate: Record<string, unknown> = { status: "sent", updated_at: now }
+      if (campaign.status !== "sent") campaignUpdate.sent_at = now
+      await supabase.from("campaigns").update(campaignUpdate).eq("id", campaignId)
 
       try {
         await supabase.from("notifications").insert({
           tenant_id: tenantId, type: "campaign_sent",
-          title: "Campa\u00f1a personalizada enviada",
+          title: campaign.status === "sent" ? "Env\u00edo de pendientes completado" : "Campa\u00f1a personalizada enviada",
           body: `"${campaignTitle}" \u2014 ${sent} emails enviados${failed > 0 ? `, ${failed} fallidos` : ""}.`,
           link: `/campaigns/${campaignId}`,
         })
