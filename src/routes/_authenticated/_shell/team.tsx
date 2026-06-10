@@ -55,6 +55,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCancelInvitation,
   useInviteMember,
+  useRemoveMember,
   useTeamInvitations,
   useTeamMembers,
   type TeamInvitation,
