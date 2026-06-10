@@ -157,6 +157,7 @@ export function PersonalizedDistributionCard({
   isSending: boolean;
 }) {
   const [sendStep, setSendStep] = useState<0 | 1 | 2>(0);
+  const [pendingStep, setPendingStep] = useState<0 | 1 | 2>(0);
 
   const readyCount = deliveries.filter((d) => d.status === "ready").length;
   const sentCount = deliveries.filter((d) => d.status === "sent").length;
@@ -168,8 +169,19 @@ export function PersonalizedDistributionCard({
   const isReadyToSend = status === "ready_to_send";
   const isSent = status === "sent";
 
+  // Deliveries that became ready after the first send batch (e.g. late
+  // fallback generations) and were therefore never sent.
+  const pendingDeliveries = isSent
+    ? deliveries.filter((d) => d.status === "ready")
+    : [];
+
   const handleSend = () => {
     setSendStep(0);
+    onSend();
+  };
+
+  const handleSendPending = () => {
+    setPendingStep(0);
     onSend();
   };
 
@@ -217,23 +229,49 @@ export function PersonalizedDistributionCard({
 
         {/* State C — sent */}
         {isSent ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Metric
-              label="Emails enviados"
-              value={sentCount.toLocaleString("es-ES")}
-            />
-            <Metric
-              label="Fallidos"
-              value={failedCount.toLocaleString("es-ES")}
-            />
-            <Metric label="Tasa de éxito" value={`${successRate}%`} />
-            <Metric
-              label="Total contactos"
-              value={total.toLocaleString("es-ES")}
-            />
+          <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Metric
+                label="Emails enviados"
+                value={sentCount.toLocaleString("es-ES")}
+              />
+              <Metric
+                label="Fallidos"
+                value={failedCount.toLocaleString("es-ES")}
+              />
+              <Metric label="Tasa de éxito" value={`${successRate}%`} />
+              <Metric
+                label="Total contactos"
+                value={total.toLocaleString("es-ES")}
+              />
+            </div>
+
+            {/* Pending deliveries that were not part of the first batch */}
+            {pendingDeliveries.length > 0 ? (
+              <div className="space-y-3 rounded-xl border border-amber-300/60 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  Hay {pendingDeliveries.length} entrega(s) lista(s) que no se
+                  enviaron en el primer lote (p. ej. generación de fallback que
+                  terminó tarde).
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => setPendingStep(1)}
+                  disabled={isSending}
+                >
+                  {isSending ? (
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-1.5 h-4 w-4" />
+                  )}
+                  Enviar pendientes ({pendingDeliveries.length})
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </CardContent>
+
 
       {/* Send — step 1: irreversible warning */}
       <Dialog
@@ -302,7 +340,91 @@ export function PersonalizedDistributionCard({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Send pending — step 1: recipient list */}
+      <Dialog
+        open={pendingStep === 1}
+        onOpenChange={(o) => {
+          if (!o) setPendingStep(0);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enviar entregas pendientes</DialogTitle>
+            <DialogDescription>
+              Se enviará la canción a los {pendingDeliveries.length}{" "}
+              destinatario(s) que quedaron listos después del primer envío.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-64 space-y-1 overflow-y-auto rounded-lg border p-2">
+            {pendingDeliveries.map((d) => (
+              <div
+                key={d.id}
+                className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm"
+              >
+                <span className="truncate">
+                  {d.first_name?.trim() || "Anónimo"}
+                </span>
+                <Badge variant="outline" className="shrink-0">
+                  Lista
+                </Badge>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingStep(0)}>
+              Cancelar
+            </Button>
+            <Button
+              className="bg-gold text-night-900 hover:bg-gold-dark"
+              onClick={() => setPendingStep(2)}
+            >
+              Continuar →
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send pending — step 2: final confirmation */}
+      <Dialog
+        open={pendingStep === 2}
+        onOpenChange={(o) => {
+          if (!o && !isSending) setPendingStep(0);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Confirmas el envío?</DialogTitle>
+            <DialogDescription>
+              Una vez enviadas, las canciones no podrán cancelarse ni
+              modificarse.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setPendingStep(0)}
+              disabled={isSending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleSendPending}
+              disabled={isSending}
+            >
+              {isSending ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="mr-1.5 h-4 w-4" />
+              )}
+              Enviar ahora
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
+
   );
 }
 
