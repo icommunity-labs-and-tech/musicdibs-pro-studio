@@ -261,6 +261,12 @@ export function useSendPersonalizedCampaign() {
     },
     onSuccess: (_res, vars) => {
       void queryClient.invalidateQueries({ queryKey: ["campaign", vars.campaignId] });
+      void queryClient.invalidateQueries({
+        queryKey: ["personalized-deliveries", vars.campaignId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["personalized-experience-content", vars.campaignId],
+      });
     },
   });
 }
