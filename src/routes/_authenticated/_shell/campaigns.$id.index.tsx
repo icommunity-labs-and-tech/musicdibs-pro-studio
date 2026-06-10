@@ -409,8 +409,9 @@ function CampaignDetailPage() {
 
       {/* CARD 3 — Analítica de reproducción */}
       {isPersonalized && campaign.status === "sent" ? (
-        <PersonalizedPlaybackCard campaignId={id} />
+        <PersonalizedPlaybackCard campaignId={id} sentAt={campaign.sent_at} />
       ) : null}
+
 
 
 
