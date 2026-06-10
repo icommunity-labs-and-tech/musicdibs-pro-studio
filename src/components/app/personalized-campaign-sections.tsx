@@ -8,6 +8,16 @@ import {
   Share2,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,8 +37,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  usePersonalizedCampaignAnalytics,
   usePersonalizedExperienceContent,
-  usePersonalizedPlaybackStats,
   useUpdatePersonalizedExperienceContent,
 } from "@/hooks/use-personalized-experience";
 import type { PersonalizedDelivery } from "@/hooks/use-generation";
@@ -506,45 +516,176 @@ export function PersonalizedDistributionCard({
   );
 }
 
-// ── CARD 3 · Playback analytics ──────────────────────────────────────────────
+// ── CARD 3 · Marketing analytics (personalized campaigns) ────────────────────
+
+// Industry reference benchmarks for standard email marketing. These are
+// sector averages used purely as a visual reference for the uplift comparison —
+// NOT measurements of this tenant's own performance.
+const BENCHMARK_OPEN_RATE = 0.22; // 22% — avg retail/CRM email open rate
+const BENCHMARK_CTR = 0.025; // 2.5% — avg email marketing click-through rate
+
+function formatPct(value: number): string {
+  return `${Math.round(value * 100)}%`;
+}
+
 export function PersonalizedPlaybackCard({
   campaignId,
+  sentAt,
 }: {
   campaignId: string;
+  sentAt?: string | null;
 }) {
-  const { data } = usePersonalizedPlaybackStats(campaignId, true);
+  const { data } = usePersonalizedCampaignAnalytics(campaignId);
 
-  const totalPlays = data?.totalPlays ?? 0;
-  const totalUnique = data?.totalUnique ?? 0;
-  const totalCompletions = data?.totalCompletions ?? 0;
-  const completionRate =
-    totalPlays > 0 ? Math.round((totalCompletions / totalPlays) * 100) : 0;
+  const sent = data?.sent ?? 0;
+  const visited = data?.visited ?? 0;
+  const played = data?.played ?? 0;
+  const completedSum = data?.completedSum ?? 0;
+  const playedSum = data?.playedSum ?? 0;
+  const ctaClicksSum = data?.ctaClicksSum ?? 0;
+
+  const visitRate = sent > 0 ? visited / sent : 0;
+  const playRate = sent > 0 ? played / sent : 0;
+  const completionRate = playedSum > 0 ? completedSum / playedSum : null;
+  const ctaCtr = sent > 0 ? ctaClicksSum / sent : 0;
+
+  const isRecent = sentAt
+    ? Date.now() - new Date(sentAt).getTime() < 24 * 60 * 60 * 1000
+    : false;
+
+  // Uplift vs. benchmarks
+  const visitUplift =
+    BENCHMARK_OPEN_RATE > 0 ? visitRate / BENCHMARK_OPEN_RATE : 0;
+  const ctrUplift = BENCHMARK_CTR > 0 ? ctaCtr / BENCHMARK_CTR : 0;
+
+  const comparisonData = [
+    {
+      name: "Tasa de visita",
+      Personalizada: Math.round(visitRate * 1000) / 10,
+      "Promedio del sector": Math.round(BENCHMARK_OPEN_RATE * 1000) / 10,
+    },
+    {
+      name: "CTR del CTA",
+      Personalizada: Math.round(ctaCtr * 1000) / 10,
+      "Promedio del sector": Math.round(BENCHMARK_CTR * 1000) / 10,
+    },
+  ];
+
+  const funnelData = [
+    { name: "Enviados", value: sent },
+    { name: "Visitaron", value: visited },
+    { name: "Reprodujeron", value: played },
+    { name: "Completaron", value: completedSum },
+    { name: "Click CTA", value: ctaClicksSum },
+  ];
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-display text-lg">
           <BarChart2 className="h-4 w-4 text-primary" />
-          Analítica de reproducción
+          Analítica
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Metric
-            label="Reproducciones"
-            value={totalPlays.toLocaleString("es-ES")}
-          />
-          <Metric
-            label="Oyentes únicos"
-            value={totalUnique.toLocaleString("es-ES")}
-          />
-          <Metric
-            label="Completadas"
-            value={totalCompletions.toLocaleString("es-ES")}
-            hint={completionRate > 0 ? `${completionRate}% tasa` : undefined}
-          />
-        </div>
+      <CardContent className="space-y-6">
+        {sent === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Aún no se ha enviado esta campaña — las métricas aparecerán aquí
+            tras el envío.
+          </p>
+        ) : (
+          <>
+            {/* Key metrics */}
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              <Metric label="Enviados" value={sent.toLocaleString("es-ES")} />
+              <Metric
+                label="Tasa de visita"
+                value={formatPct(visitRate)}
+                hint="Abrieron su experiencia"
+              />
+              <Metric
+                label="Tasa de reproducción"
+                value={formatPct(playRate)}
+                hint="Reprodujeron la canción"
+              />
+              <Metric
+                label="Finalización"
+                value={completionRate === null ? "—" : formatPct(completionRate)}
+                hint="De las reproducciones"
+              />
+              <Metric
+                label="CTR del CTA"
+                value={
+                  ctaClicksSum === 0 && isRecent ? "—" : formatPct(ctaCtr)
+                }
+                hint={
+                  ctaClicksSum === 0 && isRecent
+                    ? "Los clicks pueden tardar en reflejarse"
+                    : undefined
+                }
+              />
+            </div>
+
+            {/* Funnel */}
+            <div>
+              <p className="mb-2 text-sm font-semibold">Funnel de engagement</p>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={funnelData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" fontSize={12} />
+                  <YAxis allowDecimals={false} fontSize={12} />
+                  <Tooltip />
+                  <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                    {funnelData.map((_, i) => (
+                      <Cell key={i} fill="var(--primary)" />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Uplift vs. standard email */}
+            <div>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <p className="text-sm font-semibold">vs. email estándar</p>
+                {visitUplift > 1 ? (
+                  <Badge className="border-transparent bg-emerald-600 text-white hover:bg-emerald-600">
+                    {visitUplift.toFixed(1)}x más visitas
+                  </Badge>
+                ) : null}
+                {ctrUplift > 1 ? (
+                  <Badge className="border-transparent bg-emerald-600 text-white hover:bg-emerald-600">
+                    {ctrUplift.toFixed(1)}x más clicks
+                  </Badge>
+                ) : null}
+              </div>
+              <p className="mb-3 text-xs text-muted-foreground">
+                El "Promedio del sector" es una referencia de email marketing
+                estándar, no una medición de tu cuenta.
+              </p>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={comparisonData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" fontSize={12} />
+                  <YAxis unit="%" fontSize={12} />
+                  <Tooltip formatter={(v: number) => `${v}%`} />
+                  <Bar
+                    dataKey="Personalizada"
+                    fill="var(--primary)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="Promedio del sector"
+                    fill="var(--muted-foreground)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
 }
+

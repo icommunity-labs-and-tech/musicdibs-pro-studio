@@ -70,4 +70,5 @@ export type ExperienceStatField =
   | "play_count"
   | "unique_visitors"
   | "completion_count"
-  | "download_count";
+  | "download_count"
+  | "cta_click_count";

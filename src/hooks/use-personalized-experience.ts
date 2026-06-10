@@ -126,3 +126,78 @@ export function usePersonalizedPlaybackStats(
     enabled: enabled && Boolean(campaignId),
   });
 }
+
+export interface PersonalizedCampaignAnalytics {
+  totalRecipients: number;
+  sent: number;
+  pending: number;
+  failed: number;
+  visited: number;
+  played: number;
+  completedSum: number;
+  playedSum: number;
+  ctaClicksSum: number;
+}
+
+/**
+ * Aggregates marketing-ready analytics for a personalized campaign, combining
+ * per-recipient delivery status with engagement metrics from the associated
+ * experience pages. Personalized campaigns send 1:1 transactional emails, so
+ * email open/click stats from `campaign_stats` are intentionally ignored —
+ * engagement is measured at the experience-page level instead.
+ */
+export function usePersonalizedCampaignAnalytics(campaignId: string) {
+  return useQuery({
+    queryKey: ["personalized-campaign-analytics", campaignId],
+    queryFn: async (): Promise<PersonalizedCampaignAnalytics> => {
+      const { data: deliveries, error: delErr } = await supabase
+        .from("personalized_deliveries")
+        .select("status")
+        .eq("campaign_id", campaignId);
+      if (delErr) throw delErr;
+
+      const totalRecipients = deliveries?.length ?? 0;
+      const sent =
+        deliveries?.filter((d) => d.status === "sent").length ?? 0;
+      const pending =
+        deliveries?.filter((d) =>
+          ["pending", "generating", "ready"].includes(d.status ?? ""),
+        ).length ?? 0;
+      const failed =
+        deliveries?.filter((d) => d.status === "failed").length ?? 0;
+
+      const { data: pages, error: pagesErr } = await supabase
+        .from("experience_pages")
+        .select(
+          "unique_visitors, play_count, completion_count, cta_click_count",
+        )
+        .eq("campaign_id", campaignId);
+      if (pagesErr) throw pagesErr;
+
+      const visited =
+        pages?.filter((p) => (p.unique_visitors ?? 0) > 0).length ?? 0;
+      const played =
+        pages?.filter((p) => (p.play_count ?? 0) > 0).length ?? 0;
+      const completedSum =
+        pages?.reduce((s, p) => s + (p.completion_count ?? 0), 0) ?? 0;
+      const playedSum =
+        pages?.reduce((s, p) => s + (p.play_count ?? 0), 0) ?? 0;
+      const ctaClicksSum =
+        pages?.reduce((s, p) => s + (p.cta_click_count ?? 0), 0) ?? 0;
+
+      return {
+        totalRecipients,
+        sent,
+        pending,
+        failed,
+        visited,
+        played,
+        completedSum,
+        playedSum,
+        ctaClicksSum,
+      };
+    },
+    staleTime: 15_000,
+    enabled: Boolean(campaignId),
+  });
+}
