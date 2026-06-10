@@ -576,6 +576,7 @@ export type Database = {
           completion_count: number
           cover_asset_id: string | null
           created_at: string
+          cta_click_count: number
           cta_title: string | null
           cta_url: string | null
           download_count: number
@@ -598,6 +599,7 @@ export type Database = {
           completion_count?: number
           cover_asset_id?: string | null
           created_at?: string
+          cta_click_count?: number
           cta_title?: string | null
           cta_url?: string | null
           download_count?: number
@@ -620,6 +622,7 @@ export type Database = {
           completion_count?: number
           cover_asset_id?: string | null
           created_at?: string
+          cta_click_count?: number
           cta_title?: string | null
           cta_url?: string | null
           download_count?: number
