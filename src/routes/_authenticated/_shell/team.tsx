@@ -183,33 +183,120 @@ function TeamPage() {
   );
 }
 
-function MemberRow({ member }: { member: TeamMember }) {
+function MemberRow({
+  member,
+  profile,
+  isAdmin,
+  tenantId,
+}: {
+  member: TeamMember;
+  profile:
+    | {
+        id: string;
+        role: string;
+        is_superadmin?: boolean;
+      }
+    | null
+    | undefined;
+  isAdmin: boolean;
+  tenantId: string | undefined;
+}) {
+  const [open, setOpen] = useState(false);
+  const remove = useRemoveMember(tenantId);
+
+  const canRemove =
+    isAdmin &&
+    member.id !== profile?.id &&
+    !(member.role === "owner" && !profile?.is_superadmin);
+
+  async function handleRemove() {
+    try {
+      await remove.mutateAsync(member.id);
+      toast.success("Miembro eliminado del equipo");
+      setOpen(false);
+    } catch (e) {
+      toast.error("No pudimos eliminar al miembro", {
+        description: e instanceof Error ? e.message : undefined,
+      });
+    }
+  }
+
   return (
-    <div className="flex items-center gap-3 rounded-xl border bg-card/50 px-3 py-2.5">
-      <Avatar className="h-9 w-9">
-        <AvatarFallback className="bg-secondary text-xs font-semibold">
-          {initialsOf(member.full_name)}
-        </AvatarFallback>
-      </Avatar>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">
-          {member.full_name ?? "Sin nombre"}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Desde {new Date(member.created_at).toLocaleDateString("es-ES")}
-        </p>
-      </div>
-      {member.is_superadmin ? (
-        <Badge variant="secondary" className="gap-1">
-          <ShieldCheck className="h-3 w-3" />
-          Superadmin
+    <>
+      <div className="flex items-center gap-3 rounded-xl border bg-card/50 px-3 py-2.5">
+        <Avatar className="h-9 w-9">
+          <AvatarFallback className="bg-secondary text-xs font-semibold">
+            {initialsOf(member.full_name)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">
+            {member.full_name ?? "Sin nombre"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Desde {new Date(member.created_at).toLocaleDateString("es-ES")}
+          </p>
+        </div>
+        {member.is_superadmin ? (
+          <Badge variant="secondary" className="gap-1">
+            <ShieldCheck className="h-3 w-3" />
+            Superadmin
+          </Badge>
+        ) : null}
+        <Badge
+          variant={member.role === "owner" ? "default" : "secondary"}
+          className="gap-1"
+        >
+          {member.role === "owner" ? <Crown className="h-3 w-3" /> : null}
+          {ROLE_LABELS[member.role] ?? member.role}
         </Badge>
-      ) : null}
-      <Badge variant={member.role === "owner" ? "default" : "secondary"} className="gap-1">
-        {member.role === "owner" ? <Crown className="h-3 w-3" /> : null}
-        {ROLE_LABELS[member.role] ?? member.role}
-      </Badge>
-    </div>
+        {canRemove ? (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            onClick={() => setOpen(true)}
+            disabled={remove.isPending}
+          >
+            {remove.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+          </Button>
+        ) : null}
+      </div>
+
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar miembro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {member.full_name ?? "Este usuario"} perderá el acceso al
+              espacio de trabajo. Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={remove.isPending}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void handleRemove();
+              }}
+              disabled={remove.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {remove.isPending ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : null}
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
