@@ -324,7 +324,12 @@ function ExperienceView({
             color: "var(--primary-foreground)",
           }}
         >
-          <a href={ctaUrl} target="_blank" rel="noopener noreferrer">
+          <a
+            href={ctaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => track(token, "cta_click_count")}
+          >
             {ctaTitle}
           </a>
         </Button>
