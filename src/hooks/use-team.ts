@@ -67,7 +67,24 @@ export function useInviteMember(tenantId: string | undefined) {
       const { data, error } = await supabase.functions.invoke("invite-member", {
         body: { email: email.trim().toLowerCase(), role },
       });
-      if (error) throw error;
+      if (error) {
+        // FunctionsHttpError hides the real message in the response body —
+        // extract it so the UI can show a meaningful error.
+        const ctx = (error as { context?: Response }).context;
+        if (ctx && typeof ctx.json === "function") {
+          try {
+            const body = (await ctx.json()) as { error?: string };
+            if (body?.error) throw new Error(body.error);
+          } catch (e) {
+            if (e instanceof Error && e.message && !/JSON/i.test(e.message)) {
+              throw e;
+            }
+          }
+        }
+        throw new Error(
+          "No pudimos procesar la invitación. Inténtalo de nuevo en unos segundos.",
+        );
+      }
       if (data?.error) throw new Error(data.error);
       return data as { invite_url: string; email_sent: boolean };
     },
