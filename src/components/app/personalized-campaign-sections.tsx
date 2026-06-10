@@ -175,6 +175,10 @@ export function PersonalizedDistributionCard({
   }, [status]);
 
   const readyCount = deliveries.filter((d) => d.status === "ready").length;
+  const sampleDeliveries = deliveries
+    .filter((d) => d.status === "ready" && d.experience_token)
+    .slice(0, 5);
+
   const sentCount = deliveries.filter((d) => d.status === "sent").length;
   const failedCount = deliveries.filter((d) => d.status === "failed").length;
   const total = deliveries.length;
