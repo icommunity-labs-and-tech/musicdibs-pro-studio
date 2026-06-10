@@ -37,6 +37,8 @@ import { PROVIDERS, type ProviderMeta, type ProviderStatus } from "@/lib/provide
 import { calculateEstimatedCredits } from "@/lib/campaign-generation-options";
 import { ProviderPlanNotice } from "@/components/app/provider-plan-notice";
 import { ResendWebhookSetup } from "@/components/app/resend-webhook-setup";
+import { BrevoWebhookSetup } from "@/components/app/brevo-webhook-setup";
+import { IncomingWebhookPlanNotice } from "@/components/app/incoming-webhook-plan-notice";
 
 // Providers with a real metadata-sync integration available today.
 const SYNC_ENABLED: Record<string, boolean> = {
@@ -123,7 +125,11 @@ function ProviderCard({
   const statusMeta = STATUS_META[status];
   const canSync = isConnected && SYNC_ENABLED[provider.type];
   const isResend = provider.type === "resend";
+  const isBrevo = provider.type === "brevo";
+  const isMailerlite = provider.type === "mailerlite";
   const showWebhookSetup = isResend && isConnected;
+  const showBrevoWebhookSetup = isBrevo && isConnected;
+  const showIncomingPlanNotice = isBrevo || isMailerlite;
 
   async function handleDisconnect() {
     try {
@@ -184,11 +190,17 @@ function ProviderCard({
         {isConnected ? (
           <ProviderPlanNotice provider={provider.type} variant="compact" />
         ) : null}
+        {showIncomingPlanNotice ? (
+          <IncomingWebhookPlanNotice provider={provider.type as "brevo" | "mailerlite"} />
+        ) : null}
         {showWebhookSetup ? (
           <ResendWebhookSetup
             tenantId={tenantId}
             onConfiguredChange={setWebhookConfigured}
           />
+        ) : null}
+        {showBrevoWebhookSetup ? (
+          <BrevoWebhookSetup tenantId={tenantId} />
         ) : null}
         <p className="text-xs text-muted-foreground">
           {connection?.last_sync_at
@@ -306,6 +318,10 @@ function ConnectDialog({
         </DialogHeader>
 
         <ProviderPlanNotice provider={provider.type} variant="compact" />
+
+        {provider.type === "brevo" || provider.type === "mailerlite" ? (
+          <IncomingWebhookPlanNotice provider={provider.type} />
+        ) : null}
 
         {hasSavedKey ? (
           <div className="rounded-lg border bg-muted/40 p-3">
