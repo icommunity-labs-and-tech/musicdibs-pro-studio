@@ -157,6 +157,7 @@ export function PersonalizedDistributionCard({
   isSending: boolean;
 }) {
   const [sendStep, setSendStep] = useState<0 | 1 | 2>(0);
+  const [pendingStep, setPendingStep] = useState<0 | 1 | 2>(0);
 
   const readyCount = deliveries.filter((d) => d.status === "ready").length;
   const sentCount = deliveries.filter((d) => d.status === "sent").length;
@@ -168,8 +169,19 @@ export function PersonalizedDistributionCard({
   const isReadyToSend = status === "ready_to_send";
   const isSent = status === "sent";
 
+  // Deliveries that became ready after the first send batch (e.g. late
+  // fallback generations) and were therefore never sent.
+  const pendingDeliveries = isSent
+    ? deliveries.filter((d) => d.status === "ready")
+    : [];
+
   const handleSend = () => {
     setSendStep(0);
+    onSend();
+  };
+
+  const handleSendPending = () => {
+    setPendingStep(0);
     onSend();
   };
 
