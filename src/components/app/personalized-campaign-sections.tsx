@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
-import { BarChart2, Loader2, Save, Send, Share2 } from "lucide-react";
+import {
+  BarChart2,
+  ExternalLink,
+  Loader2,
+  Save,
+  Send,
+  Share2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { buildExperienceUrl } from "@/lib/experience/ExperienceService";
 import {
   Dialog,
   DialogContent,
@@ -158,8 +167,18 @@ export function PersonalizedDistributionCard({
 }) {
   const [sendStep, setSendStep] = useState<0 | 1 | 2>(0);
   const [pendingStep, setPendingStep] = useState<0 | 1 | 2>(0);
+  const [approved, setApproved] = useState(false);
+
+  // Reset approval gate whenever we (re)enter the ready_to_send state.
+  useEffect(() => {
+    if (status !== "ready_to_send") setApproved(false);
+  }, [status]);
 
   const readyCount = deliveries.filter((d) => d.status === "ready").length;
+  const sampleDeliveries = deliveries
+    .filter((d) => d.status === "ready" && d.experience_token)
+    .slice(0, 5);
+
   const sentCount = deliveries.filter((d) => d.status === "sent").length;
   const failedCount = deliveries.filter((d) => d.status === "failed").length;
   const total = deliveries.length;
@@ -212,10 +231,63 @@ export function PersonalizedDistributionCard({
               <span className="font-semibold">{readyCount}</span> canciones
               listas para enviar
             </p>
+
+            {/* Pre-send preview / approval gate */}
+            <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
+              <div>
+                <p className="text-sm font-semibold">Vista previa antes de enviar</p>
+                <p className="text-xs text-muted-foreground">
+                  Revisa una muestra antes del envío masivo ({readyCount}{" "}
+                  destinatarios listos)
+                </p>
+              </div>
+
+              {sampleDeliveries.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Aún no hay experiencias generadas para previsualizar.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {sampleDeliveries.map((d) => (
+                    <li
+                      key={d.id}
+                      className="flex items-center justify-between gap-3 rounded-lg border bg-background px-3 py-2"
+                    >
+                      <span className="truncate text-sm">
+                        {d.first_name?.trim() || "Contacto"}
+                      </span>
+                      <a
+                        href={buildExperienceUrl(d.experience_token as string)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline"
+                      >
+                        Ver experiencia
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <label className="flex items-start gap-2 text-sm">
+                <Checkbox
+                  checked={approved}
+                  onCheckedChange={(v) => setApproved(v === true)}
+                  disabled={sampleDeliveries.length === 0}
+                  className="mt-0.5"
+                />
+                <span>
+                  He revisado la muestra y apruebo el contenido y diseño para el
+                  envío masivo.
+                </span>
+              </label>
+            </div>
+
             <Button
               className="bg-gold text-night-900 hover:bg-gold-dark"
               onClick={() => setSendStep(1)}
-              disabled={isSending}
+              disabled={isSending || !approved || sampleDeliveries.length === 0}
             >
               {isSending ? (
                 <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -224,8 +296,14 @@ export function PersonalizedDistributionCard({
               )}
               Enviar canciones personalizadas
             </Button>
+            {!approved ? (
+              <p className="text-xs text-muted-foreground">
+                Marca la casilla de aprobación para continuar.
+              </p>
+            ) : null}
           </div>
         ) : null}
+
 
         {/* State C — sent */}
         {isSent ? (
