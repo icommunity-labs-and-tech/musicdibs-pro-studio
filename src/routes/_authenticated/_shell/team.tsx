@@ -278,9 +278,17 @@ function InviteDialog({
       setRole("member");
       onOpenChange(false);
     } catch (e) {
-      toast.error("No pudimos crear la invitación", {
-        description: e instanceof Error ? e.message : undefined,
-      });
+      const msg = e instanceof Error ? e.message : undefined;
+      if (msg && /ya es miembro/i.test(msg)) {
+        toast.error("Este usuario ya es miembro del equipo", {
+          description:
+            "No es necesario invitarle: ya tiene acceso a este espacio.",
+        });
+      } else {
+        toast.error("No pudimos crear la invitación", {
+          description: msg,
+        });
+      }
     }
   }
 
