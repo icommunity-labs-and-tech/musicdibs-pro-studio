@@ -27,8 +27,8 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  usePersonalizedCampaignAnalytics,
   usePersonalizedExperienceContent,
-  usePersonalizedPlaybackStats,
   useUpdatePersonalizedExperienceContent,
 } from "@/hooks/use-personalized-experience";
 import type { PersonalizedDelivery } from "@/hooks/use-generation";
