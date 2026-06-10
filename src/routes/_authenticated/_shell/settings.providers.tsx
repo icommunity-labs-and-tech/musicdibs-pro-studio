@@ -319,6 +319,10 @@ function ConnectDialog({
 
         <ProviderPlanNotice provider={provider.type} variant="compact" />
 
+        {provider.type === "brevo" || provider.type === "mailerlite" ? (
+          <IncomingWebhookPlanNotice provider={provider.type} />
+        ) : null}
+
         {hasSavedKey ? (
           <div className="rounded-lg border bg-muted/40 p-3">
             <p className="text-xs text-muted-foreground">
