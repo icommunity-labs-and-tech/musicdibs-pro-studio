@@ -340,7 +340,91 @@ export function PersonalizedDistributionCard({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Send pending — step 1: recipient list */}
+      <Dialog
+        open={pendingStep === 1}
+        onOpenChange={(o) => {
+          if (!o) setPendingStep(0);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enviar entregas pendientes</DialogTitle>
+            <DialogDescription>
+              Se enviará la canción a los {pendingDeliveries.length}{" "}
+              destinatario(s) que quedaron listos después del primer envío.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-64 space-y-1 overflow-y-auto rounded-lg border p-2">
+            {pendingDeliveries.map((d) => (
+              <div
+                key={d.id}
+                className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm"
+              >
+                <span className="truncate">
+                  {d.first_name?.trim() || "Anónimo"}
+                </span>
+                <Badge variant="outline" className="shrink-0">
+                  Lista
+                </Badge>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingStep(0)}>
+              Cancelar
+            </Button>
+            <Button
+              className="bg-gold text-night-900 hover:bg-gold-dark"
+              onClick={() => setPendingStep(2)}
+            >
+              Continuar →
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send pending — step 2: final confirmation */}
+      <Dialog
+        open={pendingStep === 2}
+        onOpenChange={(o) => {
+          if (!o && !isSending) setPendingStep(0);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Confirmas el envío?</DialogTitle>
+            <DialogDescription>
+              Una vez enviadas, las canciones no podrán cancelarse ni
+              modificarse.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setPendingStep(0)}
+              disabled={isSending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleSendPending}
+              disabled={isSending}
+            >
+              {isSending ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="mr-1.5 h-4 w-4" />
+              )}
+              Enviar ahora
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
+
   );
 }
 
