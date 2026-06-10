@@ -125,7 +125,11 @@ function ProviderCard({
   const statusMeta = STATUS_META[status];
   const canSync = isConnected && SYNC_ENABLED[provider.type];
   const isResend = provider.type === "resend";
+  const isBrevo = provider.type === "brevo";
+  const isMailerlite = provider.type === "mailerlite";
   const showWebhookSetup = isResend && isConnected;
+  const showBrevoWebhookSetup = isBrevo && isConnected;
+  const showIncomingPlanNotice = isBrevo || isMailerlite;
 
   async function handleDisconnect() {
     try {
