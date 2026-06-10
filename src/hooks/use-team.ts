@@ -115,3 +115,19 @@ export function useCancelInvitation(tenantId: string | undefined) {
     },
   });
 }
+
+export function useRemoveMember(tenantId: string | undefined) {
+  const queryClient = useQueryClient();
+  const removeFn = useServerFn(removeTeamMember);
+  return useMutation({
+    mutationFn: async (memberId: string) => {
+      const res = await removeFn({ data: { memberId } });
+      return res as { success: boolean };
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["team-members", tenantId],
+      });
+    },
+  });
+}
