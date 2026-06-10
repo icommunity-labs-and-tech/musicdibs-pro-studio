@@ -5,6 +5,7 @@ import {
   Loader2,
   Mail,
   ShieldCheck,
+  Trash2,
   UserPlus,
   Users2,
   X,
