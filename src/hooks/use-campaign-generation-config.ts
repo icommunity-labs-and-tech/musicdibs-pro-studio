@@ -52,6 +52,7 @@ function buildConfigPayload(
   return {
     campaign_id: campaignId,
     generation_mode: input.generationMode,
+    delivery_channel: input.deliveryChannel,
     provider_connection_id: input.providerConnectionId,
     provider_audience_id: input.providerAudienceId,
     lyrics_goal: input.lyricsGoal,
