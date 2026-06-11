@@ -99,6 +99,7 @@ export type Database = {
         Row: {
           campaign_id: string
           created_at: string
+          delivery_channel: string
           email_body: string | null
           email_subject: string | null
           estimated_credits: number
@@ -118,6 +119,7 @@ export type Database = {
         Insert: {
           campaign_id: string
           created_at?: string
+          delivery_channel?: string
           email_body?: string | null
           email_subject?: string | null
           estimated_credits?: number
@@ -137,6 +139,7 @@ export type Database = {
         Update: {
           campaign_id?: string
           created_at?: string
+          delivery_channel?: string
           email_body?: string | null
           email_subject?: string | null
           estimated_credits?: number
