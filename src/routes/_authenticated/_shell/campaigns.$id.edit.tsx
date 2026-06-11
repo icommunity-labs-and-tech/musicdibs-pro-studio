@@ -46,6 +46,10 @@ function CampaignEditPage() {
         campaign.type ??
         "") as GenerationMode | "",
       audienceId: config?.provider_audience_id ?? "",
+      deliveryChannel: (config?.delivery_channel ?? "email") as
+        | "email"
+        | "whatsapp"
+        | "sms",
       lyricsGoal: config?.lyrics_goal ?? campaign.goal ?? "",
       lyricsPrompt: config?.lyrics_prompt ?? campaign.ai_prompt ?? "",
       musicStyle: config?.music_style ?? campaign.music_style ?? "",

@@ -4,6 +4,7 @@
 import mailerliteLogo from "@/assets/logos/mailerlite.svg";
 import brevoLogo from "@/assets/logos/brevo.svg";
 import resendLogo from "@/assets/logos/resend.svg";
+import whatsappLogo from "@/assets/logos/whatsapp.svg";
 
 import { BrevoConnector } from "./BrevoConnector";
 import { MailerLiteConnector } from "./MailerLiteConnector";
@@ -23,6 +24,9 @@ export interface ProviderMeta {
   logo: string;
 }
 
+// Email providers shown in the Settings → Providers grid (mutually exclusive,
+// "single active connector"). Twilio is intentionally NOT here — it renders as
+// a separate additive card.
 export const PROVIDERS: ProviderMeta[] = [
   {
     type: "mailerlite",
@@ -46,8 +50,20 @@ export const PROVIDERS: ProviderMeta[] = [
   },
 ];
 
+// Twilio metadata — kept out of PROVIDERS but resolvable via getProviderMeta so
+// any UI iterating over connections (audiences, campaign detail) gets a label.
+const TWILIO_META: ProviderMeta = {
+  type: "twilio",
+  label: "WhatsApp / SMS",
+  description:
+    "Entrega la Experiencia Musical por WhatsApp o SMS vía Twilio. Las audiencias son tus listas locales con teléfono.",
+  logo: whatsappLogo,
+};
+
+const ALL_PROVIDER_META: ProviderMeta[] = [...PROVIDERS, TWILIO_META];
+
 export function getProviderMeta(type: ProviderType): ProviderMeta {
-  const meta = PROVIDERS.find((p) => p.type === type);
+  const meta = ALL_PROVIDER_META.find((p) => p.type === type);
   if (!meta) throw new Error(`Proveedor no soportado: ${type}`);
   return meta;
 }
@@ -61,6 +77,10 @@ export function createConnector(type: ProviderType): ProviderConnector {
       return new BrevoConnector();
     case "resend":
       return new ResendConnector();
+    case "twilio":
+      // Twilio is a WhatsApp/SMS channel handled entirely server-side
+      // (validation + sending via the edge function). No frontend connector.
+      throw new Error("Twilio se gestiona en el servidor (sin conector de cliente)");
     default:
       throw new Error(`Proveedor no soportado: ${type satisfies never}`);
   }

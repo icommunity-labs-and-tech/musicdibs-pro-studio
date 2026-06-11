@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Check,
@@ -9,6 +10,7 @@ import {
   Coins,
   Loader2,
   Mail,
+  MessageCircle,
   Music2,
   PenLine,
   RefreshCw,
@@ -63,10 +65,23 @@ import {
   useUpdateCampaign,
 } from "@/hooks/use-campaign-generation-config";
 
+export type DeliveryChannel = "email" | "whatsapp" | "sms";
+
+export const DELIVERY_CHANNELS: {
+  value: DeliveryChannel;
+  label: string;
+  description: string;
+}[] = [
+  { value: "email", label: "Email", description: "Entrega por correo electrónico (proveedor de email)." },
+  { value: "whatsapp", label: "WhatsApp", description: "Entrega por WhatsApp vía Twilio (listas con teléfono)." },
+  { value: "sms", label: "SMS", description: "Entrega por SMS vía Twilio (listas con teléfono)." },
+];
+
 export interface BuilderState {
   name: string;
   generationMode: GenerationMode | "";
   audienceId: string;
+  deliveryChannel: DeliveryChannel;
   lyricsGoal: string;
   lyricsPrompt: string;
   musicStyle: string;
@@ -82,6 +97,7 @@ export const EMPTY_BUILDER_STATE: BuilderState = {
   name: "",
   generationMode: "",
   audienceId: "",
+  deliveryChannel: "email",
   lyricsGoal: "",
   lyricsPrompt: "",
   musicStyle: "",
@@ -181,6 +197,55 @@ export function CampaignBuilder({
     [audiences, state.audienceId],
   );
 
+  // Delivery channel — Twilio (WhatsApp/SMS) is an additive provider whose
+  // audiences are local contact lists synced into provider_audiences.
+  const isPhoneChannel =
+    state.deliveryChannel === "whatsapp" || state.deliveryChannel === "sms";
+
+  const twilioConnection = useMemo(
+    () =>
+      (connections ?? []).find(
+        (c) => c.provider_type === "twilio" && c.status === "connected",
+      ) ?? null,
+    [connections],
+  );
+
+  // Audiences shown depend on the channel: phone channels only list Twilio
+  // audiences; email lists every NON-Twilio audience (current behaviour).
+  const visibleAudiences = useMemo(() => {
+    const all = audiences ?? [];
+    const twilioConnIds = new Set(
+      (connections ?? [])
+        .filter((c) => c.provider_type === "twilio")
+        .map((c) => c.id),
+    );
+    if (isPhoneChannel) {
+      if (!twilioConnection) return [];
+      return all.filter(
+        (a) => a.provider_connection_id === twilioConnection.id,
+      );
+    }
+    return all.filter((a) => !twilioConnIds.has(a.provider_connection_id));
+  }, [audiences, connections, isPhoneChannel, twilioConnection]);
+
+  // For Twilio audiences, contacts_count already reflects ACTIVE contacts with
+  // a non-empty phone (the edge function computes it that way and only stores
+  // lists with at least one). Require ≥1 for phone channels.
+  const phoneAudienceValid =
+    !isPhoneChannel ||
+    (!!selectedAudience && (selectedAudience.contacts_count ?? 0) > 0);
+
+  // When the channel changes, clear a selection that is no longer valid for the
+  // new channel (e.g. switching email→WhatsApp drops the email audience).
+  useEffect(() => {
+    if (
+      state.audienceId &&
+      !visibleAudiences.some((a) => a.id === state.audienceId)
+    ) {
+      setState((prev) => ({ ...prev, audienceId: "" }));
+    }
+  }, [state.audienceId, visibleAudiences]);
+
   const estimatedCredits = useMemo(
     () =>
       calculateEstimatedCredits(
@@ -216,7 +281,7 @@ export function CampaignBuilder({
       case "type":
         return state.name.trim().length > 0 && state.generationMode !== "";
       case "audience":
-        return state.audienceId.length > 0;
+        return state.audienceId.length > 0 && phoneAudienceValid;
       case "lyrics":
         return state.lyricsGoal.trim().length > 0;
       case "music":
@@ -229,7 +294,7 @@ export function CampaignBuilder({
       default:
         return true;
     }
-  }, [currentKey, state]);
+  }, [currentKey, state, phoneAudienceValid]);
 
   const isLastStep = step >= steps.length - 1;
 
@@ -244,6 +309,7 @@ export function CampaignBuilder({
       vertical: tenant.vertical ?? "music",
       name: state.name.trim(),
       generationMode: state.generationMode,
+      deliveryChannel: state.deliveryChannel,
       providerConnectionId: selectedAudience.provider_connection_id,
       providerAudienceId: selectedAudience.id,
       audienceContacts: selectedAudience.contacts_count,
@@ -326,7 +392,7 @@ export function CampaignBuilder({
           )}
           {currentKey === "audience" && (
             <StepAudience
-              audiences={audiences ?? []}
+              audiences={visibleAudiences}
               loading={audiencesLoading}
               syncing={syncAudiences.isPending}
               onRefresh={() => {
@@ -339,6 +405,12 @@ export function CampaignBuilder({
               providerLabelByConnection={providerLabelByConnection}
               generationMode={state.generationMode}
               estimatedCredits={estimatedCredits}
+              deliveryChannel={state.deliveryChannel}
+              onDeliveryChannelChange={(c) => update("deliveryChannel", c)}
+              isPhoneChannel={isPhoneChannel}
+              twilioConnected={!!twilioConnection}
+              selectedAudience={selectedAudience}
+              phoneAudienceValid={phoneAudienceValid}
             />
           )}
           {currentKey === "lyrics" && (
@@ -515,6 +587,12 @@ function StepAudience({
   providerLabelByConnection,
   generationMode,
   estimatedCredits,
+  deliveryChannel,
+  onDeliveryChannelChange,
+  isPhoneChannel,
+  twilioConnected,
+  selectedAudience,
+  phoneAudienceValid,
 }: {
   audiences: ProviderAudienceRow[];
   loading: boolean;
@@ -525,6 +603,12 @@ function StepAudience({
   providerLabelByConnection: Map<string, string>;
   generationMode: GenerationMode | "";
   estimatedCredits: number;
+  deliveryChannel: DeliveryChannel;
+  onDeliveryChannelChange: (channel: DeliveryChannel) => void;
+  isPhoneChannel: boolean;
+  twilioConnected: boolean;
+  selectedAudience: ProviderAudienceRow | null;
+  phoneAudienceValid: boolean;
 }) {
   const [pageSize, setPageSize] = useState<number>(AUDIENCE_PAGE_SIZES[0]);
   const [page, setPage] = useState(0);
@@ -540,17 +624,53 @@ function StepAudience({
     if (page > pageCount - 1) setPage(0);
   }, [page, pageCount]);
 
-  if (loading) {
-    return (
+  const channelSelector = (
+    <Field label="Canal de entrega" required>
+      <Select
+        value={deliveryChannel}
+        onValueChange={(v) => onDeliveryChannelChange(v as DeliveryChannel)}
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {DELIVERY_CHANNELS.map((c) => (
+            <SelectItem key={c.value} value={c.value}>
+              {c.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <p className="text-xs text-muted-foreground">
+        {DELIVERY_CHANNELS.find((c) => c.value === deliveryChannel)?.description}
+      </p>
+    </Field>
+  );
+
+  let body: ReactNode;
+
+  if (isPhoneChannel && !twilioConnected) {
+    body = (
+      <EmptyState
+        icon={MessageCircle}
+        title="Sin proveedor de WhatsApp/SMS"
+        description="Conecta un proveedor de WhatsApp/SMS en Configuración → Proveedores para usar este canal."
+        action={
+          <Button asChild>
+            <Link to="/settings/providers">Ir a proveedores</Link>
+          </Button>
+        }
+      />
+    );
+  } else if (loading) {
+    body = (
       <div className="flex items-center justify-center py-10 text-muted-foreground">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         Cargando audiencias…
       </div>
     );
-  }
-
-  if (audiences.length === 0) {
-    return (
+  } else if (audiences.length === 0) {
+    body = (
       <div className="space-y-4">
         <div className="flex items-center justify-end">
           <Button
@@ -567,8 +687,16 @@ function StepAudience({
         </div>
         <EmptyState
           icon={Users}
-          title="No hay audiencias sincronizadas"
-          description="Conecta un proveedor y sincroniza tus audiencias para seleccionarlas aquí."
+          title={
+            isPhoneChannel
+              ? "No hay listas con teléfono sincronizadas"
+              : "No hay audiencias sincronizadas"
+          }
+          description={
+            isPhoneChannel
+              ? "Sincroniza las audiencias de Twilio en Configuración → Proveedores. Solo aparecen listas con al menos un contacto con teléfono activo."
+              : "Conecta un proveedor y sincroniza tus audiencias para seleccionarlas aquí."
+          }
           action={
             <Button asChild>
               <Link to="/settings/providers">Ir a proveedores</Link>
@@ -577,121 +705,143 @@ function StepAudience({
         />
       </div>
     );
+  } else {
+    body = (
+      <>
+        {/* Toolbar: counter + page size + refresh */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">
+              {total.toLocaleString("es-ES")}
+            </span>{" "}
+            {total === 1 ? "grupo" : "grupos"}
+          </p>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Por página</span>
+              <Select
+                value={String(pageSize)}
+                onValueChange={(v) => {
+                  setPageSize(Number(v));
+                  setPage(0);
+                }}
+              >
+                <SelectTrigger className="h-8 w-[72px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {AUDIENCE_PAGE_SIZES.map((size) => (
+                    <SelectItem key={size} value={String(size)}>
+                      {size}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRefresh}
+              disabled={syncing}
+            >
+              <RefreshCw
+                className={cn("mr-1.5 h-4 w-4", syncing && "animate-spin")}
+              />
+              {syncing ? "Actualizando…" : "Actualizar"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {pageItems.map((a) => {
+            const active = selectedId === a.id;
+            return (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => onSelect(a.id)}
+                className={cn(
+                  "flex w-full items-center justify-between gap-4 rounded-xl border p-4 text-left transition-colors",
+                  active
+                    ? "border-primary bg-primary/5 ring-1 ring-primary"
+                    : "border-border hover:border-primary/50",
+                )}
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{a.name}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {audienceTypeLabel(a.audience_type)} ·{" "}
+                    {providerLabelByConnection.get(a.provider_connection_id) ??
+                      "Proveedor"}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="text-sm font-semibold">
+                    {a.contacts_count.toLocaleString("es-ES")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isPhoneChannel ? "con teléfono" : "contactos"}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Pagination controls */}
+        {pageCount > 1 && (
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              {(start + 1).toLocaleString("es-ES")}–
+              {Math.min(start + pageSize, total).toLocaleString("es-ES")} de{" "}
+              {total.toLocaleString("es-ES")}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={safePage === 0}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                {safePage + 1} / {pageCount}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+                disabled={safePage >= pageCount - 1}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </>
+    );
   }
 
   return (
-    <>
-      {/* Toolbar: counter + page size + refresh */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">
-            {total.toLocaleString("es-ES")}
-          </span>{" "}
-          {total === 1 ? "grupo" : "grupos"}
-        </p>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Por página</span>
-            <Select
-              value={String(pageSize)}
-              onValueChange={(v) => {
-                setPageSize(Number(v));
-                setPage(0);
-              }}
-            >
-              <SelectTrigger className="h-8 w-[72px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {AUDIENCE_PAGE_SIZES.map((size) => (
-                  <SelectItem key={size} value={String(size)}>
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-            disabled={syncing}
-          >
-            <RefreshCw
-              className={cn("mr-1.5 h-4 w-4", syncing && "animate-spin")}
-            />
-            {syncing ? "Actualizando…" : "Actualizar"}
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-5">
+      {channelSelector}
 
-      <div className="space-y-3">
-        {pageItems.map((a) => {
-          const active = selectedId === a.id;
-          return (
-            <button
-              key={a.id}
-              type="button"
-              onClick={() => onSelect(a.id)}
-              className={cn(
-                "flex w-full items-center justify-between gap-4 rounded-xl border p-4 text-left transition-colors",
-                active
-                  ? "border-primary bg-primary/5 ring-1 ring-primary"
-                  : "border-border hover:border-primary/50",
-              )}
-            >
-              <div className="min-w-0">
-                <p className="truncate font-medium">{a.name}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {audienceTypeLabel(a.audience_type)} ·{" "}
-                  {providerLabelByConnection.get(a.provider_connection_id) ??
-                    "Proveedor"}
-                </p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-sm font-semibold">
-                  {a.contacts_count.toLocaleString("es-ES")}
-                </p>
-                <p className="text-xs text-muted-foreground">contactos</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      {body}
 
-      {/* Pagination controls */}
-      {pageCount > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            {(start + 1).toLocaleString("es-ES")}–
-            {Math.min(start + pageSize, total).toLocaleString("es-ES")} de{" "}
-            {total.toLocaleString("es-ES")}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={safePage === 0}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              {safePage + 1} / {pageCount}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
-              disabled={safePage >= pageCount - 1}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+      {isPhoneChannel && selectedId && !phoneAudienceValid && (
+        <div className="flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+          <span>
+            La lista seleccionada no tiene contactos con teléfono activo. No
+            podrás lanzar la campaña por{" "}
+            {deliveryChannel === "sms" ? "SMS" : "WhatsApp"} hasta elegir una
+            lista con al menos un contacto con teléfono.
+          </span>
         </div>
       )}
 
-      {selectedId && generationMode !== "" && (
+      {selectedId && phoneAudienceValid && generationMode !== "" && (
         <div className="space-y-2 rounded-xl border border-primary/40 bg-primary/5 p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
@@ -707,11 +857,18 @@ function StepAudience({
               con un coste mínimo por campaña de 100 créditos.
             </p>
           )}
+          {selectedAudience && isPhoneChannel && (
+            <p className="text-xs text-muted-foreground">
+              {selectedAudience.contacts_count.toLocaleString("es-ES")} contactos
+              con teléfono activo en esta lista.
+            </p>
+          )}
         </div>
       )}
-    </>
+    </div>
   );
 }
+
 
 // ── STEP 3 · Lyrics Configuration ────────────────────────────────────────────
 function StepLyrics({ state, update }: StepProps) {
@@ -904,6 +1061,12 @@ function StepReview({
   // Single source of truth: same mapping used by Campaign Detail.
   const rows = [
     { label: "Campaña", value: state.name.trim() || "—" },
+    {
+      label: "Canal de entrega",
+      value:
+        DELIVERY_CHANNELS.find((c) => c.value === state.deliveryChannel)
+          ?.label ?? "Email",
+    },
     ...buildCampaignConfigRows({
       generationMode: state.generationMode,
       audienceName: selectedAudience?.name ?? null,

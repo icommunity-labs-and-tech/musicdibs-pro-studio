@@ -56,9 +56,19 @@ export function useProviderConnections(tenantId: string | undefined) {
 // Credentials are NEVER written from the browser. The manage-provider-connection
 // edge function encrypts and persists them server-side with the service role.
 async function callProviderFn(payload: {
-  action: "connect" | "disconnect" | "test_connection" | "sync_audiences";
+  action:
+    | "connect"
+    | "disconnect"
+    | "test_connection"
+    | "sync_audiences"
+    | "get_connection_status";
   provider_type: ProviderType;
   api_key?: string;
+  // Twilio-specific credential fields (snake_case as the edge fn expects).
+  account_sid?: string;
+  auth_token?: string;
+  whatsapp_from?: string;
+  sms_from?: string;
 }) {
   const { data, error } = await supabase.functions.invoke(
     "manage-provider-connection",
@@ -94,6 +104,65 @@ export function useConnectProvider(tenantId: string | undefined) {
         queryKey: ["provider-connections", tenantId],
       });
     },
+  });
+}
+
+// ── Twilio (WhatsApp/SMS) ─────────────────────────────────────────────────
+// Twilio is an ADDITIVE channel: connecting it does NOT disconnect the active
+// email provider (the edge function skips the "single active connector" logic
+// for provider_type === "twilio").
+
+export interface TwilioCredentialsInput {
+  accountSid: string;
+  authToken: string;
+  whatsappFrom?: string;
+  smsFrom?: string;
+}
+
+export function useConnectTwilio(tenantId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (creds: TwilioCredentialsInput) => {
+      if (!tenantId) throw new Error("Tenant no disponible");
+      await callProviderFn({
+        action: "connect",
+        provider_type: "twilio",
+        account_sid: creds.accountSid.trim(),
+        auth_token: creds.authToken.trim(),
+        whatsapp_from: creds.whatsappFrom?.trim() ?? "",
+        sms_from: creds.smsFrom?.trim() ?? "",
+      });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["provider-connections", tenantId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["twilio-status", tenantId],
+      });
+    },
+  });
+}
+
+export interface TwilioStatus {
+  connected: boolean;
+  status?: ProviderStatus;
+  last_sync_at?: string | null;
+  has_api_key?: boolean;
+  whatsapp_from?: string;
+  sms_from?: string;
+}
+
+export function useTwilioStatus(tenantId: string | undefined) {
+  return useQuery({
+    queryKey: ["twilio-status", tenantId],
+    queryFn: async (): Promise<TwilioStatus> =>
+      (await callProviderFn({
+        action: "get_connection_status",
+        provider_type: "twilio",
+      })) as TwilioStatus,
+    enabled: !!tenantId,
+    staleTime: 30_000,
   });
 }
 

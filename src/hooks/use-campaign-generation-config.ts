@@ -7,6 +7,7 @@ import type {
   GenerationLanguage,
   VoiceType,
 } from "@/lib/campaign-generation-options";
+import type { DeliveryChannel } from "@/components/app/campaign-builder";
 
 type CampaignInsert = Database["public"]["Tables"]["campaigns"]["Insert"];
 type CampaignUpdate = Database["public"]["Tables"]["campaigns"]["Update"];
@@ -21,6 +22,7 @@ export interface CreateGenerationCampaignInput {
   vertical: string;
   name: string;
   generationMode: GenerationMode;
+  deliveryChannel: DeliveryChannel;
   providerConnectionId: string | null;
   providerAudienceId: string | null;
   audienceContacts: number;
@@ -50,6 +52,7 @@ function buildConfigPayload(
   return {
     campaign_id: campaignId,
     generation_mode: input.generationMode,
+    delivery_channel: input.deliveryChannel,
     provider_connection_id: input.providerConnectionId,
     provider_audience_id: input.providerAudienceId,
     lyrics_goal: input.lyricsGoal,
