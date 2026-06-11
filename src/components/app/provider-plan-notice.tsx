@@ -43,6 +43,13 @@ const NOTICES: Record<
       "Necesitas un dominio de envío verificado en Resend para entregar los correos.",
     ],
   },
+  twilio: {
+    title: "Twilio: canal de WhatsApp/SMS",
+    lines: [
+      "Twilio entrega la Experiencia Musical por WhatsApp o SMS usando tus números de origen verificados.",
+      "Las audiencias para Twilio son tus listas locales de contactos con teléfono activo.",
+    ],
+  },
 };
 
 export function ProviderPlanNotice({

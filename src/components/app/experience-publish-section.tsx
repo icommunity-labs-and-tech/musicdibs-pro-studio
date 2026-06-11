@@ -49,6 +49,7 @@ const PROVIDER_DASHBOARD: Record<ProviderType, string> = {
   mailerlite: "https://dashboard.mailerlite.com/campaigns",
   brevo: "https://app.brevo.com/",
   resend: "https://resend.com/broadcasts",
+  twilio: "https://console.twilio.com/",
 };
 
 // Providers that can create/send a campaign from MusicDibs today.
