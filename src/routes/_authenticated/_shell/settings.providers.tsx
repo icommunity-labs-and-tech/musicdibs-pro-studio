@@ -39,6 +39,7 @@ import { ProviderPlanNotice } from "@/components/app/provider-plan-notice";
 import { ResendWebhookSetup } from "@/components/app/resend-webhook-setup";
 import { BrevoWebhookSetup } from "@/components/app/brevo-webhook-setup";
 import { IncomingWebhookPlanNotice } from "@/components/app/incoming-webhook-plan-notice";
+import { TwilioProviderCard } from "@/components/app/twilio-provider-card";
 
 // Providers with a real metadata-sync integration available today.
 const SYNC_ENABLED: Record<string, boolean> = {
