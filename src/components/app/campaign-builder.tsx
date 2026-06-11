@@ -65,7 +65,7 @@ import {
   useUpdateCampaign,
 } from "@/hooks/use-campaign-generation-config";
 
-export type DeliveryChannel = "email" | "whatsapp" | "sms";
+export type DeliveryChannel = "email" | "whatsapp" | "sms" | "whatsapp_cloud";
 
 export const DELIVERY_CHANNELS: {
   value: DeliveryChannel;
@@ -73,8 +73,9 @@ export const DELIVERY_CHANNELS: {
   description: string;
 }[] = [
   { value: "email", label: "Email", description: "Entrega por correo electrónico (proveedor de email)." },
-  { value: "whatsapp", label: "WhatsApp", description: "Entrega por WhatsApp vía Twilio (listas con teléfono)." },
-  { value: "sms", label: "SMS", description: "Entrega por SMS vía Twilio (listas con teléfono)." },
+  { value: "whatsapp", label: "WhatsApp (Twilio)", description: "Entrega por WhatsApp vía Twilio (listas con teléfono)." },
+  { value: "sms", label: "SMS (Twilio)", description: "Entrega por SMS vía Twilio (listas con teléfono)." },
+  { value: "whatsapp_cloud", label: "WhatsApp Business", description: "Entrega por WhatsApp Business API (Cloud) de Meta con plantillas aprobadas (listas con teléfono)." },
 ];
 
 export interface BuilderState {
@@ -197,36 +198,48 @@ export function CampaignBuilder({
     [audiences, state.audienceId],
   );
 
-  // Delivery channel — Twilio (WhatsApp/SMS) is an additive provider whose
-  // audiences are local contact lists synced into provider_audiences.
-  const isPhoneChannel =
+  // Delivery channel — Twilio (WhatsApp/SMS) and WhatsApp Business (Cloud API)
+  // are additive providers whose audiences are local contact lists synced into
+  // provider_audiences. Each phone channel maps to its own provider connection.
+  const isTwilioChannel =
     state.deliveryChannel === "whatsapp" || state.deliveryChannel === "sms";
+  const isWhatsAppCloudChannel = state.deliveryChannel === "whatsapp_cloud";
+  const isPhoneChannel = isTwilioChannel || isWhatsAppCloudChannel;
 
-  const twilioConnection = useMemo(
+  // The provider type backing the currently selected phone channel.
+  const phoneProviderType: "twilio" | "whatsapp" | null = isTwilioChannel
+    ? "twilio"
+    : isWhatsAppCloudChannel
+      ? "whatsapp"
+      : null;
+
+  const phoneConnection = useMemo(
     () =>
-      (connections ?? []).find(
-        (c) => c.provider_type === "twilio" && c.status === "connected",
-      ) ?? null,
-    [connections],
+      phoneProviderType
+        ? ((connections ?? []).find(
+            (c) => c.provider_type === phoneProviderType && c.status === "connected",
+          ) ?? null)
+        : null,
+    [connections, phoneProviderType],
   );
 
-  // Audiences shown depend on the channel: phone channels only list Twilio
-  // audiences; email lists every NON-Twilio audience (current behaviour).
+  // Audiences shown depend on the channel: phone channels only list the audiences
+  // of their backing connection; email lists every NON-phone audience.
   const visibleAudiences = useMemo(() => {
     const all = audiences ?? [];
-    const twilioConnIds = new Set(
+    const phoneConnIds = new Set(
       (connections ?? [])
-        .filter((c) => c.provider_type === "twilio")
+        .filter((c) => c.provider_type === "twilio" || c.provider_type === "whatsapp")
         .map((c) => c.id),
     );
     if (isPhoneChannel) {
-      if (!twilioConnection) return [];
+      if (!phoneConnection) return [];
       return all.filter(
-        (a) => a.provider_connection_id === twilioConnection.id,
+        (a) => a.provider_connection_id === phoneConnection.id,
       );
     }
-    return all.filter((a) => !twilioConnIds.has(a.provider_connection_id));
-  }, [audiences, connections, isPhoneChannel, twilioConnection]);
+    return all.filter((a) => !phoneConnIds.has(a.provider_connection_id));
+  }, [audiences, connections, isPhoneChannel, phoneConnection]);
 
   // For Twilio audiences, contacts_count already reflects ACTIVE contacts with
   // a non-empty phone (the edge function computes it that way and only stores
@@ -408,7 +421,7 @@ export function CampaignBuilder({
               deliveryChannel={state.deliveryChannel}
               onDeliveryChannelChange={(c) => update("deliveryChannel", c)}
               isPhoneChannel={isPhoneChannel}
-              twilioConnected={!!twilioConnection}
+              phoneProviderConnected={!!phoneConnection}
               selectedAudience={selectedAudience}
               phoneAudienceValid={phoneAudienceValid}
             />
@@ -590,7 +603,7 @@ function StepAudience({
   deliveryChannel,
   onDeliveryChannelChange,
   isPhoneChannel,
-  twilioConnected,
+  phoneProviderConnected,
   selectedAudience,
   phoneAudienceValid,
 }: {
@@ -606,7 +619,7 @@ function StepAudience({
   deliveryChannel: DeliveryChannel;
   onDeliveryChannelChange: (channel: DeliveryChannel) => void;
   isPhoneChannel: boolean;
-  twilioConnected: boolean;
+  phoneProviderConnected: boolean;
   selectedAudience: ProviderAudienceRow | null;
   phoneAudienceValid: boolean;
 }) {
@@ -649,12 +662,14 @@ function StepAudience({
 
   let body: ReactNode;
 
-  if (isPhoneChannel && !twilioConnected) {
+  if (isPhoneChannel && !phoneProviderConnected) {
+    const providerLabel =
+      deliveryChannel === "whatsapp_cloud" ? "WhatsApp Business" : "Twilio (WhatsApp/SMS)";
     body = (
       <EmptyState
         icon={MessageCircle}
-        title="Sin proveedor de WhatsApp/SMS"
-        description="Conecta un proveedor de WhatsApp/SMS en Configuración → Proveedores para usar este canal."
+        title={`Sin proveedor de ${providerLabel}`}
+        description={`Conecta ${providerLabel} en Configuración → Proveedores para usar este canal.`}
         action={
           <Button asChild>
             <Link to="/settings/providers">Ir a proveedores</Link>
@@ -694,7 +709,7 @@ function StepAudience({
           }
           description={
             isPhoneChannel
-              ? "Sincroniza las audiencias de Twilio en Configuración → Proveedores. Solo aparecen listas con al menos un contacto con teléfono activo."
+              ? "Sincroniza las audiencias del canal en Configuración → Proveedores. Solo aparecen listas con al menos un contacto con teléfono activo."
               : "Conecta un proveedor y sincroniza tus audiencias para seleccionarlas aquí."
           }
           action={

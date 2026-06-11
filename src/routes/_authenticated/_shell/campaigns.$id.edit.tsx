@@ -49,7 +49,8 @@ function CampaignEditPage() {
       deliveryChannel: (config?.delivery_channel ?? "email") as
         | "email"
         | "whatsapp"
-        | "sms",
+        | "sms"
+        | "whatsapp_cloud",
       lyricsGoal: config?.lyrics_goal ?? campaign.goal ?? "",
       lyricsPrompt: config?.lyrics_prompt ?? campaign.ai_prompt ?? "",
       musicStyle: config?.music_style ?? campaign.music_style ?? "",

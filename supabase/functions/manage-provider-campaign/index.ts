@@ -1384,6 +1384,114 @@ Deno.serve(async (req: Request) => {
         return json({ ok: true, sent: sentTw, failed: failedTw, total: deliveries.length, sent_at: nowTw, channel })
       }
 
+      // ── Canal WhatsApp Business (Cloud API de Meta) ─────────────────────
+      // Cuando la audiencia apunta a una conexión 'whatsapp', el envío se hace
+      // con plantillas aprobadas vía graph.facebook.com. La plantilla debe
+      // tener el cuerpo con dos parámetros: {{1}} nombre y {{2}} enlace.
+      if (audienceConn.provider_type === "whatsapp") {
+        const waCreds = decryptCredentials(audienceConn.encrypted_credentials)
+        const accessToken   = typeof waCreds?.accessToken      === "string" ? waCreds.accessToken      : ""
+        const phoneNumberId = typeof waCreds?.phoneNumberId    === "string" ? waCreds.phoneNumberId    : ""
+        const templateName  = typeof waCreds?.templateName     === "string" ? waCreds.templateName     : ""
+        const templateLang  = typeof waCreds?.templateLanguage === "string" ? waCreds.templateLanguage : "es"
+        if (!accessToken || !phoneNumberId) {
+          return json({ error: "Credenciales de WhatsApp Business no disponibles" }, 400)
+        }
+        if (!templateName) {
+          return json({
+            error: "Configura el nombre de la plantilla de WhatsApp aprobada en Ajustes → Proveedores → WhatsApp",
+          }, 400)
+        }
+
+        const contactIds = deliveries.map((d) => d.external_contact_id).filter(Boolean)
+        const { data: contactRows } = await supabase
+          .from("contacts")
+          .select("id, phone")
+          .in("id", contactIds)
+          .eq("tenant_id", tenantId)
+        const phoneMap = new Map<string, string>()
+        for (const c of contactRows ?? []) {
+          if (c.phone) phoneMap.set(String(c.id), String(c.phone))
+        }
+
+        const campaignTitle = campaign.name || "Tu canción personalizada"
+        const graphUrl = `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`
+
+        let sentWa = 0, failedWa = 0
+        const nowWa = new Date().toISOString()
+
+        for (const delivery of deliveries) {
+          const phone = phoneMap.get(delivery.external_contact_id)
+          if (!phone) {
+            await supabase.from("personalized_deliveries").update({
+              status: "failed", error_message: "Teléfono no disponible para este contacto", updated_at: nowWa,
+            }).eq("id", delivery.id)
+            failedWa++; continue
+          }
+
+          const firstName = delivery.first_name || "amigo"
+          const playUrl = `${EXPERIENCE_BASE_URL}/play/${delivery.experience_token}`
+          // WhatsApp Cloud API espera el número en formato internacional (dígitos).
+          const toNumber = phone.replace(/^whatsapp:/, "").replace(/[^0-9]/g, "")
+
+          const payload = {
+            messaging_product: "whatsapp",
+            to: toNumber,
+            type: "template",
+            template: {
+              name: templateName,
+              language: { code: templateLang },
+              components: [
+                {
+                  type: "body",
+                  parameters: [
+                    { type: "text", text: firstName },
+                    { type: "text", text: playUrl },
+                  ],
+                },
+              ],
+            },
+          }
+
+          const sendRes = await fetch(graphUrl, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+
+          if (sendRes.ok) {
+            await supabase.from("personalized_deliveries").update({
+              status: "sent", email_sent_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+            }).eq("id", delivery.id)
+            sentWa++
+          } else {
+            const errBody = await sendRes.json().catch(() => ({}))
+            const errMsg = typeof errBody?.error?.message === "string" ? errBody.error.message : `WhatsApp error ${sendRes.status}`
+            await supabase.from("personalized_deliveries").update({
+              status: "failed", error_message: errMsg, updated_at: new Date().toISOString(),
+            }).eq("id", delivery.id)
+            console.error(`[send_personalized] WhatsApp ${sendRes.status}:`, errMsg)
+            failedWa++
+          }
+        }
+
+        const campaignUpdateWa: Record<string, unknown> = { status: "sent", updated_at: nowWa }
+        if (campaign.status !== "sent") campaignUpdateWa.sent_at = nowWa
+        await supabase.from("campaigns").update(campaignUpdateWa).eq("id", campaignId)
+
+        try {
+          await supabase.from("notifications").insert({
+            tenant_id: tenantId, type: "campaign_sent",
+            title: campaign.status === "sent" ? "Envío de pendientes completado" : "Campaña personalizada enviada",
+            body: `"${campaignTitle}" — ${sentWa} mensajes WhatsApp enviados${failedWa > 0 ? `, ${failedWa} fallidos` : ""}.`,
+            link: `/campaigns/${campaignId}`,
+          })
+        } catch (_e) { /* non-critical */ }
+
+        return json({ ok: true, sent: sentWa, failed: failedWa, total: deliveries.length, sent_at: nowWa, channel: "whatsapp_cloud" })
+      }
+
+
       const audienceCreds = decryptCredentials(audienceConn.encrypted_credentials)
       const audienceApiKey = typeof audienceCreds?.apiKey === "string" ? audienceCreds.apiKey : ""
       if (!audienceApiKey) return json({ error: "API key de audiencia no disponible" }, 400)

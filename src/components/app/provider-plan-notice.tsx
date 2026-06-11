@@ -50,6 +50,13 @@ const NOTICES: Record<
       "Las audiencias para Twilio son tus listas locales de contactos con teléfono activo.",
     ],
   },
+  whatsapp: {
+    title: "WhatsApp Business: API Cloud de Meta",
+    lines: [
+      "Entrega la Experiencia Musical por WhatsApp con plantillas de marketing aprobadas vía la Cloud API de Meta.",
+      "Las audiencias son tus listas locales de contactos con teléfono activo. Necesitas una plantilla aprobada con el cuerpo {{1}} nombre y {{2}} enlace.",
+    ],
+  },
 };
 
 export function ProviderPlanNotice({

@@ -69,6 +69,12 @@ async function callProviderFn(payload: {
   auth_token?: string;
   whatsapp_from?: string;
   sms_from?: string;
+  // WhatsApp Business (Cloud API) credential fields.
+  access_token?: string;
+  phone_number_id?: string;
+  waba_id?: string;
+  template_name?: string;
+  template_language?: string;
 }) {
   const { data, error } = await supabase.functions.invoke(
     "manage-provider-connection",
@@ -165,6 +171,69 @@ export function useTwilioStatus(tenantId: string | undefined) {
     staleTime: 30_000,
   });
 }
+
+// ── WhatsApp Business (Cloud API de Meta) ──────────────────────────────────
+// Additive channel like Twilio: connecting it does NOT disconnect the active
+// email provider. Credentials are validated + stored server-side.
+
+export interface WhatsAppCredentialsInput {
+  accessToken: string;
+  phoneNumberId: string;
+  wabaId?: string;
+  templateName?: string;
+  templateLanguage?: string;
+}
+
+export function useConnectWhatsApp(tenantId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (creds: WhatsAppCredentialsInput) => {
+      if (!tenantId) throw new Error("Tenant no disponible");
+      await callProviderFn({
+        action: "connect",
+        provider_type: "whatsapp",
+        access_token: creds.accessToken.trim(),
+        phone_number_id: creds.phoneNumberId.trim(),
+        waba_id: creds.wabaId?.trim() ?? "",
+        template_name: creds.templateName?.trim() ?? "",
+        template_language: creds.templateLanguage?.trim() ?? "",
+      });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["provider-connections", tenantId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["whatsapp-status", tenantId],
+      });
+    },
+  });
+}
+
+export interface WhatsAppStatus {
+  connected: boolean;
+  status?: ProviderStatus;
+  last_sync_at?: string | null;
+  has_api_key?: boolean;
+  phone_number_id?: string;
+  waba_id?: string;
+  template_name?: string;
+  template_language?: string;
+}
+
+export function useWhatsAppStatus(tenantId: string | undefined) {
+  return useQuery({
+    queryKey: ["whatsapp-status", tenantId],
+    queryFn: async (): Promise<WhatsAppStatus> =>
+      (await callProviderFn({
+        action: "get_connection_status",
+        provider_type: "whatsapp",
+      })) as WhatsAppStatus,
+    enabled: !!tenantId,
+    staleTime: 30_000,
+  });
+}
+
 
 export function useDisconnectProvider(tenantId: string | undefined) {
   const queryClient = useQueryClient();
