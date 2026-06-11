@@ -422,9 +422,11 @@ export type Database = {
           contact_count: number
           created_at: string
           description: string | null
+          external_ref: string | null
           id: string
           mailerlite_group_id: string | null
           name: string
+          source: string
           tags: string[] | null
           tenant_id: string
           updated_at: string
@@ -434,9 +436,11 @@ export type Database = {
           contact_count?: number
           created_at?: string
           description?: string | null
+          external_ref?: string | null
           id?: string
           mailerlite_group_id?: string | null
           name: string
+          source?: string
           tags?: string[] | null
           tenant_id: string
           updated_at?: string
@@ -446,9 +450,11 @@ export type Database = {
           contact_count?: number
           created_at?: string
           description?: string | null
+          external_ref?: string | null
           id?: string
           mailerlite_group_id?: string | null
           name?: string
+          source?: string
           tags?: string[] | null
           tenant_id?: string
           updated_at?: string
@@ -490,6 +496,7 @@ export type Database = {
           created_at: string
           custom_fields: Json
           email: string
+          external_contact_id: string | null
           first_name: string | null
           id: string
           last_name: string | null
@@ -506,6 +513,7 @@ export type Database = {
           created_at?: string
           custom_fields?: Json
           email: string
+          external_contact_id?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
@@ -522,6 +530,7 @@ export type Database = {
           created_at?: string
           custom_fields?: Json
           email?: string
+          external_contact_id?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
