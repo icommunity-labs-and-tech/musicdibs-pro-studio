@@ -307,6 +307,7 @@ export function CampaignBuilder({
       vertical: tenant.vertical ?? "music",
       name: state.name.trim(),
       generationMode: state.generationMode,
+      deliveryChannel: state.deliveryChannel,
       providerConnectionId: selectedAudience.provider_connection_id,
       providerAudienceId: selectedAudience.id,
       audienceContacts: selectedAudience.contacts_count,
