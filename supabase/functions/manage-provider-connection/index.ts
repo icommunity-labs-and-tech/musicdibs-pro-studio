@@ -6,6 +6,7 @@ import { MailerLiteConnector } from "./MailerLiteConnector.ts"
 import { ResendConnector } from "./ResendConnector.ts"
 import { TwilioConnector } from "./TwilioConnector.ts"
 import { WhatsAppCloudConnector } from "./WhatsAppCloudConnector.ts"
+import { SalesforceCRMConnector } from "./SalesforceCRMConnector.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,12 +18,12 @@ const json = (data: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   })
 
-type ProviderType = "mailerlite" | "brevo" | "resend" | "twilio" | "whatsapp"
-const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo", "resend", "twilio", "whatsapp"]
+type ProviderType = "mailerlite" | "brevo" | "resend" | "twilio" | "whatsapp" | "salesforce_crm"
+const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo", "resend", "twilio", "whatsapp", "salesforce_crm"]
 
 // Canales aditivos (WhatsApp/SMS): conviven con el proveedor de email activo y
 // NO entran en la lógica de "un único conector activo".
-const ADDITIVE_PROVIDERS: ProviderType[] = ["twilio", "whatsapp"]
+const ADDITIVE_PROVIDERS: ProviderType[] = ["twilio", "whatsapp", "salesforce_crm"]
 
 function validateApiKey(apiKey: unknown): { valid: boolean; message?: string } {
   if (typeof apiKey !== "string" || apiKey.trim().length === 0) {
@@ -187,6 +188,73 @@ Deno.serve(async (req: Request) => {
         // WhatsApp Business es un canal adicional como Twilio: convive con el
         // proveedor de email activo.
         return json({ success: true, provider_type: "whatsapp", status: "connected" })
+      }
+
+      // ── Salesforce CRM (Sales Cloud): fuente de audiencias, no canal de
+      // envío. Auth vía Client Credentials Flow (Connected App / External
+      // Client App) ────────────────────────────────────────────────────────
+      if (providerType === "salesforce_crm") {
+        const instanceUrl     = typeof body.instance_url     === "string" ? body.instance_url.trim()     : ""
+        const clientId        = typeof body.client_id        === "string" ? body.client_id.trim()        : ""
+        const clientSecret    = typeof body.client_secret    === "string" ? body.client_secret.trim()    : ""
+        const apiVersion      = typeof body.api_version      === "string" ? body.api_version.trim()      : ""
+        const campaignFilter  = typeof body.campaign_filter  === "string" ? body.campaign_filter.trim()  : ""
+
+        const { data: existingSf } = await supabase
+          .from("provider_connections")
+          .select("encrypted_credentials")
+          .eq("tenant_id", profile.tenant_id)
+          .eq("provider_type", "salesforce_crm")
+          .maybeSingle()
+
+        const existingSfCreds: Record<string, unknown> =
+          existingSf?.encrypted_credentials
+            ? (decryptCredentials(existingSf.encrypted_credentials) ?? {})
+            : {}
+
+        const finalInstanceUrl = instanceUrl || (existingSfCreds.instanceUrl as string | undefined) || ""
+        const finalClientId    = clientId    || (existingSfCreds.clientId    as string | undefined) || ""
+        const finalSecret      = clientSecret || (existingSfCreds.clientSecret as string | undefined) || ""
+
+        if (!finalInstanceUrl || !finalClientId || !finalSecret) {
+          return json({ error: "My Domain URL, Consumer Key y Consumer Secret son requeridos" }, 400)
+        }
+
+        const validation = await new SalesforceCRMConnector({
+          instanceUrl: finalInstanceUrl,
+          clientId: finalClientId,
+          clientSecret: finalSecret,
+          apiVersion: apiVersion || (existingSfCreds.apiVersion as string | undefined),
+          campaignFilter: campaignFilter || (existingSfCreds.campaignFilter as string | undefined),
+        }).validateCredentials()
+        if (!validation.valid) {
+          return json({ error: validation.message ?? "Credenciales de Salesforce inválidas" }, 400)
+        }
+
+        const encrypted = encryptCredentials({
+          ...existingSfCreds,
+          instanceUrl: finalInstanceUrl,
+          clientId: finalClientId,
+          clientSecret: finalSecret,
+          apiVersion: apiVersion || existingSfCreds.apiVersion || "",
+          campaignFilter: campaignFilter || existingSfCreds.campaignFilter || "",
+        })
+
+        const { error: upsertErr } = await supabase.from("provider_connections").upsert(
+          {
+            tenant_id: profile.tenant_id,
+            provider_type: "salesforce_crm",
+            status: "connected",
+            encrypted_credentials: encrypted,
+            last_sync_at: null,
+          },
+          { onConflict: "tenant_id,provider_type" },
+        )
+        if (upsertErr) throw upsertErr
+
+        // Salesforce CRM es aditivo: convive con el proveedor de email activo
+        // y con Twilio/WhatsApp.
+        return json({ success: true, provider_type: "salesforce_crm", status: "connected" })
       }
 
 
@@ -367,6 +435,22 @@ Deno.serve(async (req: Request) => {
         })
       }
 
+      if (providerType === "salesforce_crm") {
+        const instanceUrl    = typeof creds?.instanceUrl   === "string" ? creds.instanceUrl   : ""
+        const clientId       = typeof creds?.clientId      === "string" ? creds.clientId      : ""
+        const clientSecret   = typeof creds?.clientSecret  === "string" ? creds.clientSecret  : ""
+        const apiVersion     = typeof creds?.apiVersion    === "string" ? creds.apiVersion    : ""
+        const campaignFilter = typeof creds?.campaignFilter === "string" ? creds.campaignFilter : ""
+        const check = await new SalesforceCRMConnector({
+          instanceUrl, clientId, clientSecret, apiVersion, campaignFilter,
+        }).validateCredentials()
+        return json({
+          success: check.valid,
+          provider_type: providerType,
+          message: check.valid ? "Conexión válida" : (check.message ?? "Credenciales inválidas"),
+        })
+      }
+
       const check = validateApiKey(creds?.apiKey)
 
       return json({
@@ -413,6 +497,18 @@ Deno.serve(async (req: Request) => {
           waba_id: typeof creds?.wabaId === "string" ? creds.wabaId : "",
           template_name: typeof creds?.templateName === "string" ? creds.templateName : "",
           template_language: typeof creds?.templateLanguage === "string" ? creds.templateLanguage : "es",
+        })
+      }
+
+      if (providerType === "salesforce_crm") {
+        return json({
+          connected: conn.status === "connected",
+          status: conn.status,
+          last_sync_at: conn.last_sync_at,
+          has_api_key: typeof creds?.clientId === "string" && (creds.clientId as string).length > 0,
+          instance_url: typeof creds?.instanceUrl === "string" ? creds.instanceUrl : "",
+          campaign_filter: typeof creds?.campaignFilter === "string" ? creds.campaignFilter : "",
+          api_version: typeof creds?.apiVersion === "string" ? creds.apiVersion : "",
         })
       }
 
@@ -510,6 +606,139 @@ Deno.serve(async (req: Request) => {
           success: true,
           provider_type: providerType,
           synced_count: rows.length,
+          last_sync_at: now,
+        })
+      }
+
+      // ── Salesforce CRM: Campaigns -> provider_audiences + import a
+      // contact_lists/contacts locales (fuente externa de audiencias) ───────
+      if (providerType === "salesforce_crm") {
+        const now = new Date().toISOString()
+        const instanceUrl    = typeof creds?.instanceUrl   === "string" ? creds.instanceUrl   : ""
+        const clientId       = typeof creds?.clientId      === "string" ? creds.clientId      : ""
+        const clientSecret   = typeof creds?.clientSecret  === "string" ? creds.clientSecret  : ""
+        const apiVersion     = typeof creds?.apiVersion    === "string" ? creds.apiVersion    : ""
+        const campaignFilter = typeof creds?.campaignFilter === "string" ? creds.campaignFilter : ""
+
+        if (!instanceUrl || !clientId || !clientSecret) {
+          return json({ error: "Credenciales de Salesforce no disponibles" }, 400)
+        }
+
+        const sfConnector = new SalesforceCRMConnector({
+          instanceUrl, clientId, clientSecret, apiVersion, campaignFilter,
+        })
+
+        let campaigns: Awaited<ReturnType<typeof sfConnector.syncCampaignAudiences>>
+        try {
+          campaigns = await sfConnector.syncCampaignAudiences()
+        } catch (e) {
+          await supabase.from("provider_connections").update({ status: "error" }).eq("id", conn.id)
+          return json({ error: e instanceof Error ? e.message : "Error consultando Salesforce" }, 502)
+        }
+
+        const audienceRows = campaigns.map((c) => ({
+          tenant_id: profile.tenant_id,
+          provider_connection_id: conn.id,
+          external_id: c.external_id,
+          name: c.name,
+          audience_type: c.audience_type,
+          contacts_count: c.contacts_count,
+          last_sync_at: now,
+        }))
+
+        if (audienceRows.length > 0) {
+          const { error: upsertErr } = await supabase
+            .from("provider_audiences")
+            .upsert(audienceRows, { onConflict: "provider_connection_id,external_id" })
+          if (upsertErr) throw upsertErr
+        }
+
+        const keepIds = audienceRows.map((r) => r.external_id)
+        let staleQuery = supabase
+          .from("provider_audiences")
+          .delete()
+          .eq("provider_connection_id", conn.id)
+        if (keepIds.length > 0) {
+          staleQuery = staleQuery.not("external_id", "in", `(${keepIds.map((id) => `"${id}"`).join(",")})`)
+        }
+        const { error: delErr } = await staleQuery
+        if (delErr) throw delErr
+
+        // Import: por cada Campaign, find-or-create contact_lists local y
+        // upsert de sus CampaignMember -> contacts.
+        let importedContacts = 0
+        for (const campaign of campaigns) {
+          const { data: existingList, error: listErr } = await supabase
+            .from("contact_lists")
+            .select("id")
+            .eq("tenant_id", profile.tenant_id)
+            .eq("source", "salesforce")
+            .eq("external_ref", campaign.external_id)
+            .maybeSingle()
+          if (listErr) throw listErr
+
+          let listId: string
+          if (existingList) {
+            listId = existingList.id
+            const { error: updErr } = await supabase
+              .from("contact_lists")
+              .update({ name: campaign.name, contact_count: campaign.contacts_count })
+              .eq("id", listId)
+            if (updErr) throw updErr
+          } else {
+            const { data: created, error: insErr } = await supabase
+              .from("contact_lists")
+              .insert({
+                tenant_id: profile.tenant_id,
+                name: campaign.name,
+                source: "salesforce",
+                external_ref: campaign.external_id,
+                contact_count: campaign.contacts_count,
+              })
+              .select("id")
+              .single()
+            if (insErr) throw insErr
+            listId = created.id
+          }
+
+          let sfContacts: Awaited<ReturnType<typeof sfConnector.fetchCampaignContacts>>
+          try {
+            sfContacts = await sfConnector.fetchCampaignContacts(campaign.external_id)
+          } catch (e) {
+            console.error("salesforce fetchCampaignContacts error", campaign.external_id, e)
+            continue
+          }
+
+          if (sfContacts.length === 0) continue
+
+          const contactRows = sfContacts.map((c) => ({
+            tenant_id: profile.tenant_id,
+            list_id: listId,
+            external_contact_id: c.externalId,
+            first_name: c.firstName,
+            email: c.email || "",
+            phone: c.phone || "",
+            status: "active",
+          }))
+
+          const { error: contactsErr } = await supabase
+            .from("contacts")
+            .upsert(contactRows, { onConflict: "list_id,external_contact_id" })
+          if (contactsErr) throw contactsErr
+
+          importedContacts += contactRows.length
+        }
+
+        await supabase
+          .from("provider_connections")
+          .update({ status: "connected", last_sync_at: now })
+          .eq("id", conn.id)
+
+        return json({
+          success: true,
+          provider_type: providerType,
+          synced_count: audienceRows.length,
+          imported_contacts: importedContacts,
           last_sync_at: now,
         })
       }
