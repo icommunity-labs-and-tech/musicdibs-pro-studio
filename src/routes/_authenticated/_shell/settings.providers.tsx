@@ -65,7 +65,7 @@ function ProvidersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-display text-xl font-bold">Proveedores</h2>
+        <h2 className="font-display text-xl font-bold">Plataformas de e-marketing</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Conecta tu plataforma de marketing para sincronizar audiencias y
           campañas. Solo puede haber{" "}
