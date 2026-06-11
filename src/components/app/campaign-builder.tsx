@@ -195,6 +195,55 @@ export function CampaignBuilder({
     [audiences, state.audienceId],
   );
 
+  // Delivery channel — Twilio (WhatsApp/SMS) is an additive provider whose
+  // audiences are local contact lists synced into provider_audiences.
+  const isPhoneChannel =
+    state.deliveryChannel === "whatsapp" || state.deliveryChannel === "sms";
+
+  const twilioConnection = useMemo(
+    () =>
+      (connections ?? []).find(
+        (c) => c.provider_type === "twilio" && c.status === "connected",
+      ) ?? null,
+    [connections],
+  );
+
+  // Audiences shown depend on the channel: phone channels only list Twilio
+  // audiences; email lists every NON-Twilio audience (current behaviour).
+  const visibleAudiences = useMemo(() => {
+    const all = audiences ?? [];
+    const twilioConnIds = new Set(
+      (connections ?? [])
+        .filter((c) => c.provider_type === "twilio")
+        .map((c) => c.id),
+    );
+    if (isPhoneChannel) {
+      if (!twilioConnection) return [];
+      return all.filter(
+        (a) => a.provider_connection_id === twilioConnection.id,
+      );
+    }
+    return all.filter((a) => !twilioConnIds.has(a.provider_connection_id));
+  }, [audiences, connections, isPhoneChannel, twilioConnection]);
+
+  // For Twilio audiences, contacts_count already reflects ACTIVE contacts with
+  // a non-empty phone (the edge function computes it that way and only stores
+  // lists with at least one). Require ≥1 for phone channels.
+  const phoneAudienceValid =
+    !isPhoneChannel ||
+    (!!selectedAudience && (selectedAudience.contacts_count ?? 0) > 0);
+
+  // When the channel changes, clear a selection that is no longer valid for the
+  // new channel (e.g. switching email→WhatsApp drops the email audience).
+  useEffect(() => {
+    if (
+      state.audienceId &&
+      !visibleAudiences.some((a) => a.id === state.audienceId)
+    ) {
+      setState((prev) => ({ ...prev, audienceId: "" }));
+    }
+  }, [state.audienceId, visibleAudiences]);
+
   const estimatedCredits = useMemo(
     () =>
       calculateEstimatedCredits(
