@@ -7,6 +7,7 @@ import type {
   GenerationLanguage,
   VoiceType,
 } from "@/lib/campaign-generation-options";
+import type { DeliveryChannel } from "@/components/app/campaign-builder";
 
 type CampaignInsert = Database["public"]["Tables"]["campaigns"]["Insert"];
 type CampaignUpdate = Database["public"]["Tables"]["campaigns"]["Update"];
