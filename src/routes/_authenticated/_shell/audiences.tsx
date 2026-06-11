@@ -22,7 +22,6 @@ import {
   type ProviderConnection,
 } from "@/hooks/use-providers";
 import {
-  PROVIDERS,
   getProviderMeta,
   type ProviderType,
 } from "@/lib/providers";
@@ -148,13 +147,13 @@ function AudiencesPage() {
               {audiences.data!.map((a) => {
                 const connection = connectionById.get(a.provider_connection_id);
                 const meta = connection
-                  ? PROVIDERS.find((p) => p.type === connection.provider_type)
+                  ? getProviderMeta(connection.provider_type)
                   : undefined;
                 return (
                   <TableRow key={a.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {meta ? (
+                        {meta?.logo ? (
                           <img
                             src={meta.logo}
                             alt={meta.label}
