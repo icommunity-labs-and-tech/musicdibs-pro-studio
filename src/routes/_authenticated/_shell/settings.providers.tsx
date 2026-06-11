@@ -40,6 +40,7 @@ import { ResendWebhookSetup } from "@/components/app/resend-webhook-setup";
 import { BrevoWebhookSetup } from "@/components/app/brevo-webhook-setup";
 import { IncomingWebhookPlanNotice } from "@/components/app/incoming-webhook-plan-notice";
 import { TwilioProviderCard } from "@/components/app/twilio-provider-card";
+import { WhatsAppProviderCard } from "@/components/app/whatsapp-provider-card";
 
 // Providers with a real metadata-sync integration available today.
 const SYNC_ENABLED: Record<string, boolean> = {
@@ -92,23 +93,34 @@ function ProvidersPage() {
       </div>
 
       <div>
-        <h3 className="font-display text-lg font-bold">Canal WhatsApp / SMS</h3>
+        <h3 className="font-display text-lg font-bold">Canales WhatsApp / SMS</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Twilio es un canal <strong className="text-foreground">adicional</strong>:
-          puede estar conectado en paralelo a tu proveedor de email. Sus
-          audiencias son tus listas locales de contactos con teléfono.
+          Estos son canales{" "}
+          <strong className="text-foreground">adicionales</strong>: pueden estar
+          conectados en paralelo a tu proveedor de email. Sus audiencias son tus
+          listas locales de contactos con teléfono.
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {connections.isLoading ? (
-            <Skeleton className="h-44 rounded-2xl" />
+            <>
+              <Skeleton className="h-44 rounded-2xl" />
+              <Skeleton className="h-44 rounded-2xl" />
+            </>
           ) : (
-            <TwilioProviderCard
-              tenantId={tenantId}
-              connection={connectionFor("twilio")}
-            />
+            <>
+              <TwilioProviderCard
+                tenantId={tenantId}
+                connection={connectionFor("twilio")}
+              />
+              <WhatsAppProviderCard
+                tenantId={tenantId}
+                connection={connectionFor("whatsapp")}
+              />
+            </>
           )}
         </div>
       </div>
+
 
       <AudiencesSection tenantId={tenantId} />
     </div>

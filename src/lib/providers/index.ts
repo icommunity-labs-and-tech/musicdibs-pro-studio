@@ -54,13 +54,22 @@ export const PROVIDERS: ProviderMeta[] = [
 // any UI iterating over connections (audiences, campaign detail) gets a label.
 const TWILIO_META: ProviderMeta = {
   type: "twilio",
-  label: "WhatsApp / SMS",
+  label: "Twilio",
   description:
     "Entrega la Experiencia Musical por WhatsApp o SMS vía Twilio. Las audiencias son tus listas locales con teléfono.",
   logo: whatsappLogo,
 };
 
-const ALL_PROVIDER_META: ProviderMeta[] = [...PROVIDERS, TWILIO_META];
+// WhatsApp Business (Cloud API de Meta) — canal aditivo, igual que Twilio.
+const WHATSAPP_META: ProviderMeta = {
+  type: "whatsapp",
+  label: "WhatsApp Business",
+  description:
+    "Entrega la Experiencia Musical por WhatsApp con plantillas aprobadas vía la API de WhatsApp Business (Cloud) de Meta.",
+  logo: whatsappLogo,
+};
+
+const ALL_PROVIDER_META: ProviderMeta[] = [...PROVIDERS, TWILIO_META, WHATSAPP_META];
 
 export function getProviderMeta(type: ProviderType): ProviderMeta {
   const meta = ALL_PROVIDER_META.find((p) => p.type === type);
@@ -81,6 +90,10 @@ export function createConnector(type: ProviderType): ProviderConnector {
       // Twilio is a WhatsApp/SMS channel handled entirely server-side
       // (validation + sending via the edge function). No frontend connector.
       throw new Error("Twilio se gestiona en el servidor (sin conector de cliente)");
+    case "whatsapp":
+      // WhatsApp Business (Cloud API de Meta) también se gestiona en el
+      // servidor (validación + envío con plantillas vía edge function).
+      throw new Error("WhatsApp Business se gestiona en el servidor (sin conector de cliente)");
     default:
       throw new Error(`Proveedor no soportado: ${type satisfies never}`);
   }

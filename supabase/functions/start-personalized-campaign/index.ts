@@ -210,7 +210,7 @@ Deno.serve(async (req: Request) => {
 
     const creds = decryptCredentials(conn.encrypted_credentials);
     const apiKey = typeof creds?.apiKey === "string" ? creds.apiKey : "";
-    if (conn.provider_type !== "twilio" && !apiKey) {
+    if (conn.provider_type !== "twilio" && conn.provider_type !== "whatsapp" && !apiKey) {
       return json({ error: "API key del proveedor no configurada" }, 400);
     }
 
@@ -222,7 +222,8 @@ Deno.serve(async (req: Request) => {
       contacts = await fetchMailerLiteContacts(apiKey, audience.external_id, contactLimit);
     } else if (conn.provider_type === "resend") {
       contacts = await fetchResendContacts(apiKey, audience.external_id, contactLimit);
-    } else if (conn.provider_type === "twilio") {
+    } else if (conn.provider_type === "twilio" || conn.provider_type === "whatsapp") {
+      // Ambos canales (Twilio y WhatsApp Cloud) usan listas locales con teléfono.
       contacts = await fetchTwilioContacts(supabase, tenantId, audience.external_id, contactLimit);
     } else {
       return json({ error: `Proveedor '${conn.provider_type}' no soportado para campañas personalizadas` }, 400);

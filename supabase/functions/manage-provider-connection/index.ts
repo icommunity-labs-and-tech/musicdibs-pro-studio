@@ -5,6 +5,7 @@ import { encryptCredentials, decryptCredentials } from "./encryption.ts"
 import { MailerLiteConnector } from "./MailerLiteConnector.ts"
 import { ResendConnector } from "./ResendConnector.ts"
 import { TwilioConnector } from "./TwilioConnector.ts"
+import { WhatsAppCloudConnector } from "./WhatsAppCloudConnector.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,8 +17,12 @@ const json = (data: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   })
 
-type ProviderType = "mailerlite" | "brevo" | "resend" | "twilio"
-const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo", "resend", "twilio"]
+type ProviderType = "mailerlite" | "brevo" | "resend" | "twilio" | "whatsapp"
+const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo", "resend", "twilio", "whatsapp"]
+
+// Canales aditivos (WhatsApp/SMS): conviven con el proveedor de email activo y
+// NO entran en la lógica de "un único conector activo".
+const ADDITIVE_PROVIDERS: ProviderType[] = ["twilio", "whatsapp"]
 
 function validateApiKey(apiKey: unknown): { valid: boolean; message?: string } {
   if (typeof apiKey !== "string" || apiKey.trim().length === 0) {
@@ -122,6 +127,69 @@ Deno.serve(async (req: Request) => {
         return json({ success: true, provider_type: "twilio", status: "connected" })
       }
 
+      // ── WhatsApp Business (Cloud API de Meta): flujo separado con Access
+      // Token + Phone Number ID + WABA ID + plantilla aprobada ─────────────
+      if (providerType === "whatsapp") {
+        const accessToken      = typeof body.access_token       === "string" ? body.access_token.trim()       : ""
+        const phoneNumberId    = typeof body.phone_number_id    === "string" ? body.phone_number_id.trim()    : ""
+        const wabaId           = typeof body.waba_id            === "string" ? body.waba_id.trim()            : ""
+        const templateName     = typeof body.template_name      === "string" ? body.template_name.trim()      : ""
+        const templateLanguage = typeof body.template_language  === "string" ? body.template_language.trim()  : ""
+
+        const { data: existingWa } = await supabase
+          .from("provider_connections")
+          .select("encrypted_credentials")
+          .eq("tenant_id", profile.tenant_id)
+          .eq("provider_type", "whatsapp")
+          .maybeSingle()
+
+        const existingWaCreds: Record<string, unknown> =
+          existingWa?.encrypted_credentials
+            ? (decryptCredentials(existingWa.encrypted_credentials) ?? {})
+            : {}
+
+        const finalToken = accessToken   || (existingWaCreds.accessToken   as string | undefined) || ""
+        const finalPhone = phoneNumberId || (existingWaCreds.phoneNumberId as string | undefined) || ""
+
+        if (!finalToken || !finalPhone) {
+          return json({ error: "Access Token y Phone Number ID son requeridos" }, 400)
+        }
+
+        const validation = await new WhatsAppCloudConnector({
+          accessToken: finalToken,
+          phoneNumberId: finalPhone,
+        }).validateCredentials()
+        if (!validation.valid) {
+          return json({ error: validation.message ?? "Credenciales de WhatsApp inválidas" }, 400)
+        }
+
+        const encrypted = encryptCredentials({
+          ...existingWaCreds,
+          accessToken: finalToken,
+          phoneNumberId: finalPhone,
+          wabaId: wabaId || existingWaCreds.wabaId || "",
+          templateName: templateName || existingWaCreds.templateName || "",
+          templateLanguage: templateLanguage || existingWaCreds.templateLanguage || "es",
+        })
+
+        const { error: upsertErr } = await supabase.from("provider_connections").upsert(
+          {
+            tenant_id: profile.tenant_id,
+            provider_type: "whatsapp",
+            status: "connected",
+            encrypted_credentials: encrypted,
+            last_sync_at: null,
+          },
+          { onConflict: "tenant_id,provider_type" },
+        )
+        if (upsertErr) throw upsertErr
+
+        // WhatsApp Business es un canal adicional como Twilio: convive con el
+        // proveedor de email activo.
+        return json({ success: true, provider_type: "whatsapp", status: "connected" })
+      }
+
+
       const apiKey = typeof body.api_key === "string" ? body.api_key.trim() : ""
 
       // Load any previously stored credentials for this provider.
@@ -175,7 +243,7 @@ Deno.serve(async (req: Request) => {
         .select("id")
         .eq("tenant_id", profile.tenant_id)
         .neq("provider_type", providerType)
-        .neq("provider_type", "twilio")
+        .not("provider_type", "in", `(${ADDITIVE_PROVIDERS.map((p) => `"${p}"`).join(",")})`)
       if (otherErr) throw otherErr
 
       if (otherConns && otherConns.length > 0) {
@@ -288,6 +356,17 @@ Deno.serve(async (req: Request) => {
         })
       }
 
+      if (providerType === "whatsapp") {
+        const accessToken   = typeof creds?.accessToken   === "string" ? creds.accessToken   : ""
+        const phoneNumberId = typeof creds?.phoneNumberId === "string" ? creds.phoneNumberId : ""
+        const check = await new WhatsAppCloudConnector({ accessToken, phoneNumberId }).validateCredentials()
+        return json({
+          success: check.valid,
+          provider_type: providerType,
+          message: check.valid ? "Conexión válida" : (check.message ?? "Credenciales inválidas"),
+        })
+      }
+
       const check = validateApiKey(creds?.apiKey)
 
       return json({
@@ -324,6 +403,20 @@ Deno.serve(async (req: Request) => {
         })
       }
 
+      if (providerType === "whatsapp") {
+        return json({
+          connected: conn.status === "connected",
+          status: conn.status,
+          last_sync_at: conn.last_sync_at,
+          has_api_key: typeof creds?.accessToken === "string" && (creds.accessToken as string).length > 0,
+          phone_number_id: typeof creds?.phoneNumberId === "string" ? creds.phoneNumberId : "",
+          waba_id: typeof creds?.wabaId === "string" ? creds.wabaId : "",
+          template_name: typeof creds?.templateName === "string" ? creds.templateName : "",
+          template_language: typeof creds?.templateLanguage === "string" ? creds.templateLanguage : "es",
+        })
+      }
+
+
       return json({
         connected: conn.status === "connected",
         status: conn.status,
@@ -346,8 +439,8 @@ Deno.serve(async (req: Request) => {
 
       const creds = decryptCredentials(conn.encrypted_credentials)
 
-      // ── Twilio: "audiencias" = contact_lists locales con teléfono ───────
-      if (providerType === "twilio") {
+      // ── Twilio / WhatsApp: "audiencias" = contact_lists locales con teléfono ─
+      if (providerType === "twilio" || providerType === "whatsapp") {
         const now = new Date().toISOString()
 
         const { data: lists, error: listsErr } = await supabase
@@ -415,7 +508,7 @@ Deno.serve(async (req: Request) => {
 
         return json({
           success: true,
-          provider_type: "twilio",
+          provider_type: providerType,
           synced_count: rows.length,
           last_sync_at: now,
         })

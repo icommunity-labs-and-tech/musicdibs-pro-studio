@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Loader2, MessagesSquare, Plug, RefreshCw, ShieldAlert } from "lucide-react";
+import { Loader2, Plug, RefreshCw, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
-
+import whatsappLogo from "@/assets/logos/whatsapp.svg";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,10 +24,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  useConnectTwilio,
+  useConnectWhatsApp,
   useDisconnectProvider,
   useSyncAudiences,
-  useTwilioStatus,
+  useWhatsAppStatus,
   type ProviderConnection,
 } from "@/hooks/use-providers";
 import type { ProviderStatus } from "@/lib/providers";
@@ -41,7 +41,7 @@ const STATUS_META: Record<
   error: { label: "Error", variant: "destructive" },
 };
 
-export function TwilioProviderCard({
+export function WhatsAppProviderCard({
   tenantId,
   connection,
 }: {
@@ -51,7 +51,7 @@ export function TwilioProviderCard({
   const [open, setOpen] = useState(false);
   const disconnect = useDisconnectProvider(tenantId);
   const sync = useSyncAudiences(tenantId);
-  const twilioStatus = useTwilioStatus(tenantId);
+  const waStatus = useWhatsAppStatus(tenantId);
 
   const status: ProviderStatus = connection?.status ?? "disconnected";
   const isConnected = status === "connected";
@@ -59,10 +59,10 @@ export function TwilioProviderCard({
 
   async function handleDisconnect() {
     try {
-      await disconnect.mutateAsync("twilio");
-      toast.success("WhatsApp / SMS (Twilio) desconectado");
+      await disconnect.mutateAsync("whatsapp");
+      toast.success("WhatsApp Business desconectado");
     } catch (e) {
-      toast.error("No pudimos desconectar Twilio", {
+      toast.error("No pudimos desconectar WhatsApp", {
         description: e instanceof Error ? e.message : undefined,
       });
     }
@@ -70,7 +70,7 @@ export function TwilioProviderCard({
 
   async function handleSync() {
     try {
-      const result = await sync.mutateAsync("twilio");
+      const result = await sync.mutateAsync("whatsapp");
       toast.success(`${result.synced_count} audiencias sincronizadas`);
     } catch (e) {
       toast.error("No pudimos sincronizar las audiencias", {
@@ -79,8 +79,9 @@ export function TwilioProviderCard({
     }
   }
 
-  const whatsappFrom = twilioStatus.data?.whatsapp_from?.trim();
-  const smsFrom = twilioStatus.data?.sms_from?.trim();
+  const phoneNumberId = waStatus.data?.phone_number_id?.trim();
+  const templateName = waStatus.data?.template_name?.trim();
+  const templateLanguage = waStatus.data?.template_language?.trim();
 
   return (
     <Card className="flex flex-col">
@@ -88,43 +89,48 @@ export function TwilioProviderCard({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-card">
-              <MessagesSquare className="h-6 w-6 text-[#F22F46]" />
+              <img src={whatsappLogo} alt="WhatsApp Business" className="h-6 w-6" />
             </div>
-            <CardTitle className="font-display text-lg">Twilio</CardTitle>
-            <Badge variant="outline" className="text-[10px] font-normal">
-              WhatsApp / SMS
-            </Badge>
+            <CardTitle className="font-display text-lg">WhatsApp Business</CardTitle>
           </div>
           <Badge variant={statusMeta.variant}>{statusMeta.label}</Badge>
         </div>
         <CardDescription>
-          Entrega la Experiencia Musical por WhatsApp o SMS vía Twilio. Canal
-          adicional: puede convivir con tu proveedor de email.
+          Entrega la Experiencia Musical por WhatsApp con plantillas aprobadas
+          vía la API de WhatsApp Business (Cloud) de Meta. Canal adicional: puede
+          convivir con tu proveedor de email.
         </CardDescription>
       </CardHeader>
       <CardContent className="mt-auto space-y-3">
         <Alert variant="default" className="bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/30 dark:text-amber-100 dark:border-amber-800">
           <ShieldAlert className="h-4 w-4 text-amber-700 dark:text-amber-300" />
           <AlertDescription className="text-xs">
-            Recuerda activar <strong>SMS Pumping Protection</strong> y{" "}
-            <strong>SMS Geo Permissions</strong> en Twilio para reducir fraude
-            antes de enviar a producción.
+            Necesitas una <strong>plantilla de marketing aprobada</strong> en Meta
+            cuyo cuerpo tenga dos variables: <strong>{"{{1}}"}</strong> nombre y{" "}
+            <strong>{"{{2}}"}</strong> enlace de la experiencia.
           </AlertDescription>
         </Alert>
-        {isConnected && (whatsappFrom || smsFrom) ? (
+        {isConnected && (phoneNumberId || templateName) ? (
           <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
-            {whatsappFrom ? (
+            {phoneNumberId ? (
               <p>
-                WhatsApp From:{" "}
-                <span className="font-medium text-foreground">{whatsappFrom}</span>
+                Phone Number ID:{" "}
+                <span className="font-medium text-foreground">{phoneNumberId}</span>
               </p>
             ) : null}
-            {smsFrom ? (
+            {templateName ? (
               <p>
-                SMS From:{" "}
-                <span className="font-medium text-foreground">{smsFrom}</span>
+                Plantilla:{" "}
+                <span className="font-medium text-foreground">
+                  {templateName}
+                  {templateLanguage ? ` (${templateLanguage})` : ""}
+                </span>
               </p>
-            ) : null}
+            ) : (
+              <p className="text-amber-600 dark:text-amber-400">
+                Sin plantilla configurada — no podrás enviar todavía.
+              </p>
+            )}
           </div>
         ) : null}
         <p className="text-xs text-muted-foreground">
@@ -150,11 +156,7 @@ export function TwilioProviderCard({
                 )}
                 Sincronizar audiencias
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
                 Editar
               </Button>
               <Button
@@ -178,99 +180,96 @@ export function TwilioProviderCard({
         </div>
       </CardContent>
 
-      <TwilioConnectDialog
+      <WhatsAppConnectDialog
         open={open}
         onOpenChange={setOpen}
         tenantId={tenantId}
-        initialWhatsappFrom={whatsappFrom ?? ""}
-        initialSmsFrom={smsFrom ?? ""}
-        hasSavedCredentials={!!twilioStatus.data?.has_api_key}
+        initialPhoneNumberId={phoneNumberId ?? ""}
+        initialWabaId={waStatus.data?.waba_id ?? ""}
+        initialTemplateName={templateName ?? ""}
+        initialTemplateLanguage={templateLanguage ?? "es"}
+        hasSavedCredentials={!!waStatus.data?.has_api_key}
       />
     </Card>
   );
 }
 
-function TwilioConnectDialog({
+function WhatsAppConnectDialog({
   open,
   onOpenChange,
   tenantId,
-  initialWhatsappFrom,
-  initialSmsFrom,
+  initialPhoneNumberId,
+  initialWabaId,
+  initialTemplateName,
+  initialTemplateLanguage,
   hasSavedCredentials,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   tenantId: string | undefined;
-  initialWhatsappFrom: string;
-  initialSmsFrom: string;
+  initialPhoneNumberId: string;
+  initialWabaId: string;
+  initialTemplateName: string;
+  initialTemplateLanguage: string;
   hasSavedCredentials: boolean;
 }) {
-  const [accountSid, setAccountSid] = useState("");
-  const [authToken, setAuthToken] = useState("");
-  const [whatsappFrom, setWhatsappFrom] = useState(initialWhatsappFrom);
-  const [smsFrom, setSmsFrom] = useState(initialSmsFrom);
-  const connect = useConnectTwilio(tenantId);
+  const [accessToken, setAccessToken] = useState("");
+  const [phoneNumberId, setPhoneNumberId] = useState(initialPhoneNumberId);
+  const [wabaId, setWabaId] = useState(initialWabaId);
+  const [templateName, setTemplateName] = useState(initialTemplateName);
+  const [templateLanguage, setTemplateLanguage] = useState(
+    initialTemplateLanguage || "es",
+  );
+  const connect = useConnectWhatsApp(tenantId);
 
-  // Prefill From values from saved status whenever the dialog opens.
+  // Prefill non-secret fields from saved status whenever the dialog opens.
   useEffect(() => {
     if (open) {
-      setWhatsappFrom(initialWhatsappFrom);
-      setSmsFrom(initialSmsFrom);
+      setPhoneNumberId(initialPhoneNumberId);
+      setWabaId(initialWabaId);
+      setTemplateName(initialTemplateName);
+      setTemplateLanguage(initialTemplateLanguage || "es");
     }
-  }, [open, initialWhatsappFrom, initialSmsFrom]);
+  }, [
+    open,
+    initialPhoneNumberId,
+    initialWabaId,
+    initialTemplateName,
+    initialTemplateLanguage,
+  ]);
 
   function close() {
-    setAccountSid("");
-    setAuthToken("");
+    setAccessToken("");
     onOpenChange(false);
   }
 
   async function handleConnect() {
-    const sid = accountSid.trim();
-    const token = authToken.trim();
-    const wa = whatsappFrom.trim();
-    const sms = smsFrom.trim();
+    const token = accessToken.trim();
+    const phone = phoneNumberId.trim();
 
-    // When credentials are already stored, SID/token can be left blank to keep
-    // the saved ones (the edge function merges with existing credentials).
-    if (!hasSavedCredentials) {
-      if (!sid || !sid.startsWith("AC") || sid.length !== 34) {
-        toast.error("Account SID inválido (debe empezar por 'AC' y tener 34 caracteres)");
-        return;
-      }
-      if (!token || token.length < 30) {
-        toast.error("Auth Token inválido");
-        return;
-      }
-    } else if (sid && (!sid.startsWith("AC") || sid.length !== 34)) {
-      toast.error("Account SID inválido (debe empezar por 'AC' y tener 34 caracteres)");
+    // When credentials are already stored, the Access Token can be left blank to
+    // keep the saved one (the edge function merges with existing credentials).
+    if (!hasSavedCredentials && (!token || token.length < 20)) {
+      toast.error("Introduce un Access Token válido");
       return;
     }
-
-    if (!wa && !sms) {
-      toast.error("Rellena al menos un origen: WhatsApp From o SMS From");
-      return;
-    }
-    if (wa && !wa.startsWith("whatsapp:+")) {
-      toast.error('WhatsApp From debe tener el formato "whatsapp:+1415..."');
-      return;
-    }
-    if (sms && !sms.startsWith("+")) {
-      toast.error('SMS From debe tener formato E.164 (ej. "+1415...")');
+    if (!phone || !/^\d{6,}$/.test(phone)) {
+      toast.error("Phone Number ID inválido (debe ser numérico)");
       return;
     }
 
     try {
       await connect.mutateAsync({
-        accountSid: sid,
-        authToken: token,
-        whatsappFrom: wa,
-        smsFrom: sms,
+        accessToken: token,
+        phoneNumberId: phone,
+        wabaId: wabaId.trim(),
+        templateName: templateName.trim(),
+        templateLanguage: templateLanguage.trim() || "es",
       });
-      toast.success("WhatsApp / SMS (Twilio) conectado");
+      toast.success("WhatsApp Business conectado");
       close();
     } catch (e) {
-      toast.error("No pudimos conectar Twilio", {
+      toast.error("No pudimos conectar WhatsApp", {
         description: e instanceof Error ? e.message : undefined,
       });
     }
@@ -280,67 +279,80 @@ function TwilioConnectDialog({
     <Dialog open={open} onOpenChange={(o) => (o ? onOpenChange(o) : close())}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Conectar WhatsApp / SMS (Twilio)</DialogTitle>
+          <DialogTitle>Conectar WhatsApp Business</DialogTitle>
           <DialogDescription>
-            Validamos tus credenciales con los números de prueba de Twilio, sin
-            coste ni envíos reales. Las credenciales se almacenan cifradas en el
-            servidor.
+            Validamos tus credenciales con la Cloud API de Meta mediante una
+            lectura del número (sin coste ni envíos). Las credenciales se
+            almacenan cifradas en el servidor.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="twilio-sid">
-              Account SID {hasSavedCredentials ? "(opcional)" : ""}
+            <Label htmlFor="wa-token">
+              Access Token {hasSavedCredentials ? "(opcional)" : ""}
             </Label>
             <Input
-              id="twilio-sid"
-              value={accountSid}
-              onChange={(e) => setAccountSid(e.target.value)}
-              placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-              autoComplete="off"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="twilio-token">
-              Auth Token {hasSavedCredentials ? "(opcional)" : ""}
-            </Label>
-            <Input
-              id="twilio-token"
+              id="wa-token"
               type="password"
-              value={authToken}
-              onChange={(e) => setAuthToken(e.target.value)}
+              value={accessToken}
+              onChange={(e) => setAccessToken(e.target.value)}
               placeholder="••••••••••••"
               autoComplete="off"
             />
             {hasSavedCredentials ? (
               <p className="text-xs text-muted-foreground">
-                Deja SID y token vacíos para conservar las credenciales guardadas.
+                Deja el token vacío para conservar el guardado.
               </p>
-            ) : null}
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Token permanente del System User con permiso whatsapp_business_messaging.
+              </p>
+            )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="twilio-wa">WhatsApp From</Label>
+            <Label htmlFor="wa-phone">Phone Number ID</Label>
             <Input
-              id="twilio-wa"
-              value={whatsappFrom}
-              onChange={(e) => setWhatsappFrom(e.target.value)}
-              placeholder="whatsapp:+14155238886"
+              id="wa-phone"
+              value={phoneNumberId}
+              onChange={(e) => setPhoneNumberId(e.target.value)}
+              placeholder="1234567890"
               autoComplete="off"
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="twilio-sms">SMS From</Label>
+            <Label htmlFor="wa-waba">WhatsApp Business Account ID (WABA)</Label>
             <Input
-              id="twilio-sms"
-              value={smsFrom}
-              onChange={(e) => setSmsFrom(e.target.value)}
-              placeholder="+14155238886"
+              id="wa-waba"
+              value={wabaId}
+              onChange={(e) => setWabaId(e.target.value)}
+              placeholder="opcional"
+              autoComplete="off"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="wa-template">Nombre de plantilla aprobada</Label>
+            <Input
+              id="wa-template"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder="cancion_personalizada"
               autoComplete="off"
             />
             <p className="text-xs text-muted-foreground">
-              Rellena al menos uno de los dos orígenes (WhatsApp o SMS).
+              La plantilla debe tener el cuerpo con {"{{1}}"} nombre y {"{{2}}"}{" "}
+              enlace de la experiencia.
             </p>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="wa-lang">Idioma de la plantilla</Label>
+            <Input
+              id="wa-lang"
+              value={templateLanguage}
+              onChange={(e) => setTemplateLanguage(e.target.value)}
+              placeholder="es"
+              autoComplete="off"
+            />
           </div>
         </div>
 
