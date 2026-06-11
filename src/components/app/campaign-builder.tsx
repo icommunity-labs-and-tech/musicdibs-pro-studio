@@ -292,7 +292,7 @@ export function CampaignBuilder({
       default:
         return true;
     }
-  }, [currentKey, state]);
+  }, [currentKey, state, phoneAudienceValid]);
 
   const isLastStep = step >= steps.length - 1;
 
