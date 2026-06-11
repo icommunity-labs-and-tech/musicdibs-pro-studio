@@ -4,6 +4,7 @@
 import mailerliteLogo from "@/assets/logos/mailerlite.svg";
 import brevoLogo from "@/assets/logos/brevo.svg";
 import resendLogo from "@/assets/logos/resend.svg";
+import whatsappLogo from "@/assets/logos/whatsapp.svg";
 
 import { BrevoConnector } from "./BrevoConnector";
 import { MailerLiteConnector } from "./MailerLiteConnector";
