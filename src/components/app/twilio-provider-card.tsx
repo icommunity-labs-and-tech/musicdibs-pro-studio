@@ -100,6 +100,14 @@ export function TwilioProviderCard({
         </CardDescription>
       </CardHeader>
       <CardContent className="mt-auto space-y-3">
+        <Alert variant="default" className="bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-950/30 dark:text-amber-100 dark:border-amber-800">
+          <ShieldAlert className="h-4 w-4 text-amber-700 dark:text-amber-300" />
+          <AlertDescription className="text-xs">
+            Recuerda activar <strong>SMS Pumping Protection</strong> y{" "}
+            <strong>SMS Geo Permissions</strong> en Twilio para reducir fraude
+            antes de enviar a producción.
+          </AlertDescription>
+        </Alert>
         {isConnected && (whatsappFrom || smsFrom) ? (
           <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
             {whatsappFrom ? (
