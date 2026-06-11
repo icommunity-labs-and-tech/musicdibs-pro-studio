@@ -10,6 +10,7 @@ import {
   Coins,
   Loader2,
   Mail,
+  MessageCircle,
   Music2,
   PenLine,
   RefreshCw,
