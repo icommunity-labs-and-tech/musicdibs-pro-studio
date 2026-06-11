@@ -9,7 +9,7 @@
 // every concrete connector (MailerLite, Brevo, …) must implement. No real API
 // calls live here yet; concrete connectors return mocked values for now.
 
-export type ProviderType = "mailerlite" | "brevo" | "resend";
+export type ProviderType = "mailerlite" | "brevo" | "resend" | "twilio";
 
 export type ProviderStatus = "disconnected" | "connected" | "error";
 
