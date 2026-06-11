@@ -1061,6 +1061,12 @@ function StepReview({
   // Single source of truth: same mapping used by Campaign Detail.
   const rows = [
     { label: "Campaña", value: state.name.trim() || "—" },
+    {
+      label: "Canal de entrega",
+      value:
+        DELIVERY_CHANNELS.find((c) => c.value === state.deliveryChannel)
+          ?.label ?? "Email",
+    },
     ...buildCampaignConfigRows({
       generationMode: state.generationMode,
       audienceName: selectedAudience?.name ?? null,
