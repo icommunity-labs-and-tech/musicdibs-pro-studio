@@ -390,7 +390,7 @@ export function CampaignBuilder({
           )}
           {currentKey === "audience" && (
             <StepAudience
-              audiences={audiences ?? []}
+              audiences={visibleAudiences}
               loading={audiencesLoading}
               syncing={syncAudiences.isPending}
               onRefresh={() => {
@@ -403,6 +403,12 @@ export function CampaignBuilder({
               providerLabelByConnection={providerLabelByConnection}
               generationMode={state.generationMode}
               estimatedCredits={estimatedCredits}
+              deliveryChannel={state.deliveryChannel}
+              onDeliveryChannelChange={(c) => update("deliveryChannel", c)}
+              isPhoneChannel={isPhoneChannel}
+              twilioConnected={!!twilioConnection}
+              selectedAudience={selectedAudience}
+              phoneAudienceValid={phoneAudienceValid}
             />
           )}
           {currentKey === "lyrics" && (
