@@ -75,6 +75,12 @@ async function callProviderFn(payload: {
   waba_id?: string;
   template_name?: string;
   template_language?: string;
+  // Salesforce CRM (Sales Cloud) credential fields.
+  instance_url?: string;
+  client_id?: string;
+  client_secret?: string;
+  api_version?: string;
+  campaign_filter?: string;
 }) {
   const { data, error } = await supabase.functions.invoke(
     "manage-provider-connection",
@@ -229,6 +235,68 @@ export function useWhatsAppStatus(tenantId: string | undefined) {
         action: "get_connection_status",
         provider_type: "whatsapp",
       })) as WhatsAppStatus,
+    enabled: !!tenantId,
+    staleTime: 30_000,
+  });
+}
+
+
+// ── Salesforce CRM (Sales Cloud) ───────────────────────────────────────────
+// Additive: fuente de audiencias (Campaigns), no canal de envío. Convive con
+// el proveedor de email activo y con Twilio/WhatsApp.
+
+export interface SalesforceCredentialsInput {
+  instanceUrl: string;
+  clientId: string;
+  clientSecret: string;
+  apiVersion?: string;
+  campaignFilter?: string;
+}
+
+export function useConnectSalesforce(tenantId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (creds: SalesforceCredentialsInput) => {
+      if (!tenantId) throw new Error("Tenant no disponible");
+      await callProviderFn({
+        action: "connect",
+        provider_type: "salesforce_crm",
+        instance_url: creds.instanceUrl.trim(),
+        client_id: creds.clientId.trim(),
+        client_secret: creds.clientSecret.trim(),
+        api_version: creds.apiVersion?.trim() ?? "",
+        campaign_filter: creds.campaignFilter?.trim() ?? "",
+      });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["provider-connections", tenantId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["salesforce-status", tenantId],
+      });
+    },
+  });
+}
+
+export interface SalesforceStatus {
+  connected: boolean;
+  status?: ProviderStatus;
+  last_sync_at?: string | null;
+  has_api_key?: boolean;
+  instance_url?: string;
+  campaign_filter?: string;
+  api_version?: string;
+}
+
+export function useSalesforceStatus(tenantId: string | undefined) {
+  return useQuery({
+    queryKey: ["salesforce-status", tenantId],
+    queryFn: async (): Promise<SalesforceStatus> =>
+      (await callProviderFn({
+        action: "get_connection_status",
+        provider_type: "salesforce_crm",
+      })) as SalesforceStatus,
     enabled: !!tenantId,
     staleTime: 30_000,
   });

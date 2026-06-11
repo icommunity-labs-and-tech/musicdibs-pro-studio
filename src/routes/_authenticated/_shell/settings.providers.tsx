@@ -41,6 +41,7 @@ import { BrevoWebhookSetup } from "@/components/app/brevo-webhook-setup";
 import { IncomingWebhookPlanNotice } from "@/components/app/incoming-webhook-plan-notice";
 import { TwilioProviderCard } from "@/components/app/twilio-provider-card";
 import { WhatsAppProviderCard } from "@/components/app/whatsapp-provider-card";
+import { SalesforceProviderCard } from "@/components/app/salesforce-provider-card";
 
 // Providers with a real metadata-sync integration available today.
 const SYNC_ENABLED: Record<string, boolean> = {
@@ -121,6 +122,24 @@ function ProvidersPage() {
         </div>
       </div>
 
+
+      <div>
+        <h3 className="font-display text-lg font-bold">CRM</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Fuentes de audiencias adicionales: importa Campaigns y sus
+          contactos como listas locales, sin sustituir tu proveedor de email.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {connections.isLoading ? (
+            <Skeleton className="h-44 rounded-2xl" />
+          ) : (
+            <SalesforceProviderCard
+              tenantId={tenantId}
+              connection={connectionFor("salesforce_crm")}
+            />
+          )}
+        </div>
+      </div>
 
       <AudiencesSection tenantId={tenantId} />
     </div>

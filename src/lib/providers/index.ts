@@ -69,7 +69,17 @@ const WHATSAPP_META: ProviderMeta = {
   logo: whatsappLogo,
 };
 
-const ALL_PROVIDER_META: ProviderMeta[] = [...PROVIDERS, TWILIO_META, WHATSAPP_META];
+// Salesforce CRM (Sales Cloud) — fuente de audiencias (Campaigns), canal
+// aditivo: convive con el proveedor de email y con Twilio/WhatsApp.
+const SALESFORCE_META: ProviderMeta = {
+  type: "salesforce_crm",
+  label: "Salesforce CRM",
+  description:
+    "Importa Campaigns de Salesforce Sales Cloud como audiencias y sincroniza sus contactos.",
+  logo: "",
+};
+
+const ALL_PROVIDER_META: ProviderMeta[] = [...PROVIDERS, TWILIO_META, WHATSAPP_META, SALESFORCE_META];
 
 export function getProviderMeta(type: ProviderType): ProviderMeta {
   const meta = ALL_PROVIDER_META.find((p) => p.type === type);
@@ -94,6 +104,10 @@ export function createConnector(type: ProviderType): ProviderConnector {
       // WhatsApp Business (Cloud API de Meta) también se gestiona en el
       // servidor (validación + envío con plantillas vía edge function).
       throw new Error("WhatsApp Business se gestiona en el servidor (sin conector de cliente)");
+    case "salesforce_crm":
+      // Salesforce CRM se gestiona enteramente en el servidor (OAuth Client
+      // Credentials + SOQL vía edge function). Sin conector de cliente.
+      throw new Error("Salesforce CRM se gestiona en el servidor (sin conector de cliente)");
     default:
       throw new Error(`Proveedor no soportado: ${type satisfies never}`);
   }
