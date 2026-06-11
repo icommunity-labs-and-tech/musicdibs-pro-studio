@@ -88,6 +88,34 @@ async function fetchResendContacts(
   })).filter((c) => c.externalId);
 }
 
+// ── Provider: Twilio (WhatsApp/SMS) — audiencias locales ────────────────────
+// Twilio no expone "audiencias" remotas: provider_audiences.external_id es el
+// id de un contact_lists local. Los contactos elegibles son los de esa lista
+// con teléfono y status='active'.
+async function fetchTwilioContacts(
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  tenantId: string,
+  listId: string,
+  limit: number,
+): Promise<Contact[]> {
+  const { data, error } = await supabase
+    .from("contacts")
+    .select("id, first_name, phone")
+    .eq("tenant_id", tenantId)
+    .eq("list_id", listId)
+    .eq("status", "active")
+    .not("phone", "is", null)
+    .neq("phone", "")
+    .limit(limit);
+  if (error) throw new Error(`Supabase contacts error: ${error.message}`);
+  const rows: Record<string, unknown>[] = Array.isArray(data) ? data : [];
+  return rows.map((r) => ({
+    externalId: String(r.id ?? ""),
+    firstName:  String(r.first_name ?? "").trim() || "amigo",
+  })).filter((c) => c.externalId);
+}
+
 // ── Personalise the lyricsGoal with first_name ─────────────────────────────
 function personalizeGoal(template: string | null, firstName: string): string {
   const base = template ?? "Crea una canción especial";
@@ -182,7 +210,9 @@ Deno.serve(async (req: Request) => {
 
     const creds = decryptCredentials(conn.encrypted_credentials);
     const apiKey = typeof creds?.apiKey === "string" ? creds.apiKey : "";
-    if (!apiKey) return json({ error: "API key del proveedor no configurada" }, 400);
+    if (conn.provider_type !== "twilio" && !apiKey) {
+      return json({ error: "API key del proveedor no configurada" }, 400);
+    }
 
     // Fetch contacts from provider
     log("personalized", "fetch_contacts", { tenantId, campaignId, provider: conn.provider_type, audienceExternalId: audience.external_id });
@@ -192,6 +222,8 @@ Deno.serve(async (req: Request) => {
       contacts = await fetchMailerLiteContacts(apiKey, audience.external_id, contactLimit);
     } else if (conn.provider_type === "resend") {
       contacts = await fetchResendContacts(apiKey, audience.external_id, contactLimit);
+    } else if (conn.provider_type === "twilio") {
+      contacts = await fetchTwilioContacts(supabase, tenantId, audience.external_id, contactLimit);
     } else {
       return json({ error: `Proveedor '${conn.provider_type}' no soportado para campañas personalizadas` }, 400);
     }

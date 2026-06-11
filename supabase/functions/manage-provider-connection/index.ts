@@ -4,6 +4,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2"
 import { encryptCredentials, decryptCredentials } from "./encryption.ts"
 import { MailerLiteConnector } from "./MailerLiteConnector.ts"
 import { ResendConnector } from "./ResendConnector.ts"
+import { TwilioConnector } from "./TwilioConnector.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,8 +16,8 @@ const json = (data: unknown, status = 200) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   })
 
-type ProviderType = "mailerlite" | "brevo" | "resend"
-const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo", "resend"]
+type ProviderType = "mailerlite" | "brevo" | "resend" | "twilio"
+const PROVIDER_TYPES: ProviderType[] = ["mailerlite", "brevo", "resend", "twilio"]
 
 function validateApiKey(apiKey: unknown): { valid: boolean; message?: string } {
   if (typeof apiKey !== "string" || apiKey.trim().length === 0) {
@@ -62,6 +63,65 @@ Deno.serve(async (req: Request) => {
 
     // ── connect ────────────────────────────────────────────────────────────
     if (action === "connect") {
+      // ── Twilio: flujo separado (credenciales de Account SID / Auth Token /
+      // números de origen, no un "api_key" único) ─────────────────────────
+      if (providerType === "twilio") {
+        const accountSid   = typeof body.account_sid   === "string" ? body.account_sid.trim()   : ""
+        const authToken    = typeof body.auth_token    === "string" ? body.auth_token.trim()    : ""
+        const whatsappFrom = typeof body.whatsapp_from === "string" ? body.whatsapp_from.trim() : ""
+        const smsFrom      = typeof body.sms_from      === "string" ? body.sms_from.trim()      : ""
+
+        const { data: existingTw } = await supabase
+          .from("provider_connections")
+          .select("encrypted_credentials")
+          .eq("tenant_id", profile.tenant_id)
+          .eq("provider_type", "twilio")
+          .maybeSingle()
+
+        const existingTwCreds: Record<string, unknown> =
+          existingTw?.encrypted_credentials
+            ? (decryptCredentials(existingTw.encrypted_credentials) ?? {})
+            : {}
+
+        const finalSid   = accountSid || (existingTwCreds.accountSid as string | undefined) || ""
+        const finalToken = authToken  || (existingTwCreds.authToken  as string | undefined) || ""
+
+        if (!finalSid || !finalToken) {
+          return json({ error: "Account SID y Auth Token son requeridos" }, 400)
+        }
+
+        const validation = await new TwilioConnector({ accountSid: finalSid, authToken: finalToken }).validateCredentials()
+        if (!validation.valid) {
+          return json({ error: validation.message ?? "Credenciales de Twilio inválidas" }, 400)
+        }
+
+        const encrypted = encryptCredentials({
+          ...existingTwCreds,
+          accountSid: finalSid,
+          authToken: finalToken,
+          whatsappFrom: whatsappFrom || existingTwCreds.whatsappFrom || "",
+          smsFrom: smsFrom || existingTwCreds.smsFrom || "",
+        })
+
+        const { error: upsertErr } = await supabase.from("provider_connections").upsert(
+          {
+            tenant_id: profile.tenant_id,
+            provider_type: "twilio",
+            status: "connected",
+            encrypted_credentials: encrypted,
+            last_sync_at: null,
+          },
+          { onConflict: "tenant_id,provider_type" },
+        )
+        if (upsertErr) throw upsertErr
+
+        // Twilio es un canal adicional (WhatsApp/SMS), NO reemplaza al
+        // proveedor de email activo (Resend/MailerLite/Brevo) — ambos pueden
+        // estar 'connected' simultáneamente, a diferencia del resto de
+        // proveedores que son mutuamente excluyentes.
+        return json({ success: true, provider_type: "twilio", status: "connected" })
+      }
+
       const apiKey = typeof body.api_key === "string" ? body.api_key.trim() : ""
 
       // Load any previously stored credentials for this provider.
@@ -115,6 +175,7 @@ Deno.serve(async (req: Request) => {
         .select("id")
         .eq("tenant_id", profile.tenant_id)
         .neq("provider_type", providerType)
+        .neq("provider_type", "twilio")
       if (otherErr) throw otherErr
 
       if (otherConns && otherConns.length > 0) {
@@ -215,6 +276,18 @@ Deno.serve(async (req: Request) => {
       if (!conn) return json({ error: "Provider no conectado" }, 404)
 
       const creds = decryptCredentials(conn.encrypted_credentials)
+
+      if (providerType === "twilio") {
+        const sid = typeof creds?.accountSid === "string" ? creds.accountSid : ""
+        const tok = typeof creds?.authToken === "string" ? creds.authToken : ""
+        const check = await new TwilioConnector({ accountSid: sid, authToken: tok }).validateCredentials()
+        return json({
+          success: check.valid,
+          provider_type: providerType,
+          message: check.valid ? "Conexión válida" : (check.message ?? "Credenciales inválidas"),
+        })
+      }
+
       const check = validateApiKey(creds?.apiKey)
 
       return json({
@@ -240,6 +313,17 @@ Deno.serve(async (req: Request) => {
 
       const creds = decryptCredentials(conn.encrypted_credentials)
 
+      if (providerType === "twilio") {
+        return json({
+          connected: conn.status === "connected",
+          status: conn.status,
+          last_sync_at: conn.last_sync_at,
+          has_api_key: typeof creds?.accountSid === "string" && (creds.accountSid as string).length > 0,
+          whatsapp_from: typeof creds?.whatsappFrom === "string" ? creds.whatsappFrom : "",
+          sms_from: typeof creds?.smsFrom === "string" ? creds.smsFrom : "",
+        })
+      }
+
       return json({
         connected: conn.status === "connected",
         status: conn.status,
@@ -261,6 +345,82 @@ Deno.serve(async (req: Request) => {
       if (!conn) return json({ error: "Provider no conectado" }, 404)
 
       const creds = decryptCredentials(conn.encrypted_credentials)
+
+      // ── Twilio: "audiencias" = contact_lists locales con teléfono ───────
+      if (providerType === "twilio") {
+        const now = new Date().toISOString()
+
+        const { data: lists, error: listsErr } = await supabase
+          .from("contact_lists")
+          .select("id, name")
+          .eq("tenant_id", profile.tenant_id)
+        if (listsErr) throw listsErr
+
+        const rows: Array<{
+          tenant_id: string
+          provider_connection_id: string
+          external_id: string
+          name: string
+          audience_type: string
+          contacts_count: number
+          last_sync_at: string
+        }> = []
+
+        for (const list of lists ?? []) {
+          const { count, error: countErr } = await supabase
+            .from("contacts")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", profile.tenant_id)
+            .eq("list_id", list.id)
+            .eq("status", "active")
+            .not("phone", "is", null)
+            .neq("phone", "")
+          if (countErr) throw countErr
+
+          if ((count ?? 0) > 0) {
+            rows.push({
+              tenant_id: profile.tenant_id,
+              provider_connection_id: conn.id,
+              external_id: list.id,
+              name: list.name,
+              audience_type: "list",
+              contacts_count: count ?? 0,
+              last_sync_at: now,
+            })
+          }
+        }
+
+        if (rows.length > 0) {
+          const { error: upsertErr } = await supabase
+            .from("provider_audiences")
+            .upsert(rows, { onConflict: "provider_connection_id,external_id" })
+          if (upsertErr) throw upsertErr
+        }
+
+        const keepIds = rows.map((r) => r.external_id)
+        let staleQuery = supabase
+          .from("provider_audiences")
+          .delete()
+          .eq("provider_connection_id", conn.id)
+        if (keepIds.length > 0) {
+          staleQuery = staleQuery.not("external_id", "in", `(${keepIds.map((id) => `"${id}"`).join(",")})`)
+        }
+        const { error: delErr } = await staleQuery
+        if (delErr) throw delErr
+
+        await supabase
+          .from("provider_connections")
+          .update({ status: "connected", last_sync_at: now })
+          .eq("id", conn.id)
+
+        return json({
+          success: true,
+          provider_type: "twilio",
+          synced_count: rows.length,
+          last_sync_at: now,
+        })
+      }
+
       const apiKey = typeof creds?.apiKey === "string" ? creds.apiKey : ""
       if (!apiKey) return json({ error: "Credenciales no disponibles" }, 400)
 

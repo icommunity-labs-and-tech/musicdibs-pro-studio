@@ -1270,6 +1270,120 @@ Deno.serve(async (req: Request) => {
       if (!audienceConn || audienceConn.status !== "connected") {
         return json({ error: "Proveedor de audiencia no conectado" }, 400)
       }
+
+      // ── Canal WhatsApp/SMS (Twilio) ─────────────────────────────────────
+      // Twilio es un canal aditivo: cuando la audiencia de la campaña apunta
+      // a una conexión Twilio, el envío personalizado se hace por
+      // WhatsApp/SMS (texto + enlace a la Experience Page) en vez de email.
+      if (audienceConn.provider_type === "twilio") {
+        const twilioCreds = decryptCredentials(audienceConn.encrypted_credentials)
+        const accountSid   = typeof twilioCreds?.accountSid   === "string" ? twilioCreds.accountSid   : ""
+        const authToken    = typeof twilioCreds?.authToken    === "string" ? twilioCreds.authToken    : ""
+        const whatsappFrom = typeof twilioCreds?.whatsappFrom === "string" ? twilioCreds.whatsappFrom : ""
+        const smsFrom      = typeof twilioCreds?.smsFrom      === "string" ? twilioCreds.smsFrom      : ""
+        if (!accountSid || !authToken) {
+          return json({ error: "Credenciales de Twilio no disponibles" }, 400)
+        }
+
+        const { data: genConfig } = await supabase
+          .from("campaign_generation_configs")
+          .select("delivery_channel")
+          .eq("campaign_id", campaignId)
+          .maybeSingle()
+        const channel: "whatsapp" | "sms" = genConfig?.delivery_channel === "sms" ? "sms" : "whatsapp"
+
+        const fromNumber = channel === "whatsapp" ? whatsappFrom : smsFrom
+        if (!fromNumber) {
+          return json({
+            error: `Configura el número de origen de ${channel === "whatsapp" ? "WhatsApp" : "SMS"} en Ajustes → Proveedores → Twilio`,
+          }, 400)
+        }
+
+        const contactIds = deliveries.map((d) => d.external_contact_id).filter(Boolean)
+        const { data: contactRows } = await supabase
+          .from("contacts")
+          .select("id, phone")
+          .in("id", contactIds)
+          .eq("tenant_id", tenantId)
+        const phoneMap = new Map<string, string>()
+        for (const c of contactRows ?? []) {
+          if (c.phone) phoneMap.set(String(c.id), String(c.phone))
+        }
+
+        const { emailSubject, emailBody } = await fetchEmailConfig(campaignId)
+        const campaignTitle = campaign.name || "Tu canción personalizada"
+        const plainBody = (emailBody || "")
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+        const messageTitle = emailSubject?.trim() || campaignTitle
+
+        const basicAuth = btoa(`${accountSid}:${authToken}`)
+        const fromAddr = channel === "whatsapp"
+          ? (fromNumber.startsWith("whatsapp:") ? fromNumber : `whatsapp:${fromNumber}`)
+          : fromNumber
+        const toPrefix = channel === "whatsapp" ? "whatsapp:" : ""
+
+        let sentTw = 0, failedTw = 0
+        const nowTw = new Date().toISOString()
+
+        for (const delivery of deliveries) {
+          const phone = phoneMap.get(delivery.external_contact_id)
+          if (!phone) {
+            await supabase.from("personalized_deliveries").update({
+              status: "failed", error_message: "Teléfono no disponible para este contacto", updated_at: nowTw,
+            }).eq("id", delivery.id)
+            failedTw++; continue
+          }
+
+          const firstName = delivery.first_name || "amigo"
+          const playUrl = `${EXPERIENCE_BASE_URL}/play/${delivery.experience_token}`
+          const text = plainBody
+            ? `¡Hola ${firstName}! ${messageTitle}\n\n${plainBody}\n\n${playUrl}`
+            : `¡Hola ${firstName}! 🎵 ${messageTitle} ya está lista para ti:\n${playUrl}`
+
+          const normalizedPhone = phone.replace(/^whatsapp:/, "").trim()
+          const toAddr = `${toPrefix}${normalizedPhone.startsWith("+") ? normalizedPhone : `+${normalizedPhone}`}`
+
+          const params = new URLSearchParams({ From: fromAddr, To: toAddr, Body: text })
+          const sendRes = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
+            method: "POST",
+            headers: { Authorization: `Basic ${basicAuth}`, "Content-Type": "application/x-www-form-urlencoded" },
+            body: params,
+          })
+
+          if (sendRes.ok) {
+            await supabase.from("personalized_deliveries").update({
+              status: "sent", email_sent_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+            }).eq("id", delivery.id)
+            sentTw++
+          } else {
+            const errBody = await sendRes.json().catch(() => ({}))
+            const errMsg = typeof errBody?.message === "string" ? errBody.message : `Twilio error ${sendRes.status}`
+            await supabase.from("personalized_deliveries").update({
+              status: "failed", error_message: errMsg, updated_at: new Date().toISOString(),
+            }).eq("id", delivery.id)
+            console.error(`[send_personalized] Twilio ${sendRes.status}:`, errMsg)
+            failedTw++
+          }
+        }
+
+        const campaignUpdateTw: Record<string, unknown> = { status: "sent", updated_at: nowTw }
+        if (campaign.status !== "sent") campaignUpdateTw.sent_at = nowTw
+        await supabase.from("campaigns").update(campaignUpdateTw).eq("id", campaignId)
+
+        try {
+          await supabase.from("notifications").insert({
+            tenant_id: tenantId, type: "campaign_sent",
+            title: campaign.status === "sent" ? "Envío de pendientes completado" : "Campaña personalizada enviada",
+            body: `"${campaignTitle}" — ${sentTw} mensajes ${channel === "whatsapp" ? "WhatsApp" : "SMS"} enviados${failedTw > 0 ? `, ${failedTw} fallidos` : ""}.`,
+            link: `/campaigns/${campaignId}`,
+          })
+        } catch (_e) { /* non-critical */ }
+
+        return json({ ok: true, sent: sentTw, failed: failedTw, total: deliveries.length, sent_at: nowTw, channel })
+      }
+
       const audienceCreds = decryptCredentials(audienceConn.encrypted_credentials)
       const audienceApiKey = typeof audienceCreds?.apiKey === "string" ? audienceCreds.apiKey : ""
       if (!audienceApiKey) return json({ error: "API key de audiencia no disponible" }, 400)
