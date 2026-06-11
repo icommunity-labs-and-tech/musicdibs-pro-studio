@@ -61,6 +61,10 @@ export function createConnector(type: ProviderType): ProviderConnector {
       return new BrevoConnector();
     case "resend":
       return new ResendConnector();
+    case "twilio":
+      // Twilio is a WhatsApp/SMS channel handled entirely server-side
+      // (validation + sending via the edge function). No frontend connector.
+      throw new Error("Twilio se gestiona en el servidor (sin conector de cliente)");
     default:
       throw new Error(`Proveedor no soportado: ${type satisfies never}`);
   }
