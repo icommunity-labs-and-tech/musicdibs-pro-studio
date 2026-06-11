@@ -63,10 +63,23 @@ import {
   useUpdateCampaign,
 } from "@/hooks/use-campaign-generation-config";
 
+export type DeliveryChannel = "email" | "whatsapp" | "sms";
+
+export const DELIVERY_CHANNELS: {
+  value: DeliveryChannel;
+  label: string;
+  description: string;
+}[] = [
+  { value: "email", label: "Email", description: "Entrega por correo electrónico (proveedor de email)." },
+  { value: "whatsapp", label: "WhatsApp", description: "Entrega por WhatsApp vía Twilio (listas con teléfono)." },
+  { value: "sms", label: "SMS", description: "Entrega por SMS vía Twilio (listas con teléfono)." },
+];
+
 export interface BuilderState {
   name: string;
   generationMode: GenerationMode | "";
   audienceId: string;
+  deliveryChannel: DeliveryChannel;
   lyricsGoal: string;
   lyricsPrompt: string;
   musicStyle: string;
@@ -82,6 +95,7 @@ export const EMPTY_BUILDER_STATE: BuilderState = {
   name: "",
   generationMode: "",
   audienceId: "",
+  deliveryChannel: "email",
   lyricsGoal: "",
   lyricsPrompt: "",
   musicStyle: "",
