@@ -51,6 +51,7 @@ const PROVIDER_DASHBOARD: Record<ProviderType, string> = {
   resend: "https://resend.com/broadcasts",
   twilio: "https://console.twilio.com/",
   whatsapp: "https://business.facebook.com/wa/manage/",
+  salesforce_crm: "https://salesforce.com/",
 };
 
 // Providers that can create/send a campaign from MusicDibs today.

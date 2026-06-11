@@ -57,6 +57,13 @@ const NOTICES: Record<
       "Las audiencias son tus listas locales de contactos con teléfono activo. Necesitas una plantilla aprobada con el cuerpo {{1}} nombre y {{2}} enlace.",
     ],
   },
+  salesforce_crm: {
+    title: "Salesforce CRM: fuente de audiencias",
+    lines: [
+      "Salesforce importa campañas y contactos como listas locales en MusicDibs.",
+      "No envía directamente: sirve como fuente adicional de audiencias junto a tu proveedor de email.",
+    ],
+  },
 };
 
 export function ProviderPlanNotice({
