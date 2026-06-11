@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Loader2, Plug, RefreshCw } from "lucide-react";
+import { Loader2, Plug, RefreshCw, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
 import whatsappLogo from "@/assets/logos/whatsapp.svg";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
