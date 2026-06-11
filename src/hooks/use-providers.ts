@@ -56,9 +56,19 @@ export function useProviderConnections(tenantId: string | undefined) {
 // Credentials are NEVER written from the browser. The manage-provider-connection
 // edge function encrypts and persists them server-side with the service role.
 async function callProviderFn(payload: {
-  action: "connect" | "disconnect" | "test_connection" | "sync_audiences";
+  action:
+    | "connect"
+    | "disconnect"
+    | "test_connection"
+    | "sync_audiences"
+    | "get_connection_status";
   provider_type: ProviderType;
   api_key?: string;
+  // Twilio-specific credential fields (snake_case as the edge fn expects).
+  account_sid?: string;
+  auth_token?: string;
+  whatsapp_from?: string;
+  sms_from?: string;
 }) {
   const { data, error } = await supabase.functions.invoke(
     "manage-provider-connection",
