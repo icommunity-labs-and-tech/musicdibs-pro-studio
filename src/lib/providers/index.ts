@@ -24,6 +24,9 @@ export interface ProviderMeta {
   logo: string;
 }
 
+// Email providers shown in the Settings → Providers grid (mutually exclusive,
+// "single active connector"). Twilio is intentionally NOT here — it renders as
+// a separate additive card.
 export const PROVIDERS: ProviderMeta[] = [
   {
     type: "mailerlite",
@@ -47,8 +50,20 @@ export const PROVIDERS: ProviderMeta[] = [
   },
 ];
 
+// Twilio metadata — kept out of PROVIDERS but resolvable via getProviderMeta so
+// any UI iterating over connections (audiences, campaign detail) gets a label.
+const TWILIO_META: ProviderMeta = {
+  type: "twilio",
+  label: "WhatsApp / SMS",
+  description:
+    "Entrega la Experiencia Musical por WhatsApp o SMS vía Twilio. Las audiencias son tus listas locales con teléfono.",
+  logo: whatsappLogo,
+};
+
+const ALL_PROVIDER_META: ProviderMeta[] = [...PROVIDERS, TWILIO_META];
+
 export function getProviderMeta(type: ProviderType): ProviderMeta {
-  const meta = PROVIDERS.find((p) => p.type === type);
+  const meta = ALL_PROVIDER_META.find((p) => p.type === type);
   if (!meta) throw new Error(`Proveedor no soportado: ${type}`);
   return meta;
 }
