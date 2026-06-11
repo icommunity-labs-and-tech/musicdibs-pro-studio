@@ -279,7 +279,7 @@ export function CampaignBuilder({
       case "type":
         return state.name.trim().length > 0 && state.generationMode !== "";
       case "audience":
-        return state.audienceId.length > 0;
+        return state.audienceId.length > 0 && phoneAudienceValid;
       case "lyrics":
         return state.lyricsGoal.trim().length > 0;
       case "music":
