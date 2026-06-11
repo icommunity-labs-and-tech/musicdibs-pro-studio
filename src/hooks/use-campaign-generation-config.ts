@@ -22,6 +22,7 @@ export interface CreateGenerationCampaignInput {
   vertical: string;
   name: string;
   generationMode: GenerationMode;
+  deliveryChannel: DeliveryChannel;
   providerConnectionId: string | null;
   providerAudienceId: string | null;
   audienceContacts: number;
