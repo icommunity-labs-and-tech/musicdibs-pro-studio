@@ -141,24 +141,38 @@ export class ResendCampaignProvider {
     assumedStatus?: CampaignStatus,
   ): Promise<CampaignProviderResult> {
     if (!res.ok) {
+      // Try to surface Resend's own error message (it's usually actionable,
+      // e.g. "The X domain is not verified").
+      const detail = (await res
+        .json()
+        .catch(() => null)) as { message?: string } | null;
+      const resendMessage = detail?.message?.trim();
+
       let message: string;
       switch (res.status) {
         case 401:
-        case 403:
           message = "La conexión con Resend no es válida. Revisa la API key.";
+          break;
+        case 403:
+          // 403 is almost always an unverified sender domain, not a bad key.
+          message =
+            resendMessage ??
+            "Resend rechazó el envío. Verifica que el dominio del remitente esté validado en https://resend.com/domains";
           break;
         case 404:
           message = "El broadcast no existe en Resend.";
           break;
         case 422:
           message =
+            resendMessage ??
             "Resend rechazó los datos. Verifica el dominio de envío verificado y la audiencia.";
           break;
         case 429:
           message = "Resend está limitando las peticiones. Inténtalo más tarde.";
           break;
         default:
-          message = `Resend respondió con un error (${res.status}).`;
+          message =
+            resendMessage ?? `Resend respondió con un error (${res.status}).`;
       }
       return { ok: false, status: res.status, error: message };
     }
