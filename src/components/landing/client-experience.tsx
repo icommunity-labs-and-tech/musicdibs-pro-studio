@@ -1,4 +1,7 @@
-import { ArrowDown, Check, MoreVertical, Play, Reply, Star } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowDown, Check, MoreVertical, Pause, Play, Reply, Star } from "lucide-react";
+
+import felicitacionSong from "@/assets/demos/felicitacion.mp3.asset.json";
 
 /**
  * "Así lo vive tu cliente" — shows the recipient-side experience across
@@ -115,8 +118,32 @@ function ChannelColumn({
 
 /* ── Email mockup (inbox-style card) ─────────────────────────────── */
 function EmailMockup() {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const onEnd = () => setPlaying(false);
+    audio.addEventListener("ended", onEnd);
+    return () => audio.removeEventListener("ended", onEnd);
+  }, []);
+
+  function toggle() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) {
+      audio.pause();
+      setPlaying(false);
+    } else {
+      void audio.play();
+      setPlaying(true);
+    }
+  }
+
   return (
     <div className="w-full max-w-sm overflow-hidden rounded-2xl border border-border bg-background shadow-lg">
+      <audio ref={audioRef} src={felicitacionSong.url} preload="none" />
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
           <span className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-gold to-teal font-display text-sm font-bold text-night-900">
@@ -143,11 +170,15 @@ function EmailMockup() {
 
         <button
           type="button"
-          tabIndex={-1}
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-gold to-teal px-4 py-3 text-sm font-semibold text-night-900 shadow-sm"
+          onClick={toggle}
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-gold to-teal px-4 py-3 text-sm font-semibold text-night-900 shadow-sm transition-transform hover:scale-[1.02] active:scale-[0.98]"
         >
-          <Play className="size-4 fill-current" />
-          Escuchar mensaje
+          {playing ? (
+            <Pause className="size-4 fill-current" />
+          ) : (
+            <Play className="size-4 fill-current" />
+          )}
+          {playing ? "Pausar mensaje" : "Escuchar mensaje"}
         </button>
       </div>
     </div>
