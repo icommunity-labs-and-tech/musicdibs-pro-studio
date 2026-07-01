@@ -5,6 +5,12 @@
  * `/delivery` route is an instance of <VerticalLanding> fed with this data.
  */
 
+import bancaAudio from "@/assets/demos/banca.mp3.asset.json";
+import deliveryAudio from "@/assets/demos/delivery.mp3.asset.json";
+import retailAudio from "@/assets/demos/retail.mp3.asset.json";
+import segurosAudio from "@/assets/demos/seguros.mp3.asset.json";
+import telcoAudio from "@/assets/demos/telco.mp3.asset.json";
+
 export type VerticalKey = "seguros" | "banca" | "retail" | "delivery" | "telco";
 
 export interface VerticalMetric {
