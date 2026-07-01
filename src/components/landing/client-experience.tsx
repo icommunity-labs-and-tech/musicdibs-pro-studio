@@ -1,4 +1,7 @@
-import { ArrowDown, Check, MoreVertical, Play, Reply, Star } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowDown, Check, MoreVertical, Pause, Play, Reply, Star } from "lucide-react";
+
+import felicitacionSong from "@/assets/demos/felicitacion.mp3.asset.json";
 
 /**
  * "Así lo vive tu cliente" — shows the recipient-side experience across
