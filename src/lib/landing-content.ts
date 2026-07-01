@@ -9,13 +9,14 @@
  * swapped here later without touching components.
  */
 
-export type IndustryKey = "seguros" | "banca" | "retail" | "delivery" | "telco";
-
 import bancaAudio from "@/assets/demos/banca.mp3.asset.json";
 import segurosAudio from "@/assets/demos/seguros.mp3.asset.json";
 import retailAudio from "@/assets/demos/retail.mp3.asset.json";
 import deliveryAudio from "@/assets/demos/delivery.mp3.asset.json";
 import telcoAudio from "@/assets/demos/telco.mp3.asset.json";
+
+export type IndustryKey = "seguros" | "banca" | "retail" | "delivery" | "telco";
+
 
 /** Demo audio cards shown inside the Audio Demo Modal (section 3). */
 export interface AudioDemo {
