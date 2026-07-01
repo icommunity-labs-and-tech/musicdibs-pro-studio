@@ -75,7 +75,7 @@ export const VERTICALS: Record<VerticalKey, VerticalContent> = {
         "La mayoría de emails de renovación de póliza se abren menos del 20% de las veces. Con MusicDibs, el audio personalizado convierte una comunicación ignorada en una experiencia que el cliente recuerda.",
       audioLabel: "Escucha: campaña de renovación de póliza de hogar",
       audioMeta: "Segmento 45-65 años · Tono: próximo, confiable · Duración: 32s",
-      audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+      audioSrc: segurosAudio.url,
     },
     problem: [
       "Las aseguradoras envían los mismos emails de renovación desde hace años.",
@@ -144,7 +144,7 @@ export const VERTICALS: Record<VerticalKey, VerticalContent> = {
         "Los clientes de banca premium reciben docenas de emails genéricos. MusicDibs convierte tu comunicación financiera en una experiencia diferenciada que construye confianza y fidelización.",
       audioLabel: "Escucha: campaña de fidelización banca premium",
       audioMeta: "Segmento clientes Private · Tono: sofisticado, exclusivo · Duración: 38s",
-      audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+      audioSrc: bancaAudio.url,
     },
     problem: [
       "La banca tiene el mayor problema de indiferenciación en email marketing.",
@@ -211,7 +211,7 @@ export const VERTICALS: Record<VerticalKey, VerticalContent> = {
         "En retail, el 74% de los emails promocionales se eliminan sin abrir. MusicDibs genera un audio único por campaña que detiene el scroll y convierte la apertura en una experiencia de compra.",
       audioLabel: "Escucha: campaña Black Friday — urgencia y descuento",
       audioMeta: "Segmento shoppers activos · Tono: energético, urgente · Duración: 35s",
-      audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+      audioSrc: retailAudio.url,
     },
     problem: [
       "En retail el inbox está saturado.",
@@ -281,7 +281,7 @@ export const VERTICALS: Record<VerticalKey, VerticalContent> = {
         "El cliente inactivo de delivery no necesita otro cupón del 10%. Necesita recordar por qué le gustaba pedir. MusicDibs genera música que activa el recuerdo emocional y convierte la apertura en un pedido.",
       audioLabel: "Escucha: campaña de reactivación — clientes inactivos 30 días",
       audioMeta: "Tono: cálido, apetecible, cercano · Duración: 28s",
-      audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+      audioSrc: deliveryAudio.url,
     },
     problem: [
       "En delivery, la guerra de descuentos ha entrenado a los clientes a esperar.",
@@ -350,7 +350,7 @@ export const VERTICALS: Record<VerticalKey, VerticalContent> = {
         "Las operadoras envían facturas, renovaciones y ofertas que el cliente asocia a gasto y portabilidad. MusicDibs convierte esas comunicaciones en una experiencia sonora que reduce el churn y mejora la conversión.",
       audioLabel: "Escucha: campaña de retención — cliente en riesgo de portabilidad",
       audioMeta: "Segmento alto valor · Tono: cercano, tecnológico · Duración: 30s",
-      audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+      audioSrc: telcoAudio.url,
     },
     problem: [
       "En telco la batalla es por la retención, y el email es la peor arma del sector.",
