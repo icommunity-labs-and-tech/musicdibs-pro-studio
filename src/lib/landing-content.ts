@@ -9,6 +9,12 @@
  * swapped here later without touching components.
  */
 
+import bancaSong from "@/assets/demos/banca.mp3.asset.json";
+import segurosSong from "@/assets/demos/seguros.mp3.asset.json";
+import retailSong from "@/assets/demos/retail.mp3.asset.json";
+import deliverySong from "@/assets/demos/delivery.mp3.asset.json";
+import telcoSong from "@/assets/demos/telco.mp3.asset.json";
+
 export type IndustryKey = "seguros" | "banca" | "retail" | "delivery" | "telco";
 
 /** Demo audio cards shown inside the Audio Demo Modal (section 3). */
@@ -28,7 +34,7 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     sector: "Banca Premium",
     objective: "Campaña de fidelización de clientes Private Banking",
     badge: "+41% open rate",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    src: bancaSong.url,
   },
   {
     key: "seguros",
@@ -36,7 +42,7 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     sector: "Seguros",
     objective: "Renovación de póliza de hogar, segmento 45-65 años",
     badge: "+38% open rate",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    src: segurosSong.url,
   },
   {
     key: "retail",
@@ -44,7 +50,7 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     sector: "Retail",
     objective: "Black Friday — captación de urgencia y descuento",
     badge: "+52% CTR vs baseline",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    src: retailSong.url,
   },
   {
     key: "delivery",
@@ -52,7 +58,7 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     sector: "Delivery",
     objective: "Reactivación de clientes inactivos y recompra recurrente",
     badge: "+27% recompra",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    src: deliverySong.url,
   },
   {
     key: "telco",
@@ -60,7 +66,7 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     sector: "Telecomunicaciones",
     objective: "Renovación de contrato y retención de clientes con churn alto",
     badge: "-22% churn",
-    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+    src: telcoSong.url,
   },
 ];
 
