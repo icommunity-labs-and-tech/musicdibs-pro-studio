@@ -9,7 +9,14 @@
  * swapped here later without touching components.
  */
 
+import bancaAudio from "@/assets/demos/banca.mp3.asset.json";
+import segurosAudio from "@/assets/demos/seguros.mp3.asset.json";
+import retailAudio from "@/assets/demos/retail.mp3.asset.json";
+import deliveryAudio from "@/assets/demos/delivery.mp3.asset.json";
+import telcoAudio from "@/assets/demos/telco.mp3.asset.json";
+
 export type IndustryKey = "seguros" | "banca" | "retail" | "delivery" | "telco";
+
 
 /** Demo audio cards shown inside the Audio Demo Modal (section 3). */
 export interface AudioDemo {
@@ -18,6 +25,7 @@ export interface AudioDemo {
   sector: string;
   objective: string;
   badge: string;
+  src: string;
 }
 
 export const AUDIO_DEMOS: AudioDemo[] = [
@@ -27,6 +35,7 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     sector: "Banca Premium",
     objective: "Campaña de fidelización de clientes Private Banking",
     badge: "+41% open rate",
+    src: bancaAudio.url,
   },
   {
     key: "seguros",
@@ -34,6 +43,7 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     sector: "Seguros",
     objective: "Renovación de póliza de hogar, segmento 45-65 años",
     badge: "+38% open rate",
+    src: segurosAudio.url,
   },
   {
     key: "retail",
@@ -41,6 +51,7 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     sector: "Retail",
     objective: "Black Friday — captación de urgencia y descuento",
     badge: "+52% CTR vs baseline",
+    src: retailAudio.url,
   },
   {
     key: "delivery",
@@ -48,6 +59,7 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     sector: "Delivery",
     objective: "Reactivación de clientes inactivos y recompra recurrente",
     badge: "+27% recompra",
+    src: deliveryAudio.url,
   },
   {
     key: "telco",
@@ -55,6 +67,7 @@ export const AUDIO_DEMOS: AudioDemo[] = [
     sector: "Telecomunicaciones",
     objective: "Renovación de contrato y retención de clientes con churn alto",
     badge: "-22% churn",
+    src: telcoAudio.url,
   },
 ];
 

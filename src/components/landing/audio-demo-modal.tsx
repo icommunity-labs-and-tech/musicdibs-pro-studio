@@ -1,3 +1,6 @@
+import { useEffect, useRef, useState } from "react";
+import { Pause, Play } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +21,46 @@ export function AudioDemoModal({
   onOpenChange: (open: boolean) => void;
   onRequestDemo: () => void;
 }) {
+  const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
+  const [playingKey, setPlayingKey] = useState<string | null>(null);
+
+  const stopAll = () => {
+    Object.values(audioRefs.current).forEach((el) => {
+      if (el) {
+        el.pause();
+        el.currentTime = 0;
+      }
+    });
+    setPlayingKey(null);
+  };
+
+  // Stop playback whenever the modal closes.
+  useEffect(() => {
+    if (!open) stopAll();
+  }, [open]);
+
+  const togglePlay = (key: string) => {
+    const current = audioRefs.current[key];
+    if (!current) return;
+
+    if (playingKey === key) {
+      current.pause();
+      setPlayingKey(null);
+      return;
+    }
+
+    // Pause any other track before starting a new one.
+    Object.entries(audioRefs.current).forEach(([k, el]) => {
+      if (el && k !== key) {
+        el.pause();
+        el.currentTime = 0;
+      }
+    });
+
+    void current.play();
+    setPlayingKey(key);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] gap-0 overflow-y-auto p-0 sm:max-w-2xl">
@@ -31,30 +74,61 @@ export function AudioDemoModal({
         </DialogHeader>
 
         <div className="flex flex-col gap-4 p-6">
-          {AUDIO_DEMOS.map((demo) => (
-            <article
-              key={demo.key}
-              className="rounded-2xl border border-border bg-card p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl" aria-hidden>
-                    {demo.icon}
-                  </span>
-                  <div>
-                    <h3 className="font-display text-base font-semibold">
-                      {demo.sector}
-                    </h3>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      {demo.objective}
-                    </p>
+          {AUDIO_DEMOS.map((demo) => {
+            const isPlaying = playingKey === demo.key;
+            return (
+              <article
+                key={demo.key}
+                className="rounded-2xl border border-border bg-card p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl" aria-hidden>
+                      {demo.icon}
+                    </span>
+                    <div>
+                      <h3 className="font-display text-base font-semibold">
+                        {demo.sector}
+                      </h3>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        {demo.objective}
+                      </p>
+                    </div>
                   </div>
+                  <Badge className="shrink-0 bg-teal text-night-900">
+                    {demo.badge}
+                  </Badge>
                 </div>
-                <Badge className="shrink-0 bg-teal text-night-900">{demo.badge}</Badge>
-              </div>
-              
-            </article>
-          ))}
+
+                <div className="mt-4 flex items-center gap-3">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={isPlaying ? "secondary" : "default"}
+                    className="gap-2"
+                    onClick={() => togglePlay(demo.key)}
+                  >
+                    {isPlaying ? (
+                      <Pause className="size-4" />
+                    ) : (
+                      <Play className="size-4" />
+                    )}
+                    {isPlaying ? "Pausar" : "Escuchar pieza"}
+                  </Button>
+                  <audio
+                    ref={(el) => {
+                      audioRefs.current[demo.key] = el;
+                    }}
+                    src={demo.src}
+                    preload="none"
+                    onEnded={() =>
+                      setPlayingKey((prev) => (prev === demo.key ? null : prev))
+                    }
+                  />
+                </div>
+              </article>
+            );
+          })}
         </div>
 
         <div className="border-t border-border p-6">
