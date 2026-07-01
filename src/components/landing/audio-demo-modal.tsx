@@ -1,4 +1,3 @@
-import { AudioPlayer } from "@/components/app/audio-player";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,7 +52,7 @@ export function AudioDemoModal({
                 </div>
                 <Badge className="shrink-0 bg-teal text-night-900">{demo.badge}</Badge>
               </div>
-              <AudioPlayer src={demo.src} className="mt-4 border-0 bg-muted/40 p-3" />
+              
             </article>
           ))}
         </div>

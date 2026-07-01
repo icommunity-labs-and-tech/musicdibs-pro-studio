@@ -1,8 +1,7 @@
 import { ArrowRight, Quote } from "lucide-react";
 
-import { AudioPlayer } from "@/components/app/audio-player";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AUDIO_DEMOS, INDUSTRY_RESULTS } from "@/lib/landing-content";
+import { INDUSTRY_RESULTS } from "@/lib/landing-content";
 
 /** Sectors that have a dedicated vertical landing page. */
 const VERTICAL_PATHS: Record<string, string> = {
@@ -39,66 +38,60 @@ export function IndustryResults() {
             ))}
           </TabsList>
 
-          {INDUSTRY_RESULTS.map((ind) => {
-            const demo = AUDIO_DEMOS.find((d) => d.key === ind.key);
-            return (
-              <TabsContent key={ind.key} value={ind.key} className="mt-8">
-                <div className="grid gap-6 lg:grid-cols-5">
-                  <div className="lg:col-span-3">
-                    <div className="grid gap-4 sm:grid-cols-3">
-                      {ind.metrics.map((m) => (
-                        <div
-                          key={m.label}
-                          className="rounded-2xl border border-border bg-card p-5"
-                        >
-                          <p className="font-display text-3xl font-semibold text-gold-dark dark:text-gold-light">
-                            {m.value}
-                          </p>
-                          <p className="mt-2 text-sm font-medium">{m.label}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            vs {m.benchmark}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <figure className="mt-4 rounded-2xl border border-border bg-card p-6">
-                      <Quote className="size-6 text-teal" aria-hidden />
-                      <blockquote className="mt-3 text-balance text-lg leading-relaxed">
-                        {ind.quote}
-                      </blockquote>
-                      <figcaption className="mt-4 text-sm text-muted-foreground">
-                        — {ind.author}
-                      </figcaption>
-                    </figure>
+          {INDUSTRY_RESULTS.map((ind) => (
+            <TabsContent key={ind.key} value={ind.key} className="mt-8">
+              <div className="grid gap-6 lg:grid-cols-5">
+                <div className="lg:col-span-3">
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    {ind.metrics.map((m) => (
+                      <div
+                        key={m.label}
+                        className="rounded-2xl border border-border bg-card p-5"
+                      >
+                        <p className="font-display text-3xl font-semibold text-gold-dark dark:text-gold-light">
+                          {m.value}
+                        </p>
+                        <p className="mt-2 text-sm font-medium">{m.label}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          vs {m.benchmark}
+                        </p>
+                      </div>
+                    ))}
                   </div>
 
-                  {demo && (
-                    <div className="lg:col-span-2">
-                      <div className="flex h-full flex-col justify-center rounded-2xl border border-border bg-gradient-to-br from-gold/5 to-teal/5 p-6">
-                        <p className="text-sm font-medium text-muted-foreground">
-                          Escucha la pieza de esta campaña
-                        </p>
-                        <p className="mt-1 font-display text-lg font-semibold">
-                          {demo.objective}
-                        </p>
-                        <AudioPlayer src={demo.src} className="mt-4" />
-                        {VERTICAL_PATHS[ind.key] && (
-                          <a
-                            href={VERTICAL_PATHS[ind.key]}
-                            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-teal transition-colors hover:text-teal/80"
-                          >
-                            Ver casos de uso de {ind.name}
-                            <ArrowRight className="size-4" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  <figure className="mt-4 rounded-2xl border border-border bg-card p-6">
+                    <Quote className="size-6 text-teal" aria-hidden />
+                    <blockquote className="mt-3 text-balance text-lg leading-relaxed">
+                      {ind.quote}
+                    </blockquote>
+                    <figcaption className="mt-4 text-sm text-muted-foreground">
+                      — {ind.author}
+                    </figcaption>
+                  </figure>
                 </div>
-              </TabsContent>
-            );
-          })}
+
+                <div className="lg:col-span-2">
+                  <div className="flex h-full flex-col justify-center rounded-2xl border border-border bg-gradient-to-br from-gold/5 to-teal/5 p-6">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Objetivo de la campaña
+                    </p>
+                    <p className="mt-1 font-display text-lg font-semibold">
+                      {ind.name}
+                    </p>
+                    {VERTICAL_PATHS[ind.key] && (
+                      <a
+                        href={VERTICAL_PATHS[ind.key]}
+                        className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-teal transition-colors hover:text-teal/80"
+                      >
+                        Ver casos de uso de {ind.name}
+                        <ArrowRight className="size-4" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          ))}
         </Tabs>
 
         <p className="mx-auto mt-10 max-w-2xl text-center text-xs text-muted-foreground">
