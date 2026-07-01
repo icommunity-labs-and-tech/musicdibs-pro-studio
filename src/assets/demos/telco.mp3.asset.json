@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "asset_id": "ac0e5b18-c3b3-4c19-9652-01437cef28be",
+  "asset_id": "9d185aa0-b0c4-4e76-88a8-7f85a7c1181b",
   "project_id": "73cad9f6-9968-4828-9645-5ff7afeea012",
-  "url": "/__l5e/assets-v1/ac0e5b18-c3b3-4c19-9652-01437cef28be/telecomunicaciones.mp3",
-  "r2_key": "a/v1/73cad9f6-9968-4828-9645-5ff7afeea012/ac0e5b18-c3b3-4c19-9652-01437cef28be/telecomunicaciones.mp3",
-  "original_filename": "telecomunicaciones.mp3",
-  "size": 5247405,
+  "url": "/__l5e/assets-v1/9d185aa0-b0c4-4e76-88a8-7f85a7c1181b/telecomunicaciones-v2.mp3",
+  "r2_key": "a/v1/73cad9f6-9968-4828-9645-5ff7afeea012/9d185aa0-b0c4-4e76-88a8-7f85a7c1181b/telecomunicaciones-v2.mp3",
+  "original_filename": "telecomunicaciones-v2.mp3",
+  "size": 840933,
   "content_type": "audio/mpeg",
-  "created_at": "2026-07-01T18:26:25Z"
+  "created_at": "2026-07-01T19:11:03Z"
 }
