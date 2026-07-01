@@ -9,6 +9,12 @@
  * swapped here later without touching components.
  */
 
+import bancaSong from "@/assets/demos/banca.mp3.asset.json";
+import segurosSong from "@/assets/demos/seguros.mp3.asset.json";
+import retailSong from "@/assets/demos/retail.mp3.asset.json";
+import deliverySong from "@/assets/demos/delivery.mp3.asset.json";
+import telcoSong from "@/assets/demos/telco.mp3.asset.json";
+
 export type IndustryKey = "seguros" | "banca" | "retail" | "delivery" | "telco";
 
 /** Demo audio cards shown inside the Audio Demo Modal (section 3). */
