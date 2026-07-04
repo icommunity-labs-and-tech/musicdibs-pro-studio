@@ -16,6 +16,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SegurosRouteImport } from './routes/seguros'
 import { Route as RetailRouteImport } from './routes/retail'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DeliveryRouteImport } from './routes/delivery'
@@ -25,6 +26,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayTokenRouteImport } from './routes/play.$token'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedShellRouteImport } from './routes/_authenticated/_shell'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedShellTeamRouteImport } from './routes/_authenticated/_shell/team'
 import { Route as AuthenticatedShellSettingsRouteImport } from './routes/_authenticated/_shell/settings'
 import { Route as AuthenticatedShellDevelopersRouteImport } from './routes/_authenticated/_shell/developers'
@@ -34,6 +37,7 @@ import { Route as AuthenticatedShellAuditLogRouteImport } from './routes/_authen
 import { Route as AuthenticatedShellAudiencesRouteImport } from './routes/_authenticated/_shell/audiences'
 import { Route as AuthenticatedShellAnalyticsRouteImport } from './routes/_authenticated/_shell/analytics'
 import { Route as AuthenticatedShellAdminRouteImport } from './routes/_authenticated/_shell/admin'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedShellSettingsIndexRouteImport } from './routes/_authenticated/_shell/settings.index'
 import { Route as AuthenticatedShellCampaignsIndexRouteImport } from './routes/_authenticated/_shell/campaigns.index'
 import { Route as AuthenticatedShellAdminIndexRouteImport } from './routes/_authenticated/_shell/admin/index'
@@ -80,6 +84,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -123,6 +132,18 @@ const AuthenticatedShellRoute = AuthenticatedShellRouteImport.update({
   id: '/_shell',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedShellTeamRoute = AuthenticatedShellTeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -175,6 +196,12 @@ const AuthenticatedShellAdminRoute = AuthenticatedShellAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedShellRoute,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedShellSettingsIndexRoute =
   AuthenticatedShellSettingsIndexRouteImport.update({
     id: '/',
@@ -242,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/delivery': typeof DeliveryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
   '/retail': typeof RetailRoute
   '/seguros': typeof SegurosRoute
@@ -249,8 +277,11 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/styleguide': typeof StyleguideRoute
   '/telco': typeof TelcoRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/play/$token': typeof PlayTokenRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin': typeof AuthenticatedShellAdminRouteWithChildren
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/audiences': typeof AuthenticatedShellAudiencesRoute
@@ -277,6 +308,7 @@ export interface FileRoutesByTo {
   '/delivery': typeof DeliveryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
   '/retail': typeof RetailRoute
   '/seguros': typeof SegurosRoute
@@ -284,8 +316,11 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/styleguide': typeof StyleguideRoute
   '/telco': typeof TelcoRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/play/$token': typeof PlayTokenRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/audiences': typeof AuthenticatedShellAudiencesRoute
   '/audit-log': typeof AuthenticatedShellAuditLogRoute
@@ -312,6 +347,7 @@ export interface FileRoutesById {
   '/delivery': typeof DeliveryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
+  '/mcp': typeof McpRoute
   '/reset-password': typeof ResetPasswordRoute
   '/retail': typeof RetailRoute
   '/seguros': typeof SegurosRoute
@@ -319,9 +355,12 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/styleguide': typeof StyleguideRoute
   '/telco': typeof TelcoRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/_shell': typeof AuthenticatedShellRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/play/$token': typeof PlayTokenRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/_shell/admin': typeof AuthenticatedShellAdminRouteWithChildren
   '/_authenticated/_shell/analytics': typeof AuthenticatedShellAnalyticsRoute
   '/_authenticated/_shell/audiences': typeof AuthenticatedShellAudiencesRoute
@@ -350,6 +389,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/forgot-password'
     | '/login'
+    | '/mcp'
     | '/reset-password'
     | '/retail'
     | '/seguros'
@@ -357,8 +397,11 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/styleguide'
     | '/telco'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/onboarding'
     | '/play/$token'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin'
     | '/analytics'
     | '/audiences'
@@ -385,6 +428,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/forgot-password'
     | '/login'
+    | '/mcp'
     | '/reset-password'
     | '/retail'
     | '/seguros'
@@ -392,8 +436,11 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/styleguide'
     | '/telco'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/onboarding'
     | '/play/$token'
+    | '/.mcp/invoke-tool/$tool'
     | '/analytics'
     | '/audiences'
     | '/audit-log'
@@ -419,6 +466,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/forgot-password'
     | '/login'
+    | '/mcp'
     | '/reset-password'
     | '/retail'
     | '/seguros'
@@ -426,9 +474,12 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/styleguide'
     | '/telco'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/_shell'
     | '/_authenticated/onboarding'
     | '/play/$token'
+    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/_shell/admin'
     | '/_authenticated/_shell/analytics'
     | '/_authenticated/_shell/audiences'
@@ -457,6 +508,7 @@ export interface RootRouteChildren {
   DeliveryRoute: typeof DeliveryRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
+  McpRoute: typeof McpRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RetailRoute: typeof RetailRoute
   SegurosRoute: typeof SegurosRoute
@@ -464,7 +516,10 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StyleguideRoute: typeof StyleguideRoute
   TelcoRoute: typeof TelcoRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   PlayTokenRoute: typeof PlayTokenRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -516,6 +571,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -581,6 +643,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShellRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/_shell/team': {
       id: '/_authenticated/_shell/team'
       path: '/team'
@@ -643,6 +719,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedShellAdminRouteImport
       parentRoute: typeof AuthenticatedShellRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/_shell/settings/': {
       id: '/_authenticated/_shell/settings/'
@@ -815,6 +898,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeliveryRoute: DeliveryRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
+  McpRoute: McpRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RetailRoute: RetailRoute,
   SegurosRoute: SegurosRoute,
@@ -822,7 +906,11 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StyleguideRoute: StyleguideRoute,
   TelcoRoute: TelcoRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   PlayTokenRoute: PlayTokenRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

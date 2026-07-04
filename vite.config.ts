@@ -5,6 +5,7 @@
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
 export default defineConfig({
   // Emit a Vite manifest so the Vercel post-build step (scripts/generate-index.mjs)
@@ -13,6 +14,9 @@ export default defineConfig({
     build: {
       manifest: true,
     },
+    // MCP server (agent integrations) — generates /mcp + OAuth metadata routes
+    // from src/lib/mcp/index.ts at build time.
+    plugins: [mcpPlugin()],
   },
   tanstackStart: {
     // Use a custom client entry so Vercel's static fallback can boot as a SPA
