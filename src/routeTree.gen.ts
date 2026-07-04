@@ -20,6 +20,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DeliveryRouteImport } from './routes/delivery'
+import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as BancaRouteImport } from './routes/banca'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -102,6 +103,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
 const DeliveryRoute = DeliveryRouteImport.update({
   id: '/delivery',
   path: '/delivery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectRoute = ConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BancaRoute = BancaRouteImport.update({
@@ -266,6 +272,7 @@ const AuthenticatedShellAdminTenantsIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/banca': typeof BancaRoute
+  '/connect': typeof ConnectRoute
   '/delivery': typeof DeliveryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
@@ -305,6 +312,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/banca': typeof BancaRoute
+  '/connect': typeof ConnectRoute
   '/delivery': typeof DeliveryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
@@ -344,6 +352,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/banca': typeof BancaRoute
+  '/connect': typeof ConnectRoute
   '/delivery': typeof DeliveryRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
@@ -386,6 +395,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/banca'
+    | '/connect'
     | '/delivery'
     | '/forgot-password'
     | '/login'
@@ -425,6 +435,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/banca'
+    | '/connect'
     | '/delivery'
     | '/forgot-password'
     | '/login'
@@ -463,6 +474,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/banca'
+    | '/connect'
     | '/delivery'
     | '/forgot-password'
     | '/login'
@@ -505,6 +517,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   BancaRoute: typeof BancaRoute
+  ConnectRoute: typeof ConnectRoute
   DeliveryRoute: typeof DeliveryRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
@@ -599,6 +612,13 @@ declare module '@tanstack/react-router' {
       path: '/delivery'
       fullPath: '/delivery'
       preLoaderRoute: typeof DeliveryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect': {
+      id: '/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/banca': {
@@ -895,6 +915,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   BancaRoute: BancaRoute,
+  ConnectRoute: ConnectRoute,
   DeliveryRoute: DeliveryRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
