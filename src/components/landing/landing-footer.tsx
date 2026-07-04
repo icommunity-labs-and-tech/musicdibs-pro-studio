@@ -40,6 +40,12 @@ export function LandingFooter() {
               </a>
             ))}
             <a
+              href="/connect"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Conectar IA
+            </a>
+            <a
               href="/login"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
