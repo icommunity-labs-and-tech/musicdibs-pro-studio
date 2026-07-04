@@ -5,11 +5,12 @@
  * `/delivery` route is an instance of <VerticalLanding> fed with this data.
  */
 
-import bancaAudio from "@/assets/demos/banca.mp3.asset.json";
-import deliveryAudio from "@/assets/demos/delivery.mp3.asset.json";
-import retailAudio from "@/assets/demos/retail.mp3.asset.json";
-import segurosAudio from "@/assets/demos/seguros.mp3.asset.json";
-import telcoAudio from "@/assets/demos/telco.mp3.asset.json";
+// Served statically from public/ so audio works on both Lovable and Vercel.
+const bancaAudio = { url: "/audio/banca-premium-v2.mp3" };
+const deliveryAudio = { url: "/audio/delivery-v2.mp3" };
+const retailAudio = { url: "/audio/retail-v2.mp3" };
+const segurosAudio = { url: "/audio/seguros-v2.mp3" };
+const telcoAudio = { url: "/audio/telecomunicaciones-v2.mp3" };
 
 export type VerticalKey = "seguros" | "banca" | "retail" | "delivery" | "telco";
 

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, Check, MoreVertical, Pause, Play, Reply, Star } from "lucide-react";
 
-import felicitacionSong from "@/assets/demos/felicitacion.mp3.asset.json";
+// Served statically from public/ so it works on both Lovable and Vercel.
+const felicitacionSong = { url: "/audio/felicitacion.mp3" };
 
 /**
  * "Así lo vive tu cliente" — shows the recipient-side experience across
