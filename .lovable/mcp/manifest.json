@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "musicdibs-mcp",
+      "version": "0.1.0",
+      "title": "MusicDibs MCP"
+    },
+    "tools": [
+      {
+        "name": "get_experience",
+        "title": "Get music experience",
+        "description": "Fetch a published MusicDibs music experience by its public share token (the token in a /play/{token} link). Returns the public title, message, audio URL, call-to-action and playback stats. Only works for experiences the tenant has published.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The public experience token, e.g. the value in /play/{token}."
+            }
+          },
+          "required": [
+            "token"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
