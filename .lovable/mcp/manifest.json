@@ -8,7 +8,7 @@
   "mcp": {
     "server": {
       "name": "musicdibs-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "title": "MusicDibs MCP"
     },
     "tools": [
@@ -33,6 +33,674 @@
           },
           "required": [
             "token"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_account",
+        "title": "Get account",
+        "description": "Return the MusicDibs account (tenant) profile for the given API key: name, slug, industry vertical, plan and setup status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            }
+          },
+          "required": [
+            "api_key"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_dashboard",
+        "title": "Get dashboard metrics",
+        "description": "Return aggregate metrics for the tenant: totals for campaigns (with a status breakdown), contacts, contact lists, published experiences, and total plays/completions across all experiences.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            }
+          },
+          "required": [
+            "api_key"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_campaigns",
+        "title": "List campaigns",
+        "description": "List the tenant's campaigns, most recent first. Optionally filter by status. Returns core fields plus engagement rates.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            },
+            "status": {
+              "description": "Optional status filter, e.g. draft, queued, generating, sent.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows (default 50).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          "required": [
+            "api_key"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_campaign",
+        "title": "Get campaign",
+        "description": "Fetch one campaign of the tenant by id, including delivery stats (emails sent/opened/clicked, unsubscribes, actual cost) and any published experiences with their play counts.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            },
+            "campaign_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "The campaign id (uuid)."
+            }
+          },
+          "required": [
+            "api_key",
+            "campaign_id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_contact_lists",
+        "title": "List contact lists",
+        "description": "List the tenant's contact lists (audiences) with their contact counts.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            }
+          },
+          "required": [
+            "api_key"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_contacts",
+        "title": "List contacts",
+        "description": "List the tenant's contacts, most recent first. Optionally filter by contact list, status, or an email search term. Supports pagination via limit/offset.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            },
+            "list_id": {
+              "description": "Optional contact list id to filter by.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "description": "Optional contact status filter.",
+              "type": "string",
+              "enum": [
+                "active",
+                "unsubscribed",
+                "bounced",
+                "cleaned"
+              ]
+            },
+            "search": {
+              "description": "Optional case-insensitive email search.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows (default 50).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "offset": {
+              "description": "Rows to skip (default 0).",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "api_key"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_experiences",
+        "title": "List experiences",
+        "description": "List the tenant's music experience pages, most recent first, including the public share token and playback stats. Optionally filter by status (draft, published, archived).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            },
+            "status": {
+              "description": "Optional status filter.",
+              "type": "string",
+              "enum": [
+                "draft",
+                "published",
+                "archived"
+              ]
+            },
+            "limit": {
+              "description": "Max rows (default 50).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          "required": [
+            "api_key"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_providers",
+        "title": "List providers",
+        "description": "List the tenant's connected delivery/CRM providers (e.g. MailerLite, Brevo, Resend, Salesforce) with connection status and last sync, plus any synced provider audiences. Credentials are never returned.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            }
+          },
+          "required": [
+            "api_key"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_contact_list",
+        "title": "Create contact list",
+        "description": "Create a new manual contact list (audience) for the tenant.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "description": "List name."
+            },
+            "description": {
+              "description": "Optional description.",
+              "type": "string",
+              "maxLength": 500
+            },
+            "color": {
+              "description": "Optional hex color, e.g. #14b8a6.",
+              "type": "string",
+              "maxLength": 20
+            }
+          },
+          "required": [
+            "api_key",
+            "name"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_contact",
+        "title": "Create contact",
+        "description": "Create a contact for the tenant, optionally attaching it to a contact list. Email is required.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            },
+            "email": {
+              "type": "string",
+              "maxLength": 255,
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+              "description": "Contact email address."
+            },
+            "first_name": {
+              "description": "First name.",
+              "type": "string",
+              "maxLength": 120
+            },
+            "last_name": {
+              "description": "Last name.",
+              "type": "string",
+              "maxLength": 120
+            },
+            "company": {
+              "description": "Company.",
+              "type": "string",
+              "maxLength": 160
+            },
+            "phone": {
+              "description": "Phone number (E.164 recommended).",
+              "type": "string",
+              "maxLength": 40
+            },
+            "list_id": {
+              "description": "Optional contact list id to attach to.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "description": "Contact status (default active).",
+              "type": "string",
+              "enum": [
+                "active",
+                "unsubscribed",
+                "bounced",
+                "cleaned"
+              ]
+            }
+          },
+          "required": [
+            "api_key",
+            "email"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_contact",
+        "title": "Update contact",
+        "description": "Update fields of an existing contact belonging to the tenant. Only provided fields are changed.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            },
+            "contact_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "The contact id (uuid)."
+            },
+            "email": {
+              "type": "string",
+              "maxLength": 255,
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            },
+            "first_name": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "last_name": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "company": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "phone": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "list_id": {
+              "description": "Set to null to detach from its list.",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "unsubscribed",
+                "bounced",
+                "cleaned"
+              ]
+            }
+          },
+          "required": [
+            "api_key",
+            "contact_id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "delete_contact",
+        "title": "Delete contact",
+        "description": "Permanently delete a contact belonging to the tenant. This cannot be undone.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "destructiveHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            },
+            "contact_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "The contact id (uuid) to delete."
+            }
+          },
+          "required": [
+            "api_key",
+            "contact_id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_campaign",
+        "title": "Create campaign",
+        "description": "Create a new draft campaign for the tenant. Only a name is required; sensible defaults are applied for the rest. The campaign is created in 'draft' status.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "description": "Campaign name."
+            },
+            "type": {
+              "description": "Song type (default single_song).",
+              "type": "string",
+              "enum": [
+                "single_song",
+                "personalized_song"
+              ]
+            },
+            "campaign_type": {
+              "description": "Campaign type (default broadcast).",
+              "type": "string",
+              "enum": [
+                "broadcast",
+                "personalized"
+              ]
+            },
+            "vertical": {
+              "description": "Industry vertical (default music_label).",
+              "type": "string",
+              "maxLength": 60
+            },
+            "goal": {
+              "description": "Campaign goal / objective.",
+              "type": "string",
+              "maxLength": 500
+            },
+            "tone": {
+              "description": "Desired tone for the song.",
+              "type": "string",
+              "maxLength": 120
+            },
+            "music_style": {
+              "description": "Music style.",
+              "type": "string",
+              "maxLength": 120
+            },
+            "language": {
+              "description": "Language code (default es).",
+              "type": "string",
+              "maxLength": 10
+            },
+            "delivery_channel": {
+              "description": "Delivery channel (default email).",
+              "type": "string",
+              "enum": [
+                "email",
+                "whatsapp"
+              ]
+            },
+            "duration_seconds": {
+              "description": "Song length (default 30).",
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 240
+            },
+            "ai_prompt": {
+              "description": "Optional AI prompt for generation.",
+              "type": "string",
+              "maxLength": 2000
+            },
+            "subject": {
+              "description": "Email subject (email campaigns).",
+              "type": "string",
+              "maxLength": 300
+            },
+            "contact_list_id": {
+              "description": "Optional contact list to target.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": [
+            "api_key",
+            "name"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_campaign",
+        "title": "Update campaign",
+        "description": "Update editable fields of an existing campaign belonging to the tenant. Only provided fields are changed.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Your MusicDibs tenant API key (mdb_live_…), from Settings → Developers."
+            },
+            "campaign_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "The campaign id (uuid)."
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "status": {
+              "description": "New status, e.g. draft, queued.",
+              "type": "string",
+              "maxLength": 40
+            },
+            "goal": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "tone": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "music_style": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "ai_prompt": {
+              "type": "string",
+              "maxLength": 2000
+            },
+            "subject": {
+              "type": "string",
+              "maxLength": 300
+            },
+            "delivery_channel": {
+              "type": "string",
+              "enum": [
+                "email",
+                "whatsapp"
+              ]
+            },
+            "contact_list_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "api_key",
+            "campaign_id"
           ]
         },
         "outputSchema": null
