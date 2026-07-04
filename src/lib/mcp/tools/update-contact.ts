@@ -1,8 +1,11 @@
 // MCP tool: update an existing contact for the tenant.
 import { defineTool } from "@lovable.dev/mcp-js";
 import { z } from "zod";
+import type { Database } from "@/integrations/supabase/types";
 import { authenticateTenant } from "../tenant-auth";
 import { errorResult, jsonResult } from "../respond";
+
+type ContactUpdate = Database["public"]["Tables"]["contacts"]["Update"];
 
 const apiKey = z
   .string()
