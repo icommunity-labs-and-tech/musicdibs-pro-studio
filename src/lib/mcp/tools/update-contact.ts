@@ -34,9 +34,9 @@ export default defineTool({
     if (!auth.ok) return errorResult(auth.message);
     const { supabase, tenantId } = auth.ctx;
 
-    const updates: Record<string, unknown> = {};
+    const updates: ContactUpdate = {};
     for (const [key, value] of Object.entries(fields)) {
-      if (value !== undefined) updates[key] = value;
+      if (value !== undefined) (updates as Record<string, unknown>)[key] = value;
     }
     if (Object.keys(updates).length === 0) {
       return errorResult("No fields provided to update.");
