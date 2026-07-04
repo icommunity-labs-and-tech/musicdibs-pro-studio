@@ -7,6 +7,8 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
+const isVercelBuild = process.env.VERCEL === "1";
+
 export default defineConfig({
   // Emit a Vite manifest so the Vercel post-build step (scripts/generate-index.mjs)
   // can resolve the TRUE client entry chunk instead of guessing by file size.
@@ -15,8 +17,10 @@ export default defineConfig({
       manifest: true,
     },
     // MCP server (agent integrations) — generates /mcp + OAuth metadata routes
-    // from src/lib/mcp/index.ts at build time.
-    plugins: [mcpPlugin()],
+    // from src/lib/mcp/index.ts at build time. Vercel is intentionally a static
+    // SPA deployment for enterprise.musicdibs.com; the working MCP endpoint is
+    // served by Lovable at https://musicdibs-enterprise.lovable.app/mcp.
+    plugins: isVercelBuild ? [] : [mcpPlugin()],
   },
   tanstackStart: {
     // Use a custom client entry so Vercel's static fallback can boot as a SPA
