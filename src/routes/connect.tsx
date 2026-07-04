@@ -33,13 +33,15 @@ export const Route = createFileRoute("/connect")({
   }),
 });
 
-function ConnectPage() {
-  const [mcpUrl, setMcpUrl] = useState("");
-  const [copied, setCopied] = useState(false);
+// The MCP server runs on the Lovable-published Worker, NOT on the Vercel static
+// SPA (enterprise.musicdibs.com), where /mcp returns index.html and any MCP
+// client fails. Always advertise the Worker URL so ChatGPT/Claude connect to a
+// host that actually serves the /mcp endpoint.
+const MCP_URL = "https://musicdibs-enterprise.lovable.app/mcp";
 
-  useEffect(() => {
-    setMcpUrl(new URL("/mcp", window.location.origin).toString());
-  }, []);
+function ConnectPage() {
+  const [mcpUrl] = useState(MCP_URL);
+  const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     if (!mcpUrl) return;
