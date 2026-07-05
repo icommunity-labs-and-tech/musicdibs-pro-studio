@@ -10,6 +10,10 @@ import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 const isVercelBuild = process.env.VERCEL === "1";
 
 export default defineConfig({
+  // Vercel hosts this project as a static SPA. If Nitro runs inside Vercel it
+  // auto-detects the Vercel target and writes `.vercel/output` instead of the
+  // `dist/client` directory expected by vercel.json and generate-index.mjs.
+  nitro: isVercelBuild ? false : undefined,
   // Emit a Vite manifest so the Vercel post-build step (scripts/generate-index.mjs)
   // can resolve the TRUE client entry chunk instead of guessing by file size.
   vite: {
